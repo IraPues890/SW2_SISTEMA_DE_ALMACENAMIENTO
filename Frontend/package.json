@@ -1,0 +1,12 @@
+{
+  "name": "sw2-frontend",
+  "version": "1.0.0",
+  "main": "src/main.jsx",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}
