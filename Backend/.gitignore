@@ -1,0 +1,13 @@
+# Node modules
+node_modules/
+
+# Entornos
+.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Sequelize
+src/db/*.sqlite

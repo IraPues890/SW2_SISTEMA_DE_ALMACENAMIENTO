@@ -1,0 +1,20 @@
+# Node modules en cualquier subcarpeta
+node_modules/
+**/node_modules/
+
+# Archivos de entorno en cualquier subcarpeta
+.env
+**/.env
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Archivos de bases de datos locales
+*.sqlite
+**/*.sqlite
+
+# Salidas de build de Vite
+/dist
+**/dist

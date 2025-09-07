@@ -1,0 +1,161 @@
+@startuml
+title Plataforma de Gestión de Archivos On-Premise - Sprint 1 (15 HU)
+
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+' ================== USUARIOS ==================
+package "Usuarios" {
+  class Usuario {
+    +id: UUID
+    +nombre: String
+    +correo: String
+  }
+
+  class Rol {
+    +nombre: String
+    +permisos: List<Permiso>
+  }
+
+  class Permiso {
+    +descripcion: String
+  }
+
+  Usuario --> Rol
+  Rol --> Permiso
+}
+
+' ================== AUTENTICACIÓN ==================
+package "Autenticación" {
+  class AuthService {
+    +login(email: String, password: String)
+    +logout(usuario: Usuario)
+  }
+
+  AuthService --> Usuario
+}
+
+' ================== ARCHIVOS ==================
+package "Archivos" {
+  class Archivo {
+    +id: UUID
+    +nombre: String
+    +tamaño: Double
+    +renombrar(n: String)
+  }
+
+  class Version {
+    +id: UUID
+    +fecha: Date
+    +contenido: Blob
+    +usuario: Usuario
+  }
+
+  class GestorArchivos <<Facade>> {
+    +subirArchivo(a: Archivo)
+    +eliminarArchivo(id: UUID)
+    +renombrarArchivo(a: Archivo, n: String)
+    +restaurarVersion(a: Archivo, v: Version)
+    +listarVersiones(a: Archivo): List<Version>
+  }
+
+  class VersionFactory <<Factory>> {
+    +crearVersion(a: Archivo, u: Usuario): Version
+  }
+
+  Archivo --> Version
+  GestorArchivos --> Archivo
+  GestorArchivos --> Version
+  GestorArchivos --> VersionFactory
+}
+
+' ================== CARPETAS ==================
+package "Carpetas" {
+  class Carpeta {
+    +id: UUID
+    +nombre: String
+    +renombrar(n: String)
+  }
+
+  class GestorCarpetas <<Facade>> {
+    +crearCarpeta(nombre: String)
+    +eliminarCarpeta(id: UUID)
+    +renombrarCarpeta(c: Carpeta, n: String)
+    +moverArchivos(c: Carpeta, archivos: List<Archivo>)
+  }
+
+  Carpeta o-- Archivo
+  GestorCarpetas --> Carpeta
+}
+
+' ================== ORGANIZACIÓN ==================
+package "Organización" {
+  class Etiqueta {
+    +nombre: String
+  }
+
+  interface EstrategiaOrdenamiento <<Strategy>> {
+    +ordenar(archivos: List<Archivo>): List<Archivo>
+  }
+
+  class OrdenarPorFecha implements EstrategiaOrdenamiento
+  class OrdenarPorNombre implements EstrategiaOrdenamiento
+  class OrdenarPorTipo implements EstrategiaOrdenamiento
+
+  class OrdenadorArchivos {
+    -estrategia: EstrategiaOrdenamiento
+    +setEstrategia(e: EstrategiaOrdenamiento)
+    +ordenar(archivos: List<Archivo>)
+  }
+
+  Archivo --> Etiqueta
+  OrdenadorArchivos --> EstrategiaOrdenamiento
+}
+
+' ================== VERSIONAMIENTO ==================
+package "Versionamiento" {
+  interface PoliticaVersionado <<Strategy>> {
+    +aplicarPolitica(versiones: List<Version>): List<Version>
+  }
+
+  class PoliticaLimiteFijo implements PoliticaVersionado {
+    -maxVersiones: int
+    +aplicarPolitica(versiones: List<Version>): List<Version>
+  }
+
+  GestorArchivos --> PoliticaVersionado
+}
+
+' ================== PERMISOS ==================
+package "Permisos" {
+  class CompartirService {
+    +compartirArchivo(a: Archivo, roles: List<Rol>)
+  }
+
+  CompartirService --> Archivo
+  CompartirService --> Rol
+}
+
+' ================== PERSISTENCIA ==================
+package "Persistencia" {
+  interface IRepositorioArchivos {
+    +guardarArchivo(a: Archivo)
+    +obtenerArchivo(id: UUID)
+    +eliminarArchivo(id: UUID)
+  }
+
+  interface IRepositorioUsuarios {
+    +guardarUsuario(u: Usuario)
+    +obtenerUsuario(id: UUID)
+  }
+
+  ' Patrón Repository: se puede cambiar la implementación (SQLite, Postgres, etc.)
+  class LocalStorageRepositorio {
+  }
+
+  LocalStorageRepositorio ..|> IRepositorioArchivos
+  LocalStorageRepositorio ..|> IRepositorioUsuarios
+}
+
+@enduml
+
