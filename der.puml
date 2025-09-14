@@ -1,161 +1,234 @@
 @startuml
-title Plataforma de Gestión de Archivos On-Premise - Sprint 1 (15 HU)
+title Plataforma de Archivos On-Premise - Sprint 1 (Versión Final con Cardinalidades)
 
-skinparam packageStyle rectangle
-skinparam classAttributeIconSize 0
-
-' ================== USUARIOS ==================
+' ======================
+' USUARIOS Y ROLES
+' ======================
 package "Usuarios" {
   class Usuario {
-    +id: UUID
-    +nombre: String
-    +correo: String
+    -id: int
+    -nombre: string
+    -email: string
+    -passwordHash: string
+    +getId(): int
+    +getEmail(): string
+    +validarPassword(password: string): boolean
+  }
+
+  class Administrador extends Usuario {
+    +definirPoliticaVersionado(limite: int): void
+    +verRegistrosAcceso(): List<String>
+    +recibirAlertasSeguridad(): void
   }
 
   class Rol {
-    +nombre: String
-    +permisos: List<Permiso>
+    -id: int
+    -nombre: string
+    -permisos: List<Permiso>
+    +getPermisos(): List<Permiso>
   }
 
   class Permiso {
-    +descripcion: String
+    -id: int
+    -nombre: string
+    -descripcion: string
   }
-
-  Usuario --> Rol
-  Rol --> Permiso
 }
 
-' ================== AUTENTICACIÓN ==================
+' ======================
+' AUTENTICACION
+' ======================
 package "Autenticación" {
   class AuthService {
-    +login(email: String, password: String)
-    +logout(usuario: Usuario)
+    +login(email: string, password: string): Usuario
+    +logout(usuario: Usuario): void
+    +generarToken(usuario: Usuario): string
+    +verificarToken(token: string): boolean
+    +refrescarSesion(usuario: Usuario): string
   }
-
-  AuthService --> Usuario
 }
 
-' ================== ARCHIVOS ==================
+' ======================
+' ARCHIVOS
+' ======================
 package "Archivos" {
   class Archivo {
-    +id: UUID
-    +nombre: String
-    +tamaño: Double
-    +renombrar(n: String)
+    -id: int
+    -nombre: string
+    -tamaño: float
+    -tipo: string
+    -fechaCreacion: Date
+    -fechaModificacion: Date
+    -versiones: List<Version>
+    +renombrar(nuevoNombre: string): void
+    +eliminar(): void
+    +getVersiones(): List<Version>
+    +getEtiquetas(): List<Etiqueta>
+    +previsualizar(): Object
+    +descargar(): binary
   }
 
   class Version {
-    +id: UUID
-    +fecha: Date
-    +contenido: Blob
-    +usuario: Usuario
+    -id: int
+    -numero: int
+    -contenido: binary
+    -fecha: Date
+    -autor: Usuario
   }
 
   class GestorArchivos <<Facade>> {
-    +subirArchivo(a: Archivo)
-    +eliminarArchivo(id: UUID)
-    +renombrarArchivo(a: Archivo, n: String)
-    +restaurarVersion(a: Archivo, v: Version)
-    +listarVersiones(a: Archivo): List<Version>
+    +subirArchivo(archivo: Archivo, usuario: Usuario): void
+    +eliminarArchivo(archivo: Archivo): void
+    +renombrarArchivo(archivo: Archivo, nuevoNombre: string): void
+    +restaurarVersion(archivo: Archivo, version: Version): void
+    +obtenerArchivo(id: int): Archivo
+    +listarArchivos(carpeta: Carpeta): List<Archivo>
+    +previsualizarArchivo(archivo: Archivo): Object
+    +descargarArchivo(archivo: Archivo): binary
   }
 
   class VersionFactory <<Factory>> {
-    +crearVersion(a: Archivo, u: Usuario): Version
+    +crearVersion(archivo: Archivo, usuario: Usuario): Version
   }
-
-  Archivo --> Version
-  GestorArchivos --> Archivo
-  GestorArchivos --> Version
-  GestorArchivos --> VersionFactory
 }
 
-' ================== CARPETAS ==================
+' ======================
+' CARPETAS
+' ======================
 package "Carpetas" {
   class Carpeta {
-    +id: UUID
-    +nombre: String
-    +renombrar(n: String)
+    -id: int
+    -nombre: string
+    -archivos: List<Archivo>
+    -subcarpetas: List<Carpeta>
+    +crearSubcarpeta(nombre: string): Carpeta
+    +renombrar(nuevoNombre: string): void
+    +eliminar(): void
+    +listarContenido(): List<Object>
   }
 
   class GestorCarpetas <<Facade>> {
-    +crearCarpeta(nombre: String)
-    +eliminarCarpeta(id: UUID)
-    +renombrarCarpeta(c: Carpeta, n: String)
-    +moverArchivos(c: Carpeta, archivos: List<Archivo>)
+    +crearCarpeta(nombre: string, usuario: Usuario): Carpeta
+    +eliminarCarpeta(carpeta: Carpeta): void
+    +renombrarCarpeta(carpeta: Carpeta, nuevoNombre: string): void
+    +moverArchivo(archivo: Archivo, carpetaDestino: Carpeta): void
+    +listarCarpetas(usuario: Usuario): List<Carpeta>
   }
-
-  Carpeta o-- Archivo
-  GestorCarpetas --> Carpeta
 }
 
-' ================== ORGANIZACIÓN ==================
+' ======================
+' ORGANIZACION Y ORDENAMIENTO
+' ======================
 package "Organización" {
   class Etiqueta {
-    +nombre: String
+    -id: int
+    -nombre: string
+    +asignarArchivo(archivo: Archivo): void
+    +removerArchivo(archivo: Archivo): void
   }
 
   interface EstrategiaOrdenamiento <<Strategy>> {
     +ordenar(archivos: List<Archivo>): List<Archivo>
   }
 
-  class OrdenarPorFecha implements EstrategiaOrdenamiento
-  class OrdenarPorNombre implements EstrategiaOrdenamiento
-  class OrdenarPorTipo implements EstrategiaOrdenamiento
+  class OrdenarPorFecha implements EstrategiaOrdenamiento {
+    +ordenar(archivos: List<Archivo>): List<Archivo>
+  }
+
+  class OrdenarPorNombre implements EstrategiaOrdenamiento {
+    +ordenar(archivos: List<Archivo>): List<Archivo>
+  }
+
+  class OrdenarPorTipo implements EstrategiaOrdenamiento {
+    +ordenar(archivos: List<Archivo>): List<Archivo>
+  }
 
   class OrdenadorArchivos {
     -estrategia: EstrategiaOrdenamiento
-    +setEstrategia(e: EstrategiaOrdenamiento)
-    +ordenar(archivos: List<Archivo>)
+    +setEstrategia(estrategia: EstrategiaOrdenamiento): void
+    +ordenarArchivos(archivos: List<Archivo>): List<Archivo>
   }
-
-  Archivo --> Etiqueta
-  OrdenadorArchivos --> EstrategiaOrdenamiento
 }
 
-' ================== VERSIONAMIENTO ==================
+' ======================
+' VERSIONAMIENTO
+' ======================
 package "Versionamiento" {
   interface PoliticaVersionado <<Strategy>> {
-    +aplicarPolitica(versiones: List<Version>): List<Version>
+    +aplicar(versiones: List<Version>): List<Version>
   }
 
   class PoliticaLimiteFijo implements PoliticaVersionado {
-    -maxVersiones: int
-    +aplicarPolitica(versiones: List<Version>): List<Version>
+    -limite: int
+    +aplicar(versiones: List<Version>): List<Version>
   }
-
-  GestorArchivos --> PoliticaVersionado
 }
 
-' ================== PERMISOS ==================
+' ======================
+' PERMISOS
+' ======================
 package "Permisos" {
   class CompartirService {
-    +compartirArchivo(a: Archivo, roles: List<Rol>)
+    +compartirArchivo(archivo: Archivo, rol: Rol): void
+    +revocarAcceso(archivo: Archivo, rol: Rol): void
+    +listarUsuariosConAcceso(archivo: Archivo): List<Usuario>
+    +compartirCarpeta(carpeta: Carpeta, usuario: Usuario): void
+    +revocarAccesoCarpeta(carpeta: Carpeta, usuario: Usuario): void
+    +listarUsuariosConAccesoCarpeta(carpeta: Carpeta): List<Usuario>
   }
-
-  CompartirService --> Archivo
-  CompartirService --> Rol
 }
 
-' ================== PERSISTENCIA ==================
+' ======================
+' PERSISTENCIA
+' ======================
 package "Persistencia" {
   interface IRepositorioArchivos {
-    +guardarArchivo(a: Archivo)
-    +obtenerArchivo(id: UUID)
-    +eliminarArchivo(id: UUID)
+    +guardar(archivo: Archivo): void
+    +obtener(id: int): Archivo
+    +eliminar(id: int): void
+    +listarPorCarpeta(carpeta: Carpeta): List<Archivo>
   }
 
   interface IRepositorioUsuarios {
-    +guardarUsuario(u: Usuario)
-    +obtenerUsuario(id: UUID)
+    +guardar(usuario: Usuario): void
+    +obtener(id: int): Usuario
+    +obtenerPorEmail(email: string): Usuario
   }
 
-  ' Patrón Repository: se puede cambiar la implementación (SQLite, Postgres, etc.)
-  class LocalStorageRepositorio {
+  class LocalStorageRepositorio implements IRepositorioArchivos {
+    +guardar(archivo: Archivo): void
+    +obtener(id: int): Archivo
+    +eliminar(id: int): void
+    +listarPorCarpeta(carpeta: Carpeta): List<Archivo>
   }
-
-  LocalStorageRepositorio ..|> IRepositorioArchivos
-  LocalStorageRepositorio ..|> IRepositorioUsuarios
 }
 
-@enduml
+' ======================
+' RELACIONES CON CARDINALIDAD
+' ======================
+Usuario "1" -- "1..*" Carpeta
+Usuario "1" -- "0..*" Etiqueta
+Usuario "1" --> "1" Rol
+Rol "1" --> "0..*" Permiso
 
+Carpeta "1" -- "0..*" Archivo
+Carpeta "0..1" -- "0..*" Carpeta : subcarpetas
+
+Archivo "1" -- "1..*" Version
+Archivo "0..*" -- "0..*" Etiqueta
+
+Etiqueta "1" --> "1" Usuario : creada_por
+
+Administrador "1" --> "1" PoliticaVersionado
+GestorArchivos --> VersionFactory
+GestorArchivos --> PoliticaVersionado
+GestorArchivos --> IRepositorioArchivos
+GestorCarpetas --> Carpeta
+OrdenadorArchivos --> EstrategiaOrdenamiento
+OrdenadorArchivos --> Archivo
+CompartirService --> Archivo
+CompartirService --> Rol
+CompartirService --> Carpeta
+CompartirService --> Usuario : acceso_carpeta
+AuthService --> IRepositorioUsuarios
+@enduml
