@@ -8,11 +8,12 @@ class GoogleRepository {
         // Alternativa: this.bucketName = process.env.GSC_BUCKET
     }
     async upload(filePath, fileName) {
-        const uploadRequest = {
+        const bucket = this.client.bucket(this.bucketName);
+        await bucket.upload(filePath, {
             destination: fileName,
             resumable: false,
-        }
-        await this.client.upload(fs.createReadStream(filePath),uploadRequest);
+        });
+
         return `Archivo ${fileName} subido a Google Cloud Storage`;
     }
 }
