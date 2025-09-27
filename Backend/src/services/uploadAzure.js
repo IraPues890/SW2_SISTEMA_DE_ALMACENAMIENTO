@@ -1,7 +1,7 @@
 const fs = require("fs");
 const { BlobServiceClient } = require("@azure/storage-blob");
 
-// Obtenemos variable de entorno de la VM
+// Obtenemos variable de entorno de la VM (dentro de .env)
 const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
 
 if (!AZURE_STORAGE_CONNECTION_STRING) {
@@ -20,6 +20,7 @@ async function uploadToAzure(filePath, fileName) {
 
   const blockBlobClient = containerClient.getBlockBlobClient(fileName);
   await blockBlobClient.uploadFile(filePath);
+  return `Archivo ${fileName} subido a Azure`;
 }
 
 module.exports = { uploadToAzure };
