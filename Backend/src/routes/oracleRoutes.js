@@ -9,7 +9,7 @@ const upload = multer({ dest: "uploads/" });
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
     await uploadToOracle(req.file.path, req.file.originalname);
-    res.json({ success: true, message: `Archivo ${req.file.originalname} subido a Oracle` });
+    res.json({ success: true, message: `Archivo ${req.file.originalname} subido a Oracle Object Storage` });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, error: err.message });
