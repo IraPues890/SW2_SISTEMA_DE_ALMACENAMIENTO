@@ -1,6 +1,6 @@
 const express = require("express");
 const multer = require("multer");
-const { uploadToOracle } = require("../services/uploadOracle");
+const oracleRepository = require("../services/OCI/oracleRepository");
 
 const router = express.Router();
 const upload = multer({ dest: "uploads/" });
@@ -8,7 +8,7 @@ const upload = multer({ dest: "uploads/" });
 // POST /oracle/upload
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
-    await uploadToOracle(req.file.path, req.file.originalname);
+    await oracleRepository.upload(req.file.path, req.file.originalname);
     res.json({ success: true, message: `Archivo ${req.file.originalname} subido a Oracle Object Storage` });
   } catch (err) {
     console.error(err);
