@@ -21,8 +21,8 @@ async function uploadToOracle(filePath, fileName) {
     objectName: fileName,
     putObjectBody: fs.createReadStream(filePath),
   };
-
   await client.putObject(putObjectRequest);
+  return `Archivo ${fileName} subido a Oracle Object Storage`;
 }
 
 module.exports = { uploadToOracle };
