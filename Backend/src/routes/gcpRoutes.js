@@ -1,6 +1,6 @@
 const express = require("express");
 const multer = require("multer");
-const { uploadToGCP } = require("../services/uploadGCP");
+const gcpRepository = require("../services/GCP/gcpRepository");
 
 const router = express.Router();
 const upload = multer({ dest: "uploads/" });
@@ -8,7 +8,7 @@ const upload = multer({ dest: "uploads/" });
 // POST /gcp/upload
 router.post("/upload", upload.single("file"), async (req, res) => {
   try {
-    await uploadToGCP(req.file.path, req.file.originalname);
+    await gcpRepository.upload(req.file.path, req.file.originalname);
     res.json({ success: true, message: `Archivo ${req.file.originalname} subido a Google Cloud Storage` });
   } catch (err) {
     console.error(err);
