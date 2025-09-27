@@ -1,12 +1,15 @@
 const fs = require("fs");
-const common = require("oci-common");
-const objectStorage = require("oci-objectstorage");
+const { ConfigFileAuthenticationDetailsProvider } = require("oci-common");
+const { ObjectStorageClient } = require("oci-objectstorage");
 
-const provider = new common.ConfigFileAuthenticationDetailsProvider();
-const client = new objectStorage.ObjectStorageClient({
+// Obtenemos credenciales de la VM
+const provider = new ConfigFileAuthenticationDetailsProvider();
+
+const client = new ObjectStorageClient({
   authenticationDetailsProvider: provider,
 });
 
+//Definimos el nombre del bucket
 const bucketName = "mi_bucket";
 
 async function uploadToOracle(filePath, fileName) {
@@ -23,4 +26,5 @@ async function uploadToOracle(filePath, fileName) {
 }
 
 module.exports = { uploadToOracle };
+
 

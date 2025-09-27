@@ -1,15 +1,17 @@
 const fs = require("fs");
 const { BlobServiceClient } = require("@azure/storage-blob");
 
-// URL de conexión de Azure Storage (lo obtienes desde el portal)
+// Obtenemos variable de entorno de la VM
 const AZURE_STORAGE_CONNECTION_STRING = process.env.AZURE_STORAGE_CONNECTION_STRING;
+
+if (!AZURE_STORAGE_CONNECTION_STRING) {
+    throw new Error("No se encuentra la variable de entorno o se debe definir AZURE_STORAGE_CONNECTION_STRING");
+}
+
+//Definimos el nombre del contenedor (bucket)
 const containerName = "mystoragecontainer";
 
 async function uploadToAzure(filePath, fileName) {
-  if (!AZURE_STORAGE_CONNECTION_STRING) {
-    throw new Error("Debes definir la variable de entorno AZURE_STORAGE_CONNECTION_STRING");
-  }
-
   const blobServiceClient = BlobServiceClient.fromConnectionString(AZURE_STORAGE_CONNECTION_STRING);
   const containerClient = blobServiceClient.getContainerClient(containerName);
 
