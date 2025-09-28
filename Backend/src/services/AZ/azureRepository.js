@@ -16,7 +16,7 @@ class AzureRepository {
 
         const blockBlobClient = containerClient.getBlockBlobClient(fileName);
         await blockBlobClient.uploadStream(fs.createReadStream(filePath));
-        return `Archivo ${blobName} subido a Azure Blob Storage`;
+        return `Archivo ${fileName} subido a Azure Blob Storage`;
     }
 }
 
