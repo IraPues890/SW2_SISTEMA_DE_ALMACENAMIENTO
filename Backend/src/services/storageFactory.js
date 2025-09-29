@@ -1,6 +1,6 @@
-const AwsRepository = require("./AWS/awsRepository");
+const AmazonRepository = require("./AWS/awsRepository");
 const OracleRepository = require("./OCI/oracleRepository");
-const GcpRepository = require("./GCP/gcpRepository");
+const GoogleRepository = require("./GCP/gcpRepository");
 const AzureRepository = require("./AZ/azureRepository");
 
 function StorageFactory(provider) {
