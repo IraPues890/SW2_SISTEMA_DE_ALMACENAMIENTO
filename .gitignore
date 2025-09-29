@@ -18,3 +18,6 @@ npm-debug.log*
 # Salidas de build de Vite
 /dist
 **/dist
+
+# Archivos guardados de disco
+Backend/uploads
