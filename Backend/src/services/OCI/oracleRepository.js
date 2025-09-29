@@ -1,8 +1,10 @@
 const fs = require("fs");
 const oracleClient = require("./oracleClient");
+const IStorageRepository = require("../IStorageRepository");
 
-class OracleRepository {
+class OracleRepository extends IStorageRepository {
   constructor() {
+    super();
     this.client = oracleClient.getClient();
     this.bucketName = "mi_bucket";
     // Alternativa: this.bucketName = process.env.ORACLE_BUCKET
@@ -41,5 +43,5 @@ class OracleRepository {
   }
 }
 
-module.exports = new OracleRepository();
+module.exports = OracleRepository;
 
