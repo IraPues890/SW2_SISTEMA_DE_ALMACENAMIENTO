@@ -1,8 +1,10 @@
 const fs = require("fs");
 const oracleClient = require("./oracleClient");
+const IStorageRepository = require("../IStorageRepository");
 
-class OracleRepository {
+class OracleRepository extends IStorageRepository {
   constructor() {
+    super();
     this.client = oracleClient.getClient();
     this.bucketName = "mi_bucket";
     // Alternativa: this.bucketName = process.env.ORACLE_BUCKET
@@ -33,13 +35,17 @@ class OracleRepository {
     };
     
     const response = await this.client.listObjects(listObjectsRequest);
-    return response.listObjects.objects.map(obj => ({
-        name: obj.name,
-        size: obj.size,
-        timeCreated: obj.timeCreated
-    }));
+    return {
+        bucket: this.bucketName,
+        objects: response.listObjects.objects.map(obj => ({
+            fileName: obj.name,
+            size: obj.size,
+            etag: obj.etag,
+            storageTier: obj.storageTier
+    })),
+    };
   }
 }
 
-module.exports = new OracleRepository();
+module.exports = OracleRepository;
 
