@@ -35,11 +35,15 @@ class OracleRepository extends IStorageRepository {
     };
     
     const response = await this.client.listObjects(listObjectsRequest);
-    return response.listObjects.objects.map(obj => ({
-        name: obj.name,
-        size: obj.size,
-        timeCreated: obj.timeCreated
-    }));
+    return {
+        bucket: this.bucketName,
+        objects: response.listObjects.objects.map(obj => ({
+            fileName: obj.name,
+            size: obj.size,
+            etag: obj.etag,
+            storageTier: obj.storageTier
+    })),
+    };
   }
 }
 

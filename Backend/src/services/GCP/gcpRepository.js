@@ -23,7 +23,12 @@ class GoogleRepository extends IStorageRepository {
     }
     async listObjects() {
         const bucket = this.client.bucket(this.bucketName);
-        await bucket.getFiles();
+        const [files] = await bucket.getFiles();
+        return files.map(file => ({
+            fileName: file.name,
+            bucket: this.bucketName,
+            updated: file.metadata.updated,
+        }));
     }
 }
 module.exports = GoogleRepository;
