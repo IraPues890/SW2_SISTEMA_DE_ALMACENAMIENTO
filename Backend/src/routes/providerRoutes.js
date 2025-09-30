@@ -23,5 +23,26 @@ router.post("/:provider/upload", upload.single("file"), async (req, res) => {
     });
   }
 });
+// GET /storage/:provider/list
+router.get("/:provider/list", async (req, res) => {
+  try {
+    const repo = StorageFactory(req.params.provider);
+    const objects = await repo.listObjects();
+    res.json({
+      success: true,
+      message: "Lista de objetos obtenida correctamente",
+      data: objects
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Error al listar objetos",
+      error: err.message
+    });
+  }
+});
+
 
 module.exports = router;
+
