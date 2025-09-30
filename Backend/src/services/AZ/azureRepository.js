@@ -1,9 +1,10 @@
-const { BlockBlobClient } = require("@azure/storage-blob");
 const fs = require("fs");
 const azureClient = require("./azureClient");
+const IStorageRepository = require("../IStorageRepository");
 
-class AzureRepository {
+class AzureRepository extends IStorageRepository {
     constructor() {
+        super();
         this.client = azureClient.getClient();
         this.containerName = "zaperoko-container";
         // Alternativa: this.containerName = process.env.AZURE_CONTAINER
@@ -16,8 +17,19 @@ class AzureRepository {
 
         const blockBlobClient = containerClient.getBlockBlobClient(fileName);
         await blockBlobClient.uploadStream(fs.createReadStream(filePath));
-        return `Archivo ${fileName} subido a Azure Blob Storage`;
+        return {
+            bucket: this.containerName,
+            fileName,
+            uploaded: true,
+        };
+    }
+    async listObjects() {
+        const containerClient = this.client.getContainerClient(this.containerName);
+
+        // Creamos el container si no existe
+        await containerClient.createIfNotExists();
+        return containerClient.listBlobsFlat;
     }
 }
 
-module.exports = new AzureRepository();
+module.exports = AzureRepository;
