@@ -1,8 +1,10 @@
 const fs = require("fs");
 const gcpClient = require("./gcpClient");
+const IStorageRepository = require("../IStorageRepository");
 
-class GoogleRepository {
+class GoogleRepository extends IStorageRepository {
     constructor() {
+        super();
         this.client = gcpClient.getClient();
         this.bucketName = "zaperoko-bucket";
         // Alternativa: this.bucketName = process.env.GSC_BUCKET
@@ -13,8 +15,20 @@ class GoogleRepository {
             destination: fileName,
             resumable: false,
         });
-
-        return `Archivo ${fileName} subido a Google Cloud Storage`;
+        return {
+            fileName,
+            bucket: this.bucketName,
+            uploaded: true,
+        };
+    }
+    async listObjects() {
+        const bucket = this.client.bucket(this.bucketName);
+        const [files] = await bucket.getFiles();
+        return files.map(file => ({
+            fileName: file.name,
+            bucket: this.bucketName,
+            updated: file.metadata.updated,
+        }));
     }
 }
-module.exports = new GoogleRepository();
+module.exports = GoogleRepository;
