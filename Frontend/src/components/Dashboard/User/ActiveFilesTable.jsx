@@ -13,11 +13,11 @@ function ActiveFilesTable({ actives }) {
           </tr>
         </thead>
         <tbody>
-          {actives.map(({ name, size, date }) => (
-            <tr key={name}>
-              <td>{name}</td>
-              <td>{size} GB</td>
-              <td>{date}</td>
+          {actives.map(( active ) => (
+            <tr key={active.getName}>
+              <td>{active.getName}</td>
+              <td>{active.getSize} GB</td>
+              <td>{active.getDate}</td>
             </tr>
           ))}
         </tbody>

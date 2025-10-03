@@ -15,7 +15,7 @@ import QuickActions from '../../../components/Dashboard/QuickActions';
 import ActiveFilesTable from '../../../components/Dashboard/User/ActiveFilesTable';
 
 function DashUser() {
-  const admin = new User("María López", "Jefa de TI", "Administrador")
+  const admin = new User("Pedro Vazques", "Analista de datos", "Usuario")
   const metrics = [
     new Metrics( 'Archivos almacenados:', '120' ),
     new Metrics( 'Espacio utilizado:', '2.5 GB' ),

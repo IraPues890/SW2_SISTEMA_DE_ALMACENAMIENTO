@@ -3,10 +3,10 @@ import './ServersStatus.css';
 function ServerStatus({ status }) {
   return (
     <section className='global_metrics'>
-      {status.map(({ label, value }) => (
-        <div className='metric' key={label}>
-          <span>{label}</span>
-          <strong>{value}</strong>
+      {status.map(( stat ) => (
+        <div className='metric' key={stat.getLabel}>
+          <span>{stat.getLabel}</span>
+          <strong>{stat.getValue}</strong>
         </div>
       ))}
     </section>

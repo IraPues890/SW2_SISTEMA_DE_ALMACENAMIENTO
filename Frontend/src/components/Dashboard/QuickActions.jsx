@@ -3,9 +3,9 @@ import './QuickActions.css'
 function QuickActions({ actions }) {
   return (
     <section className="quick_actions">
-      {actions.map(({ label, icon, title }) => (
-        <button key={label} title={title}>
-          {icon} {label}
+      {actions.map(( action ) => (
+        <button key={action.getLabel} title={action.getTitle}>
+          {action.getIcon} {action.getLabel}
         </button>
       ))}
     </section>
