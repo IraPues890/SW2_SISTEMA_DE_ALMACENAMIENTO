@@ -1,100 +1,55 @@
+
 import './DashAdmin.css';
+import { useState } from 'react';
 
-// S: Cabecera de identidad
-function UserHeader({ name, position, role }) {
-  return (
-    <header className="identity-header">
-      <div className="identity-info">
-        <h2>{name}</h2>
-        <p>Puesto laboral: {position}</p>
-        <p>Rol en el sistema: {role}</p>
-      </div>
-    </header>
-  );
-}
+//class
+import { User } from '../User';
+import { Metrics } from '../Metrics';
+import { Status } from './Status';
+import { Action } from '../Action';
+import { Active } from '../Active';
 
-// S: Métricas globales
-function GlobalMetrics({ metrics }) {
-  return (
-    <section className="global-metrics">
-      {metrics.map(({ label, value, className }) => (
-        <div className="metric" key={label}>
-          <span>{label}</span>
-          <strong className={className}>{value}</strong>
-        </div>
-      ))}
-    </section>
-  );
-}
+//functions
+import UserHeader from '../../../components/Dashboard/UserHeader';
+import GlobalMetrics from '../../../components/Dashboard/GlobalMetrics';
+import ServerStatus from '../../../components/Dashboard/Admin/ServersStatus';
+import QuickActions from '../../../components/Dashboard/QuickActions';
+import ActiveUserTable from '../../../components/Dashboard/Admin/ActiveUserTable';
 
-// S: Acciones rápidas
-function QuickActions({ actions }) {
-  return (
-    <section className="quick-actions">
-      {actions.map(({ label, icon, title, onClick }) => (
-        <button key={label} title={title} onClick={onClick}>
-          {icon} {label}
-        </button>
-      ))}
-    </section>
-  );
-}
-
-// S: Vista global de usuarios activos
-function ActiveUsersTable({ users }) {
-  return (
-    <section className="active-users">
-      <h3>Usuarios activos</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Espacio usado</th>
-            <th>Última actividad</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map(({ name, space, activity }) => (
-            <tr key={name}>
-              <td>{name}</td>
-              <td>{space}</td>
-              <td>{activity}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-  );
-}
-
-// O: Permite extensión por props
 function DashAdmin() {
+
+  const admin = new User("María López", "Jefa de TI", "Administrador")
   const metrics = [
-    { label: 'Total de usuarios:', value: '15' },
-    { label: 'Archivos almacenados:', value: '1,250' },
-    { label: 'Espacio global usado:', value: '120 GB' },
-    { label: 'Estado de servidores:', value: 'Online', className: 'server-status online' },
+    new Metrics( 'Total de usuarios:', '15' ),
+    new Metrics( 'Archivos almacenados:', '1,250' ),
+    new Metrics( 'Espacio global usado:', '120 GB' )
+  ]
+
+  const status = [
+    new Status( 'Server 1', 'Online' ),
+    new Status( 'Server 2', 'Online' ),
+    new Status( 'Server 3', 'Online' )
   ];
   const actions = [
-    { label: 'Subir archivo', icon: '📤', title: 'Subir archivo' },
-    { label: 'Descargar archivo', icon: '📥', title: 'Descargar archivo' },
-    { label: 'Ver archivo', icon: '👁️', title: 'Ver archivo' },
-    { label: 'Acceso a servidores', icon: '🖥️', title: 'Acceso a servidores' },
-  ];
-  const users = [
-    { name: 'Giomar Castillo', space: '2.5 GB', activity: '29/09/2025 14:32' },
-    { name: 'Pedro Sánchez', space: '1.8 GB', activity: '29/09/2025 13:10' },
-    { name: 'Ana Torres', space: '3.1 GB', activity: '28/09/2025 17:45' },
-  ];
+    new Action( 'Subir archivo', '📤', 'Subir archivo' ),
+    new Action( 'Buscar archivo', '👁️', 'Buscar archivo' ),
+    new Action( 'Validar permisos', '🔑', 'Validar permisos' )
+  ]
+  
+  const [actives,setActives] = useState([
+    new Active( 'Giomar Castillo', '2.5', '29/09/2025 14:32' ),
+    new Active( 'Pedro Sánchez', '1.8', '29/09/2025 13:10' ),
+    new Active( 'Ana Torres', '3.1', '28/09/2025 17:45' )
+  ])
 
   return (
-    <div className="dashboard-admin">
-      <UserHeader name="María López" position="Jefa de TI" role="Administrador" />
+    <div className="dashboard_admin">
+      <UserHeader administrator={admin} />
       <GlobalMetrics metrics={metrics} />
+      <ServerStatus status={status} />
       <QuickActions actions={actions} />
-      <ActiveUsersTable users={users} />
+      <ActiveUserTable actives={actives} />
     </div>
-  );
+  )
 }
-
-export default DashAdmin;
+export default DashAdmin

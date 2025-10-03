@@ -1,98 +1,44 @@
+
 import './DashUser.css';
+import { useState } from 'react';
 
-// S: Cabecera de identidad
-function UserHeader({ name, position, role }) {
-  return (
-    <header className="identity-header">
-      <div className="identity-info">
-        <h2>{name}</h2>
-        <p>Puesto laboral: {position}</p>
-        <p>Rol en el sistema: {role}</p>
-      </div>
-    </header>
-  );
-}
+//class
+import { User } from '../User';
+import { Metrics } from '../Metrics';
+import { Action } from '../Action';
+import { Active } from '../Active';
 
-// S: Métricas personales
-function PersonalMetrics({ metrics }) {
-  return (
-    <section className="personal-metrics">
-      {metrics.map(({ label, value }) => (
-        <div className="metric" key={label}>
-          <span>{label}</span>
-          <strong>{value}</strong>
-        </div>
-      ))}
-    </section>
-  );
-}
+//functions
+import UserHeader from '../../../components/Dashboard/UserHeader';
+import GlobalMetrics from '../../../components/Dashboard/GlobalMetrics';
+import QuickActions from '../../../components/Dashboard/QuickActions';
+import ActiveFilesTable from '../../../components/Dashboard/User/ActiveFilesTable';
 
-// S: Acciones rápidas
-function QuickActions({ actions }) {
-  return (
-    <section className="quick-actions">
-      {actions.map(({ label, icon, title, onClick }) => (
-        <button key={label} title={title} onClick={onClick}>
-          {icon} {label}
-        </button>
-      ))}
-    </section>
-  );
-}
-
-// S: Archivos recientes
-function RecentFilesTable({ files }) {
-  return (
-    <section className="recent-files">
-      <h3>Archivos recientes</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Fecha</th>
-            <th>Tamaño</th>
-          </tr>
-        </thead>
-        <tbody>
-          {files.map(({ name, date, size }) => (
-            <tr key={name}>
-              <td>{name}</td>
-              <td>{date}</td>
-              <td>{size}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </section>
-  );
-}
-
-// O: Permite extensión por props
 function DashUser() {
+  const admin = new User("María López", "Jefa de TI", "Administrador")
   const metrics = [
-    { label: 'Archivos almacenados:', value: '120' },
-    { label: 'Espacio utilizado:', value: '2.5 GB' },
-    { label: 'Última actividad:', value: '29/09/2025 14:32' },
-  ];
+    new Metrics( 'Archivos almacenados:', '120' ),
+    new Metrics( 'Espacio utilizado:', '2.5 GB' ),
+    new Metrics( 'Última actividad:', '29/09/2025 14:32' )
+  ]
+  
   const actions = [
-    { label: 'Subir archivo', icon: '📤', title: 'Subir archivo' },
-    { label: 'Descargar archivo', icon: '📥', title: 'Descargar archivo' },
-    { label: 'Ver archivo', icon: '👁️', title: 'Ver archivo' },
-  ];
-  const files = [
-    { name: 'reporte_ventas.xlsx', date: '29/09/2025', size: '1.2 MB' },
-    { name: 'datos_clientes.csv', date: '28/09/2025', size: '800 KB' },
-    { name: 'grafico_anual.png', date: '27/09/2025', size: '500 KB' },
-  ];
+    new Action( 'Subir archivo', '📤', 'Subir archivo' ),
+    new Action( 'Buscar archivo', '👁️', 'Buscar archivo' )
+  ]
+  const [actives,setActives] = useState([
+    new Active( 'reporte_ventas.xlsx', '1.2', '29/09/2025' ),
+    new Active( 'datos_clientes.csv', '800', '28/09/2025' ),
+    new Active( 'grafico_anual.png', '500', '27/09/2025' )
+  ])
 
   return (
-    <div className="dashboard-user">
-      <UserHeader name="Pedro Vazques" position="Analista de datos" role="Usuario" />
-      <PersonalMetrics metrics={metrics} />
+    <div className="dashboard_user">
+      <UserHeader administrator={admin} />
+      <GlobalMetrics metrics={metrics} />
       <QuickActions actions={actions} />
-      <RecentFilesTable files={files} />
+      <ActiveFilesTable actives={actives} />
     </div>
-  );
+  )
 }
-
-export default DashUser;
+export default DashUser

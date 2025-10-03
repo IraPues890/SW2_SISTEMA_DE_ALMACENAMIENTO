@@ -1,0 +1,35 @@
+
+/*ActiveFilesTable*/
+
+.active_files h3 {
+  margin-bottom: 12px;
+  color: #2563eb;
+  font-size: 1.2rem;
+}
+
+.active_files table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #f9fafb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.active_files th, .active_files td {
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.active_files th {
+  background: #e0e7ff;
+  color: #2d3e50;
+  font-weight: 600;
+}
+
+.active_files tr:nth-child(even) {
+  background: #f3f4f6;
+}
+
+.active_files tr:hover {
+  background: #e0e7ff;
+}
