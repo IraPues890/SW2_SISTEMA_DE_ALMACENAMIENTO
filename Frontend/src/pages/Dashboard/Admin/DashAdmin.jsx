@@ -37,7 +37,7 @@ function DashAdmin() {
   ]
   
   const [actives,setActives] = useState([
-    new Active( 'Giomar Castillo', '2.5', '29/09/2025 14:32' ),
+    new Active( 'Raul Romero', '2.5', '29/09/2025 14:32' ),
     new Active( 'Pedro Sánchez', '1.8', '29/09/2025 13:10' ),
     new Active( 'Ana Torres', '3.1', '28/09/2025 17:45' )
   ])
