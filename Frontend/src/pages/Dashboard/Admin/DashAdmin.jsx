@@ -1,6 +1,7 @@
 
 import './DashAdmin.css';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'
 
 //class
 import { User } from '../User';
@@ -15,8 +16,10 @@ import GlobalMetrics from '../../../components/Dashboard/GlobalMetrics';
 import ServerStatus from '../../../components/Dashboard/Admin/ServersStatus';
 import QuickActions from '../../../components/Dashboard/QuickActions';
 import ActiveUserTable from '../../../components/Dashboard/Admin/ActiveUserTable';
+import { createActionHandlers, handleAction } from '../../../components/Dashboard/CreateActions';
 
 function DashAdmin() {
+  const navigate = useNavigate()
 
   const admin = new User("María López", "Jefa de TI", "Administrador")
   const metrics = [
@@ -42,12 +45,15 @@ function DashAdmin() {
     new Active( 'Ana Torres', '3.1', '28/09/2025 17:45' )
   ])
 
+  const actionHandlers = createActionHandlers(navigate, actions)
+  const onAction = (actionName) => handleAction(actionName, actionHandlers)
+
   return (
     <div className="dashboard_admin">
       <UserHeader administrator={admin} />
       <GlobalMetrics metrics={metrics} />
       <ServerStatus status={status} />
-      <QuickActions actions={actions} />
+      <QuickActions actions={actions} onAction={onAction} />
       <ActiveUserTable actives={actives} />
     </div>
   )

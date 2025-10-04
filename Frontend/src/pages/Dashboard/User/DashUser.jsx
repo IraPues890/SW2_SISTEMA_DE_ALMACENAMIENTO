@@ -1,6 +1,7 @@
 
 import './DashUser.css';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'
 
 //class
 import { User } from '../User';
@@ -13,8 +14,11 @@ import UserHeader from '../../../components/Dashboard/UserHeader';
 import GlobalMetrics from '../../../components/Dashboard/GlobalMetrics';
 import QuickActions from '../../../components/Dashboard/QuickActions';
 import ActiveFilesTable from '../../../components/Dashboard/User/ActiveFilesTable';
+import { createActionHandlers, handleAction } from '../../../components/Dashboard/CreateActions';
 
 function DashUser() {
+  const navigate = useNavigate()
+
   const admin = new User("Pedro Vazques", "Analista de datos", "Usuario")
   const metrics = [
     new Metrics( 'Archivos almacenados:', '120' ),
@@ -32,11 +36,14 @@ function DashUser() {
     new Active( 'grafico_anual.png', '500', '27/09/2025' )
   ])
 
+  const actionHandlers = createActionHandlers(navigate, actions)
+  const onAction = (actionName) => handleAction(actionName, actionHandlers)
+
   return (
     <div className="dashboard_user">
       <UserHeader administrator={admin} />
       <GlobalMetrics metrics={metrics} />
-      <QuickActions actions={actions} />
+      <QuickActions actions={actions} onAction={onAction} />
       <ActiveFilesTable actives={actives} />
     </div>
   )
