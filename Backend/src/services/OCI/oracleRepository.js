@@ -45,6 +45,27 @@ class OracleRepository extends IStorageRepository {
     })),
     };
   }
+
+  /**/ 
+  async downloadObject(fileName, destinationPath) {
+    const { value: namespaceName } = await this.client.getNamespace({});
+    const getObjectRequest = {
+      namespaceName,
+      bucketName: this.bucketName,
+      objectName: fileName,
+    };
+
+    const response = await this.client.getObject(getObjectRequest);
+
+    await fs.promises.writeFile(destinationPath, response.value);
+
+    return {
+      fileName,
+      bucket: this.bucketName,
+      destination: destinationPath,
+      downloaded: true,
+    };
+  }
 }
 
 module.exports = OracleRepository;
