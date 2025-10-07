@@ -38,6 +38,30 @@ class AmazonRepository extends IStorageRepository {
             objects,
         };
     }
+
+    /**/ 
+    async downloadObject(fileName, destinationPath) {
+      const getObjectRequest = {
+        Bucket: this.bucketName,
+        Key: fileName,
+      };
+
+      const response = await this.client.send(new GetObjectCommand(getObjectRequest));
+
+      const writeStream = fs.createWriteStream(destinationPath);
+      await new Promise((resolve, reject) => {
+        response.Body.pipe(writeStream)
+          .on("finish", resolve)
+          .on("error", reject);
+      });
+
+      return {
+        fileName,
+        bucket: this.bucketName,
+        destination: destinationPath,
+        downloaded: true,
+      };
+    }
 }
 
 module.exports = AmazonRepository;
