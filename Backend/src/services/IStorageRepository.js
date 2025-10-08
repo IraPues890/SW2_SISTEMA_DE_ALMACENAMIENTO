@@ -10,6 +10,10 @@ class IStorageRepository {
   async downloadObject(fileName, destinationPath){
     throw new Error("Se debe implemetar el método downloadObject()");
   }
+
+  async deleteObject(fileName){
+    throw new Error("Se debe implemetar el método deleteObject()");
+  }
 }
 
 module.exports = IStorageRepository;
