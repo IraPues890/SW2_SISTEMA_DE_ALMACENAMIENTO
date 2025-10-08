@@ -9,7 +9,7 @@ module.exports = {
     port: process.env.DB_PORT || 5432,
     dialect: 'postgres',
     dialectOptions: {
-      ssl: false,
+      ssl: false, // Sin SSL para este servidor
       connectTimeout: 30000,
     },
     pool: {
