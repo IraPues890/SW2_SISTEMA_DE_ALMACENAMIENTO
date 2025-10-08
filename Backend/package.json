@@ -18,6 +18,16 @@
     "multer": "^2.0.2",
     "oci-common": "^2.118.0",
     "oci-objectstorage": "^2.118.0",
-    "oci-sdk": "^2.118.0"
+    "oci-sdk": "^2.118.0",
+    "pg": "^8.16.3",
+    "bcrypt": "^6.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "cors": "^2.8.5",
+    "express-validator": "^7.2.1",
+    "sequelize": "^6.37.7",
+    "sequelize-cli": "^6.6.3"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
   }
 }
