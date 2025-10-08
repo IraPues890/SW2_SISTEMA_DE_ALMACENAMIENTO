@@ -6,7 +6,7 @@ class IStorageRepository {
   async listObjects() {
     throw new Error("Se debe implemetar el método listObjects()");
   }
-  
+
   async downloadObject(fileName, destinationPath){
     throw new Error("Se debe implemetar el método downloadObject()");
   }

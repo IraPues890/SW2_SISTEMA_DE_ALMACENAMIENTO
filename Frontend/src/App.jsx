@@ -3,9 +3,9 @@ import { Routes, Route} from 'react-router-dom'
 import Login from './pages/Login/Login';
 import Dashboardadmin from './pages/Dashboard/Admin/DashAdmin';
 import Dashboarduser from './pages/Dashboard/User/DashUser';
-import Previewfiles from './pages/PreviewFiles/Previewfiles';
-import Uploadfiles from './pages/UploadFiles/Uploadfiles';
-import Filesexplorer from './pages/FilesExplorer/Filesexplorer';
+import Previewfiles from './pages/PreviewFiles/PreviewFiles';
+import Uploadfiles from './pages/UploadFiles/UploadFiles';
+import Filesexplorer from './pages/FilesExplorer/FilesExplorer';
 
 function App() {
   return (

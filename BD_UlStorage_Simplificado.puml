@@ -1,0 +1,116 @@
+@startuml BD_UlStorage_Simplificado
+
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor #F0F8FF
+    BorderColor #4682B4
+    ArrowColor #4682B4
+}
+
+class users as "USERS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + nombre: VARCHAR(100)
+    + email: VARCHAR(255) [UK]
+    + password_hash: VARCHAR(255)
+    + rol: VARCHAR(20)
+    + activo: BOOLEAN
+    + ultimo_login: TIMESTAMP
+    + created_at: TIMESTAMP
+    + updated_at: TIMESTAMP
+}
+
+class carpetas as "CARPETAS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + usuario_id: int [FK]
+    + carpeta_padre_id: int [FK]
+    + nombre: VARCHAR(255)
+    + ruta_completa: VARCHAR(500)
+    + created_at: TIMESTAMP
+    + updated_at: TIMESTAMP
+}
+
+class archivos as "ARCHIVOS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + usuario_id: int [FK]
+    + carpeta_id: int [FK]
+    + nombre: VARCHAR(255)
+    + nombre_sistema: VARCHAR(255) [UK]
+    + tamaño: int
+    + tipo: VARCHAR(100)
+    + proveedor: VARCHAR(10)
+    + bucket_path: VARCHAR(500)
+    + hash_archivo: VARCHAR(255)
+    + created_at: TIMESTAMP
+    + updated_at: TIMESTAMP
+}
+
+class versiones as "VERSIONES" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + archivo_id: int [FK]
+    + usuario_id: int [FK]
+    + numero: int
+    + tamaño: int
+    + bucket_path: VARCHAR(500)
+    + comentario: VARCHAR(255)
+    + created_at: TIMESTAMP
+}
+
+class etiquetas as "ETIQUETAS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + usuario_id: int [FK]
+    + nombre: VARCHAR(100)
+    + color: VARCHAR(7)
+    + created_at: TIMESTAMP
+}
+
+class archivo_etiquetas as "REL_ARCHIVO_ETIQUETA" << (T,#AAFFAA) >> {
+    + archivo_id: int [PK]
+    + etiqueta_id: int [PK]
+    + created_at: TIMESTAMP
+}
+
+class permisos as "PERMISOS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + propietario_id: int [FK]
+    + usuario_id: int [FK]
+    + archivo_id: int [FK]
+    + carpeta_id: int [FK]
+    + tipo_permiso: VARCHAR(20)
+    + activo: BOOLEAN
+    + created_at: TIMESTAMP
+    + updated_at: TIMESTAMP
+}
+
+class logs as "ACTIVITY_LOGS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + usuario_id: int [FK]
+    + accion: VARCHAR(100)
+    + descripcion: VARCHAR(255)
+    + archivo_id: int [FK]
+    + ip_address: VARCHAR(45)
+    + created_at: TIMESTAMP
+}
+
+users ||--o{ carpetas
+users ||--o{ archivos 
+users ||--o{ etiquetas
+users ||--o{ versiones
+users ||--o{ permisos
+users ||--o{ logs
+
+carpetas ||--o{ carpetas
+carpetas ||--o{ archivos
+
+archivos ||--o{ versiones
+archivos ||--o{ archivo_etiquetas
+archivos ||--o{ permisos
+archivos ||--o{ logs
+
+etiquetas ||--o{ archivo_etiquetas
+
+title **BD ULSTORAGE - SISTEMA DE ALMACENAMIENTO HÍBRIDO**
+note top : BD PostgreSQL almacena METADATOS
+note top : Cloud Storage (OCI/AWS/GCP/Azure) almacena ARCHIVOS FÍSICOS
+
+@enduml
