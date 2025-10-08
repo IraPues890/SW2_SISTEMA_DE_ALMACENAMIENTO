@@ -30,5 +30,24 @@ class GoogleRepository extends IStorageRepository {
             updated: file.metadata.updated,
         }));
     }
+
+
+    async downloadObject(fileName, destinationPath) {
+        const bucket = this.client.bucket(this.bucketName);
+        const file = bucket.file(fileName);
+        const dir = path.dirname(destinationPath);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+
+        await file.download({ destination: destinationPath });
+
+        return {
+            fileName,
+            bucket: this.bucketName,
+            destination: destinationPath,
+            downloaded: true,
+        };
+    }
 }
 module.exports = GoogleRepository;
