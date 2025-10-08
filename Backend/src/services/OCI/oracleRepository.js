@@ -60,6 +60,7 @@ class OracleRepository extends IStorageRepository {
 
       const dir = path.dirname(destinationPath);
       await fs.promises.mkdir(dir, { recursive: true });
+      
       const response = await this.client.getObject(getObjectRequest);
 
       return new Promise((resolve, reject) => {

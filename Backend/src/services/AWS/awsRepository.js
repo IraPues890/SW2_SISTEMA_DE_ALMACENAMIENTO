@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const { PutObjectCommand, ListObjectsV2Command, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const awsClient = require("./awsClient");
 const IStorageRepository = require("../IStorageRepository");
@@ -52,6 +53,9 @@ class AmazonRepository extends IStorageRepository {
             Bucket: this.bucketName,
             Key: fileName,
         });
+
+        const dir = path.dirname(destinationPath);
+        await fs.promises.mkdir(dir, { recursive: true });
 
         const response = await this.client.send(command);
         const writeStream = fs.createWriteStream(destinationPath);

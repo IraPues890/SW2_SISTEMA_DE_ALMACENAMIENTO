@@ -51,27 +51,26 @@ router.get("/:provider/list", async (req, res) => {
   }
 });
 
-// GET /storage/:provider/download/:fileName
-router.get("/:provider/download/:fileName", async (req, res) => {
+// GET /storage/:provider/download
+router.get("/:provider/download", async (req, res) => {
   try {
-    const { provider, fileName } = req.params;
-    const repo = StorageFactory(provider);
+    const { provider } = req.params;
+    const { fileName } = req.query;
 
+    const repo = StorageFactory(provider);
     const destinationPath = path.join("downloads", fileName);
     const result = await repo.downloadObject(fileName, destinationPath);
 
-    res.download(result.destination, fileName, err => {
+    res.download(result.destination, path.basename(fileName), err => {
       if (err) console.error("Error al enviar archivo:", err);
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      success: false,
-      message: "Error al descargar archivo",
-      error: err.message
-    });
+    res.status(500).json({ 
+    success: false,
+    message: "Error al descargar archivo", error: err.message });
   }
 });
+
 
 // DELETE /storage/:provider/delete/:fileName
 router.delete("/:provider/delete/:fileName", async (req, res) => {
