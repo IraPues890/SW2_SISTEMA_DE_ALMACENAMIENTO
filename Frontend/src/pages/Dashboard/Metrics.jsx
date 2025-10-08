@@ -13,4 +13,8 @@ export class Metrics {
   get getValue(){
     return this.value
   }
+  // Alias para compatibilidad con componentes que usan `getName`
+  get getName(){
+    return this.label
+  }
 }

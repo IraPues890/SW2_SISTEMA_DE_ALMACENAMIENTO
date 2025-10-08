@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { useNavigate } from 'react-router-dom'
+import { AuthContext } from '../../context/AuthContext'
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -6,10 +8,17 @@ const Login = () => {
   const [showPopup, setShowPopup] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
 
+  const navigate = useNavigate()
+  const { login } = useContext(AuthContext)
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Aquí puedes manejar la lógica de autenticación
-    alert(`Usuario: ${username}\nContraseña: ${password}`);
+    // Simulación de autenticación: rol por nombre de usuario (solo demo)
+    const role = username.toLowerCase().includes('admin') ? 'Administrador' : 'Usuario'
+    login({ username, role })
+    // Redirigir según rol
+    if (role === 'Administrador') navigate('/admin')
+    else navigate('/user')
   };
 
   const handleLogoClick = (e) => {
@@ -28,6 +37,30 @@ const Login = () => {
       setShowConfetti(false);
     }, 3000);
   };
+
+  // Quick/demo helpers
+  const handleQuickAdmin = () => {
+    login({ username: 'admin_demo', role: 'Administrador' })
+    navigate('/admin')
+  }
+
+  const handleQuickUser = () => {
+    login({ username: 'user_demo', role: 'Usuario' })
+    navigate('/user')
+  }
+
+  const handleQuickPreview = () => {
+    const demoFile = {
+      name: 'informe2025.pdf',
+      type: 'pdf',
+      size: '2300',
+      modified: '30/09/2025 14:32',
+      previewable: true,
+      url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
+    }
+    login({ username: 'preview_demo', role: 'Usuario' })
+    navigate('/preview', { state: { file: demoFile } })
+  }
 
   const closePopup = () => {
     setShowPopup(false);
@@ -118,6 +151,13 @@ const Login = () => {
             </button>
           </form>
 
+          {/* Quick access buttons for demo/testing */}
+          <div className="mt-6 flex items-center justify-between gap-3">
+            <button onClick={handleQuickAdmin} className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-700 text-white rounded-lg">Entrar como Admin</button>
+            <button onClick={handleQuickUser} className="flex-1 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-lg">Entrar como Usuario</button>
+            <button onClick={handleQuickPreview} className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg">Preview demo</button>
+          </div>
+
           <div className="mt-8 pt-6 border-t border-slate-200">
             <div className="flex items-center justify-center text-xs text-slate-500 space-x-4">
               <span className="flex items-center gap-1">
@@ -182,9 +222,10 @@ const Login = () => {
             
             {/* Imagen */}
             <div className="bg-white p-2 rounded-xl shadow-2xl">
-              <img 
-                src="/images/LEYENDAS.jpg" 
-                alt="ZAPEROKO LA LEYENDA" 
+              <img
+                src="/images/LEYENDAS.jpg"
+                alt="ZAPEROKO LA LEYENDA"
+                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = 'https://via.placeholder.com/800x400?text=LEYENDAS' }}
                 className="w-full h-auto rounded-lg max-h-96 object-contain"
                 style={{
                   filter: 'drop-shadow(0 0 20px rgba(255, 215, 0, 0.8))'

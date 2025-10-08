@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useContext } from 'react'
+import { AuthContext } from '../../context/AuthContext'
 
 // S: Cabecera de identidad
 function UserHeader({ name, role, type }) {
@@ -69,11 +72,23 @@ function FileHeader({ file, onClose }) {
       </div>
       
       <div className="flex space-x-3">
-        <button className="bg-gradient-to-r from-blue-600 to-cyan-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 hover:from-blue-700 hover:to-cyan-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 active:scale-[0.98] shadow-lg hover:shadow-xl flex items-center space-x-2">
+        <button onClick={() => {
+          // Si viene una URL real la usaríamos; aquí generamos un blob simulado
+          const content = `Descarga: ${file.name}`
+          const blob = new Blob([content], { type: 'text/plain' })
+          const url = URL.createObjectURL(blob)
+          const a = document.createElement('a')
+          a.href = url
+          a.download = file.name
+          document.body.appendChild(a)
+          a.click()
+          a.remove()
+          URL.revokeObjectURL(url)
+        }} className="bg-gradient-to-r from-blue-600 to-cyan-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 hover:from-blue-700 hover:to-cyan-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 active:scale-[0.98] shadow-lg hover:shadow-xl flex items-center space-x-2">
           <span>📥</span>
           <span>Descargar</span>
         </button>
-        <button className="bg-gradient-to-r from-green-600 to-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 hover:from-green-700 hover:to-emerald-800 focus:outline-none focus:ring-2 focus:ring-green-500/50 active:scale-[0.98] shadow-lg hover:shadow-xl flex items-center space-x-2">
+        <button onClick={() => window.print()} className="bg-gradient-to-r from-green-600 to-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 hover:from-green-700 hover:to-emerald-800 focus:outline-none focus:ring-2 focus:ring-green-500/50 active:scale-[0.98] shadow-lg hover:shadow-xl flex items-center space-x-2">
           <span>🖨️</span>
           <span>Imprimir</span>
         </button>
@@ -122,11 +137,26 @@ function FilePreview({ file, showPreview }) {
         Vista Previa del Documento
       </h2>
       <div className="bg-slate-100 rounded-lg overflow-hidden" style={{ height: '600px' }}>
-        <iframe
-          src="https://docs.google.com/gview?url=https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf&embedded=true"
-          title="Visor PDF"
-          className="w-full h-full border-0"
-        />
+        {
+          (() => {
+            // If we have an explicit URL, use it (for images, HTML, etc.).
+            // For PDFs, use Google Docs viewer to improve compatibility inside iframe.
+            const effective = file.url || null
+            const dummy = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
+            const urlToUse = effective || (file.previewable ? dummy : null)
+            if (!urlToUse) {
+              return <div className="w-full h-full flex items-center justify-center text-slate-600">No hay URL de previsualización disponible para este archivo.</div>
+            }
+
+            const ext = (file.type || '').toString().toLowerCase()
+            let iframeSrc = urlToUse
+            if (ext === 'pdf' || iframeSrc.endsWith('.pdf')) {
+              iframeSrc = `https://docs.google.com/gview?url=${encodeURIComponent(iframeSrc)}&embedded=true`
+            }
+
+            return <iframe src={iframeSrc} title={`Preview ${file.name}`} className="w-full h-full border-0" />
+          })()
+        }
       </div>
     </div>
   );
@@ -135,21 +165,41 @@ function FilePreview({ file, showPreview }) {
 // O: Permite extensión por props
 function Previewfiles() {
   const [showPreview, setShowPreview] = useState(true);
-  const file = {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { user } = useContext(AuthContext)
+
+  // Detect if the component was opened via navigation state (route) or as a standalone/local view
+  const routeFile = location.state?.file ?? null
+  const routePreviewUrl = location.state?.previewUrl ?? null
+
+  const file = routeFile || {
     name: 'informe2025.pdf',
     type: 'PDF',
     size: '2.3 MB',
     modified: '30/09/2025 14:32',
     previewable: true,
-  };
+    url: null,
+  }
+
+  // If there is a previewUrl passed separately, prefer it
+  const effectiveUrl = routePreviewUrl ?? file.url ?? null
+  const fileType = (file.type || '').toString().toLowerCase()
+  const previewableTypes = ['pdf', 'png', 'jpg', 'jpeg', 'txt', 'html']
+  const isPreviewable = Boolean(effectiveUrl) || previewableTypes.includes(fileType)
+  const fileForRender = { ...file, url: effectiveUrl, previewable: isPreviewable }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
-      <UserHeader name="Pedro Vazques" role="Analista de datos" type="Usuario" />
+      <UserHeader name={user?.username || 'Invitado'} role={user?.role || ''} type="Usuario" />
       
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
-        <FileHeader file={file} onClose={() => setShowPreview(false)} />
-        <FilePreview file={file} showPreview={showPreview} />
+        <FileHeader file={fileForRender} onClose={() => {
+          // If opened via route, navigate back; otherwise just hide preview
+          if (routeFile) navigate(-1)
+          else setShowPreview(false)
+        }} />
+        <FilePreview file={fileForRender} showPreview={showPreview} />
       </main>
     </div>
   );

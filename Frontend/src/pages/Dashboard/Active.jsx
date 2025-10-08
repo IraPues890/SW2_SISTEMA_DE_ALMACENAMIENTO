@@ -15,6 +15,10 @@ export class Active {
   get getSize(){
     return this.size
   }
+  // Alias para compatibilidad: algunos componentes esperan `getSpace`
+  get getSpace(){
+    return this.size
+  }
   get getDate(){
     return this.date
   }
