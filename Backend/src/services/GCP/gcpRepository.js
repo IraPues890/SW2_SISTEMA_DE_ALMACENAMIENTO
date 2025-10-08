@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 const gcpClient = require("./gcpClient");
 const IStorageRepository = require("../IStorageRepository");
 
@@ -48,6 +49,14 @@ class GoogleRepository extends IStorageRepository {
             destination: destinationPath,
             downloaded: true,
         };
+    }
+    
+    async deleteObject(fileName) {
+        const bucket = this.client.bucket(this.bucketName);
+        const file = bucket.file(fileName);
+        await file.delete();
+
+        return { fileName, bucket: this.bucketName, deleted: true };
     }
 }
 module.exports = GoogleRepository;

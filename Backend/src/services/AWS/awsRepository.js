@@ -1,5 +1,5 @@
-const { PutObjectCommand, ListObjectsV2Command } = require("@aws-sdk/client-s3");
 const fs = require("fs");
+const { PutObjectCommand, ListObjectsV2Command, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const awsClient = require("./awsClient");
 const IStorageRepository = require("../IStorageRepository");
 
@@ -10,24 +10,32 @@ class AmazonRepository extends IStorageRepository {
         this.bucketName = "giomar-nos-debe-broster";
         // Alternativa: this.bucketName = process.env.AWS_BUCKET
     }
+
     async upload(filePath, fileName) {
-        const putObjectCommand = new PutObjectCommand ({
+        const command = new PutObjectCommand({
             Bucket: this.bucketName,
             Key: fileName,
-            Body: fs.createReadStream(filePath)
-        });
-        await this.client.send(putObjectCommand);
-        return `Archivo ${fileName} subido a AWS S3`;
-    }
-    async listObjects() {
-        const listObjectsCommand = new ListObjectsV2Command({
-            Bucket: this.bucketName
+            Body: fs.createReadStream(filePath),
         });
 
-        const response = await this.client.send(listObjectsCommand);
+        await this.client.send(command);
+
+        return {
+            fileName,
+            bucket: this.bucketName,
+            uploaded: true,
+        };
+    }
+
+    async listObjects() {
+        const command = new ListObjectsV2Command({
+            Bucket: this.bucketName,
+        });
+
+        const response = await this.client.send(command);
 
         const objects =
-            response.Contents?.map(obj => ({
+            response.Contents?.map((obj) => ({
                 fileName: obj.Key,
                 size: obj.Size,
                 lastModified: obj.LastModified,
@@ -39,28 +47,43 @@ class AmazonRepository extends IStorageRepository {
         };
     }
 
-    /**/ 
     async downloadObject(fileName, destinationPath) {
-      const getObjectRequest = {
-        Bucket: this.bucketName,
-        Key: fileName,
-      };
+        const command = new GetObjectCommand({
+            Bucket: this.bucketName,
+            Key: fileName,
+        });
 
-      const response = await this.client.send(new GetObjectCommand(getObjectRequest));
+        const response = await this.client.send(command);
+        const writeStream = fs.createWriteStream(destinationPath);
 
-      const writeStream = fs.createWriteStream(destinationPath);
-      await new Promise((resolve, reject) => {
-        response.Body.pipe(writeStream)
-          .on("finish", resolve)
-          .on("error", reject);
-      });
+        await new Promise((resolve, reject) => {
+            response.Body.pipe(writeStream)
+                .on("finish", resolve)
+                .on("error", reject);
+        });
 
-      return {
-        fileName,
-        bucket: this.bucketName,
-        destination: destinationPath,
-        downloaded: true,
-      };
+        return {
+            fileName,
+            bucket: this.bucketName,
+            destination: destinationPath,
+            downloaded: true,
+        };
+    }
+
+    async deleteObject(fileName) {
+
+        const command = new DeleteObjectCommand({
+            Bucket: this.bucketName,
+            Key: fileName,
+        });
+
+        await this.client.send(command);
+
+        return {
+            fileName,
+            bucket: this.bucketName,
+            deleted: true,
+        };
     }
 }
 
