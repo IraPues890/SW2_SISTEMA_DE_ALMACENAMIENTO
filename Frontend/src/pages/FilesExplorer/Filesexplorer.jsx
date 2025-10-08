@@ -1,12 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'
-import './Filesexplorer.css'
 
-// S: Componente para la cabecera de usuario
+// Componente para la cabecera de usuario
 function UserHeader({ name, role, type }) {
   return (
     <header className="bg-white/10 backdrop-blur-md border-b border-white/20 shadow-lg">
-      <div className="w-full px-4 lg:px-6 py-4">
+      <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
@@ -27,26 +26,26 @@ function UserHeader({ name, role, type }) {
   );
 }
 
-// S: Componente para cambiar la vista
+// Componente para cambiar la vista
 function ViewSwitch({ views, activeView, onChange }) {
   return (
-    <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-4">
+    <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6 mb-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
-        <span className="text-slate-700 font-medium">Cambiar vista:</span>
-        <div className="flex space-x-2">
+        <span className="text-slate-700 font-semibold text-lg">Cambiar vista:</span>
+        <div className="flex space-x-3">
           {views.map(view => (
             <button
               key={view.key}
-              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+              className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
                 activeView === view.key 
-                  ? 'bg-gradient-to-r from-purple-600 to-blue-700 text-white shadow-lg' 
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg' 
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
               }`}
               onClick={() => onChange(view.key)}
               title={view.label}
             >
-              <span className="mr-2">{view.icon}</span>
-              {view.label}
+              <span className="text-lg">{view.icon}</span>
+              <span className="hidden sm:inline">{view.label}</span>
             </button>
           ))}
         </div>
@@ -55,72 +54,68 @@ function ViewSwitch({ views, activeView, onChange }) {
   );
 }
 
-// S: Componente para acciones de archivos
+// Componente para acciones de archivos
 function FileActions() {
   const actions = [
-    { icon: '📤', text: 'Subir archivo', color: 'from-green-600 to-emerald-700' },
-    { icon: '📥', text: 'Descargar archivo', color: 'from-blue-600 to-cyan-700' },
-    { icon: '➕', text: 'Crear carpeta', color: 'from-yellow-600 to-orange-700' },
-    { icon: '📂', text: 'Organizar en carpetas', color: 'from-purple-600 to-indigo-700' }
+    { icon: '📤', text: 'Subir archivo', color: 'bg-gradient-to-r from-green-600 to-emerald-700' },
+    { icon: '📥', text: 'Descargar archivo', color: 'bg-gradient-to-r from-blue-600 to-cyan-700' },
+    { icon: '➕', text: 'Crear carpeta', color: 'bg-gradient-to-r from-yellow-600 to-orange-700' },
+    { icon: '📂', text: 'Organizar carpetas', color: 'bg-gradient-to-r from-purple-600 to-indigo-700' }
   ];
 
   return (
-    <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg border border-white/20 p-4">
-         <h3 className="text-lg font-semibold text-slate-800 mb-3">Acciones de Archivos</h3>
-         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-           {actions.map((action, index) => (
-             <button
-               key={index}
-               style={{
-                 background: `linear-gradient(90deg, ${action.color})`,
-                 color: '#fff',
-               }}
-               className="font-medium py-3 px-4 rounded-lg transition-all duration-200 hover:shadow-lg active:scale-[0.98] flex items-center justify-center space-x-2"
-               title={action.text}
-             >
-               <span className="text-lg">{action.icon}</span>
-               <span className="hidden sm:inline text-sm">{action.text}</span>
-             </button>
-           ))}
-         </div>
+    <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6 mb-6">
+      <h3 className="text-lg font-semibold text-slate-800 mb-4">Acciones de Archivos</h3>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {actions.map((action, index) => (
+          <button
+            key={index}
+            className={`${action.color} text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 hover:shadow-lg hover:scale-105 active:scale-95 flex items-center justify-center gap-2`}
+            title={action.text}
+          >
+            <span className="text-lg">{action.icon}</span>
+            <span className="hidden lg:inline text-sm">{action.text}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
 
-// S: Componente para métricas
+// Componente para métricas
 function Metrics({ totalFiles, usedSpace, breadcrumb }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-white/20 p-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+      <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-slate-600 text-sm font-medium">Total de archivos</p>
-            <p className="text-3xl font-bold text-slate-800 mt-1">{totalFiles}</p>
+            <p className="text-3xl font-bold text-slate-800 mt-2">{totalFiles}</p>
           </div>
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <span className="text-white text-xl">📁</span>
+          <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+            <span className="text-white text-2xl">📁</span>
           </div>
         </div>
       </div>
-      <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-white/20 p-6">
+      <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-slate-600 text-sm font-medium">Espacio utilizado</p>
-            <p className="text-3xl font-bold text-slate-800 mt-1">{usedSpace}</p>
+            <p className="text-3xl font-bold text-slate-800 mt-2">{usedSpace}</p>
           </div>
-          <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white text-xl">💾</span>
+          <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+            <span className="text-white text-2xl">💾</span>
           </div>
         </div>
       </div>
-      <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-white/20 p-6">
+      <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6">
         <div className="flex items-center justify-between">
-          <div>
+          <div className="flex-1 pr-4">
             <p className="text-slate-600 text-sm font-medium">Ubicación actual</p>
-            <p className="text-lg font-bold text-slate-800 mt-1 break-all">{breadcrumb}</p>
+            <p className="text-lg font-bold text-slate-800 mt-2 break-all">{breadcrumb}</p>
           </div>
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
-            <span className="text-white text-xl">📍</span>
+          <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+            <span className="text-white text-2xl">📍</span>
           </div>
         </div>
       </div>
@@ -235,71 +230,58 @@ function Filesexplorer() {
   }, [files])
 
   return (
-    <div className="Files_explorer">
-      {/* moved metrics above header as requested */}
-      <div className="fe-metrics-wrapper mb-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-slate-900">
+      <UserHeader name="Pedro Vazques" role="Analista de datos" type="Usuario" />
+      
+      <div className="max-w-7xl mx-auto px-6 py-8">
         <Metrics totalFiles={files.length} usedSpace={'1.2 GB'} breadcrumb={'Raíz > Proyectos > 2025'} />
-      </div>
+        <ViewSwitch views={VIEWS} activeView={activeView} onChange={setActiveView} />
+        <FileActions />
 
-      <div className="fe-header">
-        <div className="fe-user-info">
-          <div>
-            <h2 style={{fontSize: '1.15rem', margin: 0}}>Cambiar vista:</h2>
-            <div className="fe-view-switch mt-2">
-              {VIEWS.map(v => (
-                <button key={v.key} className={v.key===activeView? 'active':''} onClick={()=>setActiveView(v.key)}>{v.label}</button>
-              ))}
-            </div>
+        <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-slate-800">Archivos</h2>
+            <input 
+              value={query} 
+              onChange={e => { setQuery(e.target.value); setPage(1); }} 
+              placeholder="Buscar archivos..." 
+              className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" 
+            />
           </div>
-        </div>
-
-        <div style={{marginLeft: 'auto'}}>
-          <div className="fe-file-actions">
-            <FileActions />
-          </div>
-        </div>
-      </div>
-
-  <div className="fe-main-options w-full px-4 lg:px-12 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          <div className="lg:col-span-3">
-            <div className="fe-view-content">
-              {activeView === 'table' ? (
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-bold text-slate-800">Archivos</h2>
-                    <input value={query} onChange={e=>{ setQuery(e.target.value); setPage(1)}} placeholder="Buscar..." className="px-3 py-2 border rounded-md" />
-                  </div>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                      <thead>
-                        <tr className="border-b border-slate-200">
-                          <th className="py-3 px-4 font-semibold text-slate-700">Nombre</th>
-                          <th className="py-3 px-4 font-semibold text-slate-700">Tamaño (KB)</th>
-                          <th className="py-3 px-4 font-semibold text-slate-700">Fecha</th>
-                          <th className="py-3 px-4 font-semibold text-slate-700">Tipo</th>
-                          <th className="py-3 px-4 font-semibold text-slate-700">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {pageItems.map((f) => (
-                          <tr key={f.id} className={`border-b border-slate-100 transition-colors ${selectedFile?.id === f.id ? 'bg-slate-100' : 'hover:bg-slate-50'}`}>
-                            <td className="py-3 px-4">
-                              <div className="flex items-center space-x-3">
-                                <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
-                                  <span className="text-white text-sm">{f.type === 'xlsx' ? '📊' : f.type === 'csv' ? '📋' : f.type === 'png' ? '🖼️' : '📄'}</span>
-                                </div>
-                                <span onClick={() => openSidePreview(f)} className="font-medium text-slate-800 cursor-pointer">{f.name}</span>
+          {activeView === 'table' ? (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b-2 border-slate-200 bg-slate-50">
+                        <th className="py-4 px-4 text-left font-semibold text-slate-700">Nombre</th>
+                        <th className="py-4 px-4 text-left font-semibold text-slate-700">Tamaño (KB)</th>
+                        <th className="py-4 px-4 text-left font-semibold text-slate-700">Fecha</th>
+                        <th className="py-4 px-4 text-left font-semibold text-slate-700">Tipo</th>
+                        <th className="py-4 px-4 text-left font-semibold text-slate-700">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {pageItems.map((f) => (
+                        <tr key={f.id} className={`border-b border-slate-100 transition-colors ${selectedFile?.id === f.id ? 'bg-blue-50' : 'hover:bg-slate-50'}`}>
+                          <td className="py-4 px-4">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
+                                <span className="text-white text-lg">{f.type === 'xlsx' ? '📊' : f.type === 'csv' ? '📋' : f.type === 'png' ? '🖼️' : '📄'}</span>
                               </div>
-                            </td>
-                            <td className="py-3 px-4 text-slate-600">{f.size}</td>
-                            <td className="py-3 px-4 text-slate-600">{f.date}</td>
-                            <td className="py-3 px-4">
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">{f.type.toUpperCase()}</span>
-                            </td>
-                            <td className="py-3 px-4">
-                              <div className="flex space-x-2">
-                                <button onClick={() => {
+                              <span onClick={() => openSidePreview(f)} className="font-medium text-slate-800 cursor-pointer hover:text-blue-600 transition-colors">{f.name}</span>
+                            </div>
+                          </td>
+                          <td className="py-4 px-4 text-slate-600 font-medium">{f.size}</td>
+                          <td className="py-4 px-4 text-slate-600">{f.date}</td>
+                          <td className="py-4 px-4">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 uppercase">{f.type}</span>
+                          </td>
+                          <td className="py-4 px-4">
+                            <div className="flex space-x-2">
+                              <button 
+                                onClick={() => {
                                   const content = `Archivo: ${f.name}`
                                   const blob = new Blob([content], { type: 'text/plain' })
                                   const url = URL.createObjectURL(blob)
@@ -310,76 +292,117 @@ function Filesexplorer() {
                                   a.click()
                                   a.remove()
                                   URL.revokeObjectURL(url)
-                                }} className="px-3 py-1 bg-gradient-to-r from-blue-600 to-cyan-700 text-white rounded-md text-sm shadow">📥 Descargar</button>
-
-                                <button onClick={() => navigate('/preview', { state: { file: f, previewUrl: f.url ?? demoPdf } })} className="px-3 py-1 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-md text-sm shadow">Previsualizar</button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                                }} 
+                                className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-700 text-white rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-1"
+                              >
+                                📥 Descargar
+                              </button>
+                              <button 
+                                onClick={() => navigate('/preview', { state: { file: f, previewUrl: f.url ?? demoPdf } })} 
+                                className="px-3 py-1.5 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-all duration-200"
+                              >
+                                Ver
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div className="mt-6 flex items-center justify-between">
+                  <div className="text-sm text-slate-600 font-medium">
+                    Mostrando {pageItems.length} de {filtered.length} archivos
                   </div>
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="text-sm text-slate-600">Mostrando {pageItems.length} de {filtered.length} archivos</div>
-                    <div className="flex items-center space-x-2">
-                      <button onClick={()=>setPage(p=>Math.max(1,p-1))} disabled={page===1} className="px-3 py-1 bg-slate-200 rounded">Anterior</button>
-                      <span className="text-sm">{page} / {totalPages}</span>
-                      <button onClick={()=>setPage(p=>Math.min(totalPages,p+1))} disabled={page===totalPages} className="px-3 py-1 bg-slate-200 rounded">Siguiente</button>
-                    </div>
+                  <div className="flex items-center space-x-3">
+                    <button 
+                      onClick={() => setPage(p => Math.max(1, p-1))} 
+                      disabled={page === 1} 
+                      className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-300 transition-colors"
+                    >
+                      Anterior
+                    </button>
+                    <span className="text-sm font-medium text-slate-700">{page} / {totalPages}</span>
+                    <button 
+                      onClick={() => setPage(p => Math.min(totalPages, p+1))} 
+                      disabled={page === totalPages} 
+                      className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-slate-300 transition-colors"
+                    >
+                      Siguiente
+                    </button>
                   </div>
                 </div>
-              ) : (
-                <ViewContent activeView={activeView} />
-              )}
-            </div>
-          </div>
+              </div>
 
-          <div className="lg:col-span-2">
-            <div className="fe-preview-panel">
-              {selectedFile ? (
-                <div className="p-4">
-                  <div className="flex items-start justify-between mb-4">
+              <div className="lg:col-span-1">
+                <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6">
+                  {selectedFile ? (
                     <div>
-                      <h3 className="text-lg font-semibold text-slate-800">{selectedFile.name}</h3>
-                      <div className="text-sm text-slate-600">{selectedFile.type.toUpperCase()} • {selectedFile.size} KB</div>
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="text-lg font-semibold text-slate-800">{selectedFile.name}</h3>
+                          <div className="text-sm text-slate-600 mt-1">{selectedFile.type.toUpperCase()} • {selectedFile.size} KB</div>
+                        </div>
+                        <button 
+                          onClick={closeSidePreview} 
+                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg text-sm font-medium transition-colors"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      <div className="mb-4">
+                        <div className="bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-200" style={{height: 300}}>
+                          <iframe 
+                            src={selectedPreviewUrl && (selectedPreviewUrl.endsWith('.pdf') ? `https://docs.google.com/gview?url=${encodeURIComponent(selectedPreviewUrl)}&embedded=true` : selectedPreviewUrl)} 
+                            title={`Preview ${selectedFile.name}`} 
+                            className="w-full h-full border-0" 
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col space-y-2">
+                        <button 
+                          onClick={() => {
+                            const content = `Descarga: ${selectedFile.name}`
+                            const blob = new Blob([content], { type: 'text/plain' })
+                            const url = URL.createObjectURL(blob)
+                            const a = document.createElement('a')
+                            a.href = url
+                            a.download = selectedFile.name
+                            document.body.appendChild(a)
+                            a.click()
+                            a.remove()
+                            URL.revokeObjectURL(url)
+                          }} 
+                          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200"
+                        >
+                          📥 Descargar archivo
+                        </button>
+                        <button 
+                          onClick={() => window.print()} 
+                          className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200"
+                        >
+                          🖨️ Imprimir
+                        </button>
+                      </div>
                     </div>
-                    <button onClick={closeSidePreview} className="ml-2 bg-red-500 text-white px-3 py-1 rounded">Cerrar</button>
-                  </div>
-
-                  <div className="mb-3">
-                    <div className="bg-slate-100 rounded overflow-hidden" style={{height: 360}}>
-                      {/* PDF viewer: use Google gview for compatibility */}
-                      <iframe src={selectedPreviewUrl && (selectedPreviewUrl.endsWith('.pdf') ? `https://docs.google.com/gview?url=${encodeURIComponent(selectedPreviewUrl)}&embedded=true` : selectedPreviewUrl)} title={`Preview ${selectedFile.name}`} className="w-full h-full border-0" />
+                  ) : (
+                    <div className="text-center text-slate-600 py-8">
+                      <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full mx-auto mb-4 flex items-center justify-center text-white shadow-lg">
+                        <span className="text-2xl">🔍</span>
+                      </div>
+                      <h4 className="font-semibold mb-2 text-slate-800">Selecciona un archivo</h4>
+                      <p className="text-sm">La vista previa aparecerá aquí</p>
                     </div>
-                  </div>
-
-                  <div className="flex space-x-2">
-                    <button onClick={() => {
-                      const content = `Descarga: ${selectedFile.name}`
-                      const blob = new Blob([content], { type: 'text/plain' })
-                      const url = URL.createObjectURL(blob)
-                      const a = document.createElement('a')
-                      a.href = url
-                      a.download = selectedFile.name
-                      document.body.appendChild(a)
-                      a.click()
-                      a.remove()
-                      URL.revokeObjectURL(url)
-                    }} className="px-3 py-2 bg-gradient-to-r from-blue-600 to-cyan-700 text-white rounded">Descargar archivo</button>
-
-                    <button onClick={() => window.print()} className="px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded">Imprimir</button>
-                  </div>
+                  )}
                 </div>
-              ) : (
-                <div className="p-6 text-center text-slate-600">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full mx-auto mb-4 flex items-center justify-center text-white">🔍</div>
-                  <h4 className="font-semibold mb-1">Selecciona un archivo para previsualizar</h4>
-                  <p className="text-sm">La vista previa aparecerá aquí.</p>
-                </div>
-              )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <ViewContent activeView={activeView} />
+          )}
         </div>
       </div>
     </div>
