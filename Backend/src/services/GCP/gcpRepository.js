@@ -58,5 +58,20 @@ class GoogleRepository extends IStorageRepository {
 
         return { fileName, bucket: this.bucketName, deleted: true };
     }
+    
+    async createFolder(folderName) {
+        const bucket = this.client.bucket(this.bucketName);
+        const folderKey = folderName.endsWith("/") ? folderName : `${folderName}/`;
+        const file = bucket.file(folderKey);
+
+        await file.save("");
+
+        return {
+          folderName: folderKey,
+          bucket: this.bucketName,
+          created: true,
+        };
+    }
 }
+
 module.exports = GoogleRepository;

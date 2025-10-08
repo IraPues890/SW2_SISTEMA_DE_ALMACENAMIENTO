@@ -95,6 +95,26 @@ class OracleRepository extends IStorageRepository {
         deleted: true,
       };
   }
+  
+  async createFolder(folderName) {
+      const { value: namespaceName } = await this.client.getNamespace({});
+
+      const folderKey = folderName.endsWith("/") ? folderName : `${folderName}/`;
+      const putObjectRequest = {
+        namespaceName,
+        bucketName: this.bucketName,
+        objectName: folderKey,
+        putObjectBody: Buffer.from(""),
+      };
+
+      await this.client.putObject(putObjectRequest);
+
+      return {
+        folderName: folderKey,
+        bucket: this.bucketName,
+        created: true,
+      };
+    }
 }
 
 module.exports = OracleRepository;

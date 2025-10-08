@@ -14,6 +14,10 @@ class IStorageRepository {
   async deleteObject(fileName){
     throw new Error("Se debe implemetar el método deleteObject()");
   }
+  
+  async createFolder(folderName) {
+    throw new Error("Method not implemented");
+  }
 }
 
 module.exports = IStorageRepository;

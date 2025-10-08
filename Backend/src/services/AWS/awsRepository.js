@@ -85,6 +85,22 @@ class AmazonRepository extends IStorageRepository {
             deleted: true,
         };
     }
+    
+    async createFolder(folderName) {
+        const params = {
+          Bucket: this.bucketName,
+          Key: folderName.endsWith("/") ? folderName : `${folderName}/`,
+          Body: "",
+        };
+
+        await this.client.send(new PutObjectCommand(params));
+
+        return {
+          folderName: params.Key,
+          bucket: this.bucketName,
+          created: true,
+        };
+    }
 }
 
 module.exports = AmazonRepository;
