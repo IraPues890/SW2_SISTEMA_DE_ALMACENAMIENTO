@@ -37,9 +37,7 @@ class GoogleRepository extends IStorageRepository {
         const bucket = this.client.bucket(this.bucketName);
         const file = bucket.file(fileName);
         const dir = path.dirname(destinationPath);
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
+        await fs.promises.mkdir(dir, { recursive: true });
 
         await file.download({ destination: destinationPath });
 
