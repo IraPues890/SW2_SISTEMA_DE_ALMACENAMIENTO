@@ -21,3 +21,4 @@ npm-debug.log*
 
 # Archivos guardados de disco
 Backend/uploads
+Backend/downloads
