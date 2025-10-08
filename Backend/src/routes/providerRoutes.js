@@ -10,19 +10,22 @@ const upload = multer({ dest: "uploads/" });
 router.post("/:provider/upload", upload.single("file"), async (req, res) => {
   try {
     const repo = StorageFactory(req.params.provider);
-    const result = await repo.upload(req.file.path, req.file.originalname);
+    const folderPath = req.body.path ? `${req.body.path}/` : "";
+    const fileName = `${folderPath}${req.file.originalname}`;
+
+    const result = await repo.upload(req.file.path, fileName);
 
     res.json({
       success: true,
       message: `Archivo ${req.file.originalname} subido correctamente`,
-      data: result
+      data: result,
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({
       success: false,
       message: "Error al subir archivo",
-      error: err.message
+      error: err.message,
     });
   }
 });
@@ -88,6 +91,37 @@ router.delete("/:provider/delete/:fileName", async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Error al eliminar archivo",
+      error: err.message
+    });
+  }
+});
+
+// POST /storage/:provider/folder
+router.post("/:provider/folder", async (req, res) => {
+  try {
+    const { provider } = req.params;
+    const { folderName } = req.body;
+
+    if (!folderName) {
+      return res.status(400).json({
+        success: false,
+        message: "El nombre de la carpeta es obligatorio"
+      });
+    }
+
+    const repo = StorageFactory(provider);
+    const result = await repo.createFolder(folderName);
+
+    res.json({
+      success: true,
+      message: `Carpeta ${folderName} creada correctamente`,
+      data: result
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({
+      success: false,
+      message: "Error al crear carpeta",
       error: err.message
     });
   }
