@@ -1,6 +1,7 @@
 {
   "name": "sw2-frontend",
   "version": "1.0.0",
+  "type": "module",
   "main": "src/main.jsx",
   "scripts": {
     "dev": "vite",
@@ -19,6 +20,9 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^5.0.2",
-    "vite": "^7.1.7"
+    "vite": "^7.1.7",
+    "tailwindcss": "^3.4.0",
+    "postcss": "^8.4.32",
+    "autoprefixer": "^10.4.16"
   }
 }
