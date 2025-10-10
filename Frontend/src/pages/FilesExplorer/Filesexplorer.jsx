@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom'
 
 // Componente para la cabecera de usuario
@@ -55,21 +55,22 @@ function ViewSwitch({ views, activeView, onChange }) {
 }
 
 // Componente para acciones de archivos
-function FileActions() {
+function FileActions({ onCreateFolder }) {
   const actions = [
-    { icon: '📤', text: 'Subir archivo', color: 'bg-gradient-to-r from-green-600 to-emerald-700' },
-    { icon: '📥', text: 'Descargar archivo', color: 'bg-gradient-to-r from-blue-600 to-cyan-700' },
-    { icon: '➕', text: 'Crear carpeta', color: 'bg-gradient-to-r from-yellow-600 to-orange-700' },
-    { icon: '📂', text: 'Organizar carpetas', color: 'bg-gradient-to-r from-purple-600 to-indigo-700' }
+    { key: 'upload', icon: '📤', text: 'Subir archivo',     color: 'bg-gradient-to-r from-green-600 to-emerald-700' },
+    { key: 'download', icon: '📥', text: 'Descargar archivo', color: 'bg-gradient-to-r from-blue-600 to-cyan-700' },
+    { key: 'new-folder', icon: '➕', text: 'Crear carpeta',   color: 'bg-gradient-to-r from-yellow-600 to-orange-700', onClick: onCreateFolder },
+    { key: 'organize', icon: '📂', text: 'Organizar carpetas', color: 'bg-gradient-to-r from-purple-600 to-indigo-700' }
   ];
 
   return (
     <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6 mb-6">
       <h3 className="text-lg font-semibold text-slate-800 mb-4">Acciones de Archivos</h3>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {actions.map((action, index) => (
+        {actions.map((action) => (
           <button
-            key={index}
+            key={action.key}
+            onClick={action.onClick ?? (() => {})}
             className={`${action.color} text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 hover:shadow-lg hover:scale-105 active:scale-95 flex items-center justify-center gap-2`}
             title={action.text}
           >
@@ -171,7 +172,7 @@ function FileIcon({ file, size = 'medium', onOpen }) {
     >
       <div className={`mx-auto ${sz.box} rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow`}>
         <span className={`text-white ${sz.icon}`}>
-          {file.type === 'xlsx' ? '📊' : file.type === 'csv' ? '📋' : file.type === 'png' ? '🖼️' : '📄'}
+          {file.type === 'xlsx' ? '📊' : file.type === 'csv' ? '📋' : file.type === 'png' ? '🖼️' : file.type === 'pptx' ? '📄': file.type === 'pdf' ? '📄' : '📁'}
         </span>
       </div>
       <div className="mt-3">
@@ -201,6 +202,91 @@ function IconGrid({ files, viewSize, onOpen }) {
   );
 }
 
+function CreateFolderModal({ isOpen, onClose, onCreate, validateName }) {
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setName('');
+      setError('');
+      // focus al abrir
+      setTimeout(() => inputRef.current?.focus(), 0);
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  const submit = (e) => {
+    e?.preventDefault?.();
+    const msg = validateName ? validateName(name) : null;
+    if (msg) {
+      setError(msg);
+      return;
+    }
+    onCreate(name.trim());
+  };
+
+  const onKeyDown = (e) => {
+    if (e.key === 'Escape') onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50" onKeyDown={onKeyDown} role="dialog" aria-modal="true" aria-labelledby="create-folder-title">
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+
+      {/* Dialog */}
+      <div className="absolute inset-0 flex items-center justify-center p-4">
+        <form
+          onSubmit={submit}
+          className="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-6"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 text-white flex items-center justify-center shadow">
+              <span className="text-2xl">➕</span>
+            </div>
+            <div>
+              <h3 id="create-folder-title" className="text-xl font-semibold text-slate-900">Crear carpeta</h3>
+              <p className="text-slate-500 text-sm">Asigna un nombre y la añadiremos a la ubicación actual.</p>
+            </div>
+          </div>
+
+          <label className="block text-sm font-medium text-slate-700 mb-1">Nombre de la carpeta</label>
+          <input
+            ref={inputRef}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="p. ej., Reportes 2025"
+            className={`w-full px-4 py-2 rounded-lg border ${
+              error ? 'border-red-300 ring-2 ring-red-100' : 'border-slate-300 focus:ring-2 focus:ring-blue-500'
+            } focus:border-transparent outline-none`}
+          />
+
+          {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+
+          <div className="mt-6 flex items-center justify-end gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-lg text-white font-medium bg-gradient-to-r from-yellow-600 to-orange-700 shadow hover:shadow-lg transition-all"
+            >
+              Crear
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 
 function Filesexplorer() {
   const [activeView, setActiveView] = useState('table');
@@ -218,6 +304,7 @@ function Filesexplorer() {
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
   const perPage = 5
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -231,13 +318,46 @@ function Filesexplorer() {
   const demoPdf = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
 
   function openSidePreview(f) {
-    setSelectedFile(f)
-    setSelectedPreviewUrl(f.url ?? demoPdf)
+  setSelectedFile(f);
+  if (f.type === 'folder') {
+    setSelectedPreviewUrl(null); // sin preview para carpetas
+    return;
+  }
+  setSelectedPreviewUrl(f.url ?? demoPdf);
   }
 
   function closeSidePreview() {
     setSelectedFile(null)
     setSelectedPreviewUrl(null)
+  }
+
+  function handleCreateFolder() {
+  setIsCreateOpen(true);
+  }
+
+  function validateFolderName(raw) {
+  const name = (raw || '').trim();
+  if (!name) return 'Escribe un nombre.';
+  if (!/^[\w\-\s]{1,64}$/.test(name)) return 'Usa letras, números, espacios o guiones (máx. 64).';
+  const dup = files.some(
+    (f) => f.type === 'folder' && f.name.toLowerCase() === name.toLowerCase()
+  );
+  if (dup) return 'Ya existe una carpeta con ese nombre.';
+  return null;
+  }
+
+  function handleConfirmCreateFolder(name) {
+    const newFolder = {
+      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Date.now(),
+      name,
+      size: '0',
+      date: new Date().toLocaleDateString('es-PE'),
+      type: 'folder',
+    };
+    setFiles((prev) => [newFolder, ...prev]);
+    setSelectedFile(newFolder);
+    setSelectedPreviewUrl(null);
+    setIsCreateOpen(false);
   }
 
   // select first file by default when component mounts (if any)
@@ -256,7 +376,7 @@ function Filesexplorer() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Metrics totalFiles={files.length} usedSpace={'1.2 GB'} breadcrumb={'Raíz > Proyectos > 2025'} />
         <ViewSwitch views={VIEWS} activeView={activeView} onChange={setActiveView} />
-        <FileActions />
+        <FileActions onCreateFolder={handleCreateFolder} />
 
         <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6">
           <div className="flex items-center justify-between mb-6">
@@ -288,7 +408,7 @@ function Filesexplorer() {
                           <td className="py-4 px-4">
                             <div className="flex items-center space-x-3">
                               <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
-                                <span className="text-white text-lg">{f.type === 'xlsx' ? '📊' : f.type === 'csv' ? '📋' : f.type === 'png' ? '🖼️' : '📄'}</span>
+                                <span className="text-white text-lg">{f.type === 'folder' ? '📁' : f.type === 'xlsx' ? '📊' : f.type === 'csv' ? '📋' : f.type === 'png' ? '🖼️' : '📄'}</span>
                               </div>
                               <span onClick={() => openSidePreview(f)} className="font-medium text-slate-800 cursor-pointer hover:text-blue-600 transition-colors">{f.name}</span>
                             </div>
@@ -300,28 +420,39 @@ function Filesexplorer() {
                           </td>
                           <td className="py-4 px-4">
                             <div className="flex space-x-2">
-                              <button 
+                              {f.type !== 'folder' && (
+                                <button
+                                  onClick={() => {
+                                    const content = `Archivo: ${f.name}`;
+                                    const blob = new Blob([content], { type: 'text/plain' });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = f.name;
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    a.remove();
+                                    URL.revokeObjectURL(url);
+                                  }}
+                                  className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-700 text-white rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-1"
+                                >
+                                  📥 Descargar
+                                </button>
+                              )}
+
+                              <button
                                 onClick={() => {
-                                  const content = `Archivo: ${f.name}`
-                                  const blob = new Blob([content], { type: 'text/plain' })
-                                  const url = URL.createObjectURL(blob)
-                                  const a = document.createElement('a')
-                                  a.href = url
-                                  a.download = f.name
-                                  document.body.appendChild(a)
-                                  a.click()
-                                  a.remove()
-                                  URL.revokeObjectURL(url)
-                                }} 
-                                className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-700 text-white rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-1"
-                              >
-                                📥 Descargar
-                              </button>
-                              <button 
-                                onClick={() => navigate('/preview', { state: { file: f, previewUrl: f.url ?? demoPdf } })} 
+                                  if (f.type === 'folder') {
+                                    // aquí podrías navegar al contenido de la carpeta (demo simple)
+                                    setSelectedFile(f);
+                                    setSelectedPreviewUrl(null);
+                                  } else {
+                                    navigate('/preview', { state: { file: f, previewUrl: f.url ?? demoPdf } });
+                                  }
+                                }}
                                 className="px-3 py-1.5 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-all duration-200"
                               >
-                                Ver
+                                {f.type === 'folder' ? 'Abrir' : 'Ver'}
                               </button>
                             </div>
                           </td>
@@ -374,32 +505,41 @@ function Filesexplorer() {
 
                       <div className="mb-4">
                         <div className="bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-200" style={{height: 300}}>
-                          <iframe 
-                            src={selectedPreviewUrl && (selectedPreviewUrl.endsWith('.pdf') ? `https://docs.google.com/gview?url=${encodeURIComponent(selectedPreviewUrl)}&embedded=true` : selectedPreviewUrl)} 
-                            title={`Preview ${selectedFile.name}`} 
-                            className="w-full h-full border-0" 
-                          />
+                          {selectedFile.type === 'folder' ? (
+                            <div className="w-full h-full flex items-center justify-center text-slate-500">
+                              Esta es una carpeta. (Sin vista previa)
+                            </div>
+                          ) : (
+                            <iframe
+                              src={selectedPreviewUrl && (selectedPreviewUrl.endsWith('.pdf') ? `https://docs.google.com/gview?url=${encodeURIComponent(selectedPreviewUrl)}&embedded=true` : selectedPreviewUrl)}
+                              title={`Preview ${selectedFile.name}`}
+                              className="w-full h-full border-0"
+                            />
+                          )}
                         </div>
                       </div>
 
                       <div className="flex flex-col space-y-2">
-                        <button 
-                          onClick={() => {
-                            const content = `Descarga: ${selectedFile.name}`
-                            const blob = new Blob([content], { type: 'text/plain' })
-                            const url = URL.createObjectURL(blob)
-                            const a = document.createElement('a')
-                            a.href = url
-                            a.download = selectedFile.name
-                            document.body.appendChild(a)
-                            a.click()
-                            a.remove()
-                            URL.revokeObjectURL(url)
-                          }} 
-                          className="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200"
-                        >
-                          📥 Descargar archivo
-                        </button>
+                        {selectedFile.type !== 'folder' && (
+                          <button 
+                            onClick={() => {
+                              const content = `Descarga: ${selectedFile.name}`
+                              const blob = new Blob([content], { type: 'text/plain' })
+                              const url = URL.createObjectURL(blob)
+                              const a = document.createElement('a')
+                              a.href = url
+                              a.download = selectedFile.name
+                              document.body.appendChild(a)
+                              a.click()
+                              a.remove()
+                              URL.revokeObjectURL(url)
+                            }} 
+                            className="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200"
+                          >
+                            📥 Descargar archivo
+                          </button>
+                        )}
+
                         <button 
                           onClick={() => window.print()} 
                           className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200"
@@ -429,6 +569,12 @@ function Filesexplorer() {
           )}
         </div>
       </div>
+      <CreateFolderModal
+      isOpen={isCreateOpen}
+      onClose={() => setIsCreateOpen(false)}
+      onCreate={handleConfirmCreateFolder}
+      validateName={validateFolderName}
+      />
     </div>
   );
 }
