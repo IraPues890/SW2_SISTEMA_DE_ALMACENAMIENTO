@@ -56,9 +56,9 @@ function ViewSwitch({ views, activeView, onChange }) {
 }
 
 // Componente para acciones de archivos
-function FileActions({ onCreateFolder }) {
+function FileActions({ onCreateFolder, onUploadFile }) {
   const actions = [
-    { key: 'upload', icon: '📤', text: 'Subir archivo',     color: 'bg-gradient-to-r from-green-600 to-emerald-700' },
+    { key: 'upload', icon: '📤', text: 'Subir archivo',     color: 'bg-gradient-to-r from-green-600 to-emerald-700', onClick: onUploadFile },
     { key: 'download', icon: '📥', text: 'Descargar archivo', color: 'bg-gradient-to-r from-blue-600 to-cyan-700' },
     { key: 'new-folder', icon: '➕', text: 'Crear carpeta',   color: 'bg-gradient-to-r from-yellow-600 to-orange-700', onClick: onCreateFolder },
     { key: 'organize', icon: '📂', text: 'Organizar carpetas', color: 'bg-gradient-to-r from-purple-600 to-indigo-700' }
@@ -67,7 +67,7 @@ function FileActions({ onCreateFolder }) {
   return (
     <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6 mb-6">
       <h3 className="text-lg font-semibold text-slate-800 mb-4">Acciones de Archivos</h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 justify-center">
         {actions.map((action) => (
           <button
             key={action.key}
@@ -403,6 +403,15 @@ function Filesexplorer() {
     setIsCreateOpen(true);
   }
 
+  function handleUploadFile() {
+    navigate('/upload', { 
+      state: { 
+        currentPath: 'Raíz > Proyectos > 2025',
+        returnTo: '/files-explorer' 
+      } 
+    });
+  }
+
   function validateFolderName(raw) {
     const name = (raw || '').trim();
     if (!name) return 'Escribe un nombre.';
@@ -455,7 +464,7 @@ function Filesexplorer() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Metrics totalFiles={files.length} usedSpace={'1.2 GB'} breadcrumb={breadcrumbString} />
         <ViewSwitch views={VIEWS} activeView={activeView} onChange={setActiveView} />
-        <FileActions onCreateFolder={handleCreateFolder} />
+        <FileActions onCreateFolder={handleCreateFolder} onUploadFile={handleUploadFile} />
 
         <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6">
           <div className="flex items-center justify-between mb-6">
