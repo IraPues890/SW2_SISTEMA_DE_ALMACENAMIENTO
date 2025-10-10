@@ -124,55 +124,23 @@ function Metrics({ totalFiles, usedSpace, breadcrumb }) {
 }
 
 // S: Componente para mostrar la vista activa
-function ViewContent({ activeView }) {
-  const views = {
-    table: (
-      <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-white/20 p-6">
-        <div className="text-center py-12">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl">📋</span>
-          </div>
-          <h3 className="text-xl font-semibold text-slate-800 mb-2">Vista de Tabla</h3>
-          <p className="text-slate-600">Los archivos se mostrarán en formato de tabla detallada</p>
-        </div>
-      </div>
-    ),
-    large: (
-      <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-white/20 p-6">
-        <div className="text-center py-12">
-          <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl">🖼️</span>
-          </div>
-          <h3 className="text-xl font-semibold text-slate-800 mb-2">Iconos Grandes</h3>
-          <p className="text-slate-600">Vista de iconos grandes para fácil identificación</p>
-        </div>
-      </div>
-    ),
-    medium: (
-      <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-white/20 p-6">
-        <div className="text-center py-12">
-          <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 to-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl">🗂️</span>
-          </div>
-          <h3 className="text-xl font-semibold text-slate-800 mb-2">Iconos Medianos</h3>
-          <p className="text-slate-600">Balance perfecto entre detalle y espacio</p>
-        </div>
-      </div>
-    ),
-    small: (
-      <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-white/20 p-6">
-        <div className="text-center py-12">
-          <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-white text-2xl">🔹</span>
-          </div>
-          <h3 className="text-xl font-semibold text-slate-800 mb-2">Iconos Pequeños</h3>
-          <p className="text-slate-600">Vista compacta para máxima eficiencia</p>
-        </div>
-      </div>
-    ),
-  };
-  return <section className="space-y-6">{views[activeView]}</section>;
+
+
+function ViewContent({ activeView, files, onOpen }) {
+  if (activeView === 'table') return null;
+
+  const size =
+    activeView === 'large' ? 'large' :
+    activeView === 'small' ? 'small' :
+    'medium';
+
+  return (
+    <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-white/20 p-6">
+      <IconGrid files={files} viewSize={size} onOpen={onOpen} />
+    </div>
+  );
 }
+
 
 // O: Permite extensión por props
 const VIEWS = [
@@ -181,6 +149,58 @@ const VIEWS = [
   { key: 'medium', label: 'Iconos medianos', icon: '🗂️' },
   { key: 'small', label: 'Iconos pequeños', icon: '🔹' },
 ];
+const ICON_SIZES = {
+  large:  { box: 'w-28 h-28', icon: 'text-6xl', name: 'text-base' },
+  medium: { box: 'w-20 h-20', icon: 'text-4xl', name: 'text-sm' },
+  small:  { box: 'w-14 h-14', icon: 'text-2xl', name: 'text-xs' },
+};
+// Ícono según tipo
+function FileEmoji({ type }) {
+  const map = { xlsx: '📊', csv: '📋', png: '🖼️', pdf: '📄', pptx: '📄' };
+  return <span>{map[type] ?? '📄'}</span>;
+}
+
+// Nuevo por MAU
+function FileIcon({ file, size = 'medium', onOpen }) {
+  const sz = ICON_SIZES[size] ?? ICON_SIZES.medium;
+  return (
+    <button
+      onClick={() => onOpen?.(file)}
+      className="group bg-white/95 border border-white/20 rounded-xl p-4 shadow hover:shadow-lg transition-all hover:-translate-y-0.5 text-left"
+      title={file.name}
+    >
+      <div className={`mx-auto ${sz.box} rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow`}>
+        <span className={`text-white ${sz.icon}`}>
+          {file.type === 'xlsx' ? '📊' : file.type === 'csv' ? '📋' : file.type === 'png' ? '🖼️' : '📄'}
+        </span>
+      </div>
+      <div className="mt-3">
+        <div className={`font-medium text-slate-800 line-clamp-2 ${sz.name}`}>{file.name}</div>
+        <div className="text-slate-500 text-xs mt-1">{file.size} KB • {file.type.toUpperCase()}</div>
+      </div>
+    </button>
+  );
+}
+
+function IconGrid({ files, viewSize, onOpen }) {
+  const cols =
+    viewSize === 'large'
+      ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+      : viewSize === 'medium'
+      ? 'grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8'
+      : viewSize === 'small'
+      ? 'grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10'
+      : 'grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8';
+
+  return (
+    <div className={`grid ${cols} gap-5`}>
+      {files.map(f => (
+        <FileIcon key={f.id} file={f} size={viewSize} onOpen={onOpen} />
+      ))}
+    </div>
+  );
+}
+
 
 function Filesexplorer() {
   const [activeView, setActiveView] = useState('table');
@@ -401,7 +421,11 @@ function Filesexplorer() {
               </div>
             </div>
           ) : (
-            <ViewContent activeView={activeView} />
+            <ViewContent
+              activeView={activeView}
+              files={filtered}
+              onOpen={openSidePreview} 
+            />
           )}
         </div>
       </div>
