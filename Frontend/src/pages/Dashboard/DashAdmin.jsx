@@ -3,14 +3,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom'
 
 //class
-import { User } from '../User';
-import { Metrics } from '../Metrics';
-import { Status } from './Status';
-import { Action } from '../Action';
-import { Active } from '../Active';
+import { User } from './classes/User';
+import { Metrics } from './classes/Metrics';
+import { Status } from './classes/Status';
+import { Action } from './classes/Action';
+import { Active } from './classes/Active';
 
 //functions
-import { createActionHandlers, handleAction } from '../../../components/Dashboard/CreateActions';
+import { createActionHandlers, handleAction } from './components/CreateActions';
 
 function DashAdmin() {
   const navigate = useNavigate()
