@@ -1,3 +1,4 @@
+// ...existing code...
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom'
 
@@ -37,8 +38,8 @@ function ViewSwitch({ views, activeView, onChange }) {
             <button
               key={view.key}
               className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 ${
-                activeView === view.key 
-                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg' 
+                activeView === view.key
+                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200 hover:shadow-md'
               }`}
               onClick={() => onChange(view.key)}
@@ -125,8 +126,6 @@ function Metrics({ totalFiles, usedSpace, breadcrumb }) {
 }
 
 // S: Componente para mostrar la vista activa
-
-
 function ViewContent({ activeView, files, onOpen }) {
   if (activeView === 'table') return null;
 
@@ -142,8 +141,7 @@ function ViewContent({ activeView, files, onOpen }) {
   );
 }
 
-
-// O: Permite extensión por props
+// Constantes
 const VIEWS = [
   { key: 'table', label: 'Tabla', icon: '📋' },
   { key: 'large', label: 'Iconos grandes', icon: '🖼️' },
@@ -155,11 +153,6 @@ const ICON_SIZES = {
   medium: { box: 'w-20 h-20', icon: 'text-4xl', name: 'text-sm' },
   small:  { box: 'w-14 h-14', icon: 'text-2xl', name: 'text-xs' },
 };
-// Ícono según tipo
-function FileEmoji({ type }) {
-  const map = { xlsx: '📊', csv: '📋', png: '🖼️', pdf: '📄', pptx: '📄' };
-  return <span>{map[type] ?? '📄'}</span>;
-}
 
 // Tamaño de íconos
 function FileIcon({ file, size = 'medium', onOpen }) {
@@ -293,37 +286,112 @@ function Filesexplorer() {
   const navigate = useNavigate()
   const [selectedFile, setSelectedFile] = useState(null)
   const [selectedPreviewUrl, setSelectedPreviewUrl] = useState(null)
+
+  // current folder (null = root)
+  const [currentFolderId, setCurrentFolderId] = useState(null)
+  // ordenamiento
+  const [sortOption, setSortOption] = useState('name-asc') // opciones: name-asc, name-desc, date-asc, date-desc, size-asc, size-desc
+
   // Datos de ejemplo (en producción vendrían del backend)
   const [files, setFiles] = useState([
-    { id: 1, name: 'informe2025.pdf', size: '2300', date: '30/09/2025', type: 'pdf' },
-    { id: 2, name: 'reporte_ventas.xlsx', size: '1200', date: '29/09/2025', type: 'xlsx' },
-    { id: 3, name: 'datos_clientes.csv', size: '800', date: '28/09/2025', type: 'csv' },
-    { id: 4, name: 'grafico_anual.png', size: '500', date: '27/09/2025', type: 'png' },
-    { id: 5, name: 'presentacion.pptx', size: '4500', date: '25/09/2025', type: 'pptx' },
+    { id: 1, name: 'informe2025.pdf', size: '2300', date: '30/09/2025', type: 'pdf', parentId: null },
+    { id: 2, name: 'reporte_ventas.xlsx', size: '1200', date: '29/09/2025', type: 'xlsx', parentId: null },
+    { id: 3, name: 'datos_clientes.csv', size: '800', date: '28/09/2025', type: 'csv', parentId: null },
+    { id: 4, name: 'grafico_anual.png', size: '500', date: '27/09/2025', type: 'png', parentId: null },
+    { id: 5, name: 'presentacion.pptx', size: '4500', date: '25/09/2025', type: 'pptx', parentId: null },
   ])
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
   const perPage = 5
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return files
-    return files.filter(f => f.name.toLowerCase().includes(q) || f.type.toLowerCase().includes(q))
-  }, [files, query])
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage))
-  const pageItems = filtered.slice((page - 1) * perPage, page * perPage)
-
   const demoPdf = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
 
-  function openSidePreview(f) {
-  setSelectedFile(f);
-  if (f.type === 'folder') {
-    setSelectedPreviewUrl(null); // sin preview para carpetas
-    return;
+  // Filtrado por carpeta actual + búsqueda
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    let items = files.filter(f => (f.parentId ?? null) === currentFolderId)
+    if (!q) return items
+    return items.filter(f => f.name.toLowerCase().includes(q) || f.type.toLowerCase().includes(q))
+  }, [files, query, currentFolderId])
+
+  // Ordenar el resultado filtrado (se aplica antes de paginar)
+  const sortedFiltered = useMemo(() => {
+    const items = [...(filtered ?? [])];
+    if (!items.length) return items;
+
+    const collator = new Intl.Collator('es', { numeric: true, sensitivity: 'base' });
+
+    switch (sortOption) {
+      case 'name-asc':
+        items.sort((a, b) => collator.compare(String(a.name), String(b.name)));
+        break;
+      case 'name-desc':
+        items.sort((a, b) => collator.compare(String(b.name), String(a.name)));
+        break;
+      case 'date-asc':
+        items.sort((a, b) => new Date(a.date) - new Date(b.date));
+        break;
+      case 'date-desc':
+        items.sort((a, b) => new Date(b.date) - new Date(a.date));
+        break;
+      case 'size-asc':
+        items.sort((a, b) => Number(a.size) - Number(b.size));
+        break;
+      case 'size-desc':
+        items.sort((a, b) => Number(b.size) - Number(a.size));
+        break;
+      default:
+        break;
+    }
+    return items;
+  }, [filtered, sortOption]);
+
+  const totalPages = Math.max(1, Math.ceil(sortedFiltered.length / perPage))
+  const pageItems = sortedFiltered.slice((page - 1) * perPage, page * perPage)
+
+  // Construir breadcrumb (lista de nodos desde root hasta current)
+  const breadcrumbNodes = useMemo(() => {
+    const nodes = [];
+    let id = currentFolderId;
+    while (id != null) {
+      const node = files.find(f => f.id === id);
+      if (!node) break;
+      nodes.push(node);
+      id = node.parentId ?? null;
+    }
+    return nodes.reverse();
+  }, [currentFolderId, files]);
+
+  const breadcrumbString = useMemo(() => {
+    if (!breadcrumbNodes.length) return 'Raíz';
+    return 'Raíz > ' + breadcrumbNodes.map(n => n.name).join(' > ');
+  }, [breadcrumbNodes]);
+
+  // Entrar a carpeta
+  function enterFolder(folder) {
+    setCurrentFolderId(folder.id)
+    setSelectedFile(null)
+    setSelectedPreviewUrl(null)
+    setPage(1)
   }
-  setSelectedPreviewUrl(f.url ?? demoPdf);
+
+  // Subir nivel (clic en breadcrumb)
+  function goToFolderId(id) {
+    setCurrentFolderId(id ?? null)
+    setSelectedFile(null)
+    setSelectedPreviewUrl(null)
+    setPage(1)
+  }
+
+  function openSidePreview(f) {
+    if (!f) return
+    if (f.type === 'folder') {
+      enterFolder(f)
+      return;
+    }
+    setSelectedFile(f);
+    setSelectedPreviewUrl(f.url ?? demoPdf);
   }
 
   function closeSidePreview() {
@@ -332,62 +400,108 @@ function Filesexplorer() {
   }
 
   function handleCreateFolder() {
-  setIsCreateOpen(true);
+    setIsCreateOpen(true);
   }
 
   function validateFolderName(raw) {
-  const name = (raw || '').trim();
-  if (!name) return 'Escribe un nombre.';
-  if (!/^[\w\-\s]{1,64}$/.test(name)) return 'Usa letras, números, espacios o guiones (máx. 64).';
-  const dup = files.some(
-    (f) => f.type === 'folder' && f.name.toLowerCase() === name.toLowerCase()
-  );
-  if (dup) return 'Ya existe una carpeta con ese nombre.';
-  return null;
+    const name = (raw || '').trim();
+    if (!name) return 'Escribe un nombre.';
+    if (!/^[\w\-\s]{1,64}$/.test(name)) return 'Usa letras, números, espacios o guiones (máx. 64).';
+    const dup = files.some(
+      (f) => (f.type === 'folder') && (f.name.toLowerCase() === name.toLowerCase()) && ((f.parentId ?? null) === currentFolderId)
+    );
+    if (dup) return 'Ya existe una carpeta con ese nombre en esta ubicación.';
+    return null;
   }
 
   function handleConfirmCreateFolder(name) {
     const newFolder = {
-      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Date.now(),
+      id: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
       name,
       size: '0',
       date: new Date().toLocaleDateString('es-PE'),
       type: 'folder',
+      parentId: currentFolderId ?? null,
     };
     setFiles((prev) => [newFolder, ...prev]);
+    // entrar a la carpeta nueva y seleccionarla
+    setCurrentFolderId(newFolder.id);
     setSelectedFile(newFolder);
     setSelectedPreviewUrl(null);
     setIsCreateOpen(false);
+    setPage(1);
   }
 
-  // select first file by default when component mounts (if any)
+  // select first file by default when the files or current folder change (if any)
   useEffect(() => {
-    if (files && files.length > 0) {
-      // only set if nothing selected yet
-      if (!selectedFile) openSidePreview(files[0])
+    if (!selectedFile && filtered && filtered.length > 0) {
+      // preferir el primer archivo que NO sea carpeta, para no "entrar" automáticamente en carpetas
+      const firstNonFolder = filtered.find(item => item.type !== 'folder');
+      if (firstNonFolder) {
+        openSidePreview(firstNonFolder);
+      } else {
+        // si no hay archivos, no seleccionar ni entrar en la primera carpeta automáticamente
+        // opcional: podrías seleccionar la primera carpeta en vez de entrarla:
+        // setSelectedFile(filtered[0]);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [files])
+  }, [filtered]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-slate-900">
       <UserHeader name="Pedro Vazques" role="Analista de datos" type="Usuario" />
       
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <Metrics totalFiles={files.length} usedSpace={'1.2 GB'} breadcrumb={'Raíz > Proyectos > 2025'} />
+        <Metrics totalFiles={files.length} usedSpace={'1.2 GB'} breadcrumb={breadcrumbString} />
         <ViewSwitch views={VIEWS} activeView={activeView} onChange={setActiveView} />
         <FileActions onCreateFolder={handleCreateFolder} />
 
         <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-slate-800">Archivos</h2>
-            <input 
-              value={query} 
-              onChange={e => { setQuery(e.target.value); setPage(1); }} 
-              placeholder="Buscar archivos..." 
-              className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" 
-            />
+            <div>
+              {/* Breadcrumb simple y navegable */}
+              <div className="text-sm text-slate-600 mb-2">
+                <button onClick={() => goToFolderId(null)} className="text-blue-600 font-medium hover:underline">Raíz</button>
+                {breadcrumbNodes.map((node, idx) => (
+                  <span key={node.id}>
+                    <span className="mx-2">/</span>
+                    <button
+                      onClick={() => goToFolderId(node.id)}
+                      className="text-slate-700 hover:underline"
+                    >
+                      {node.name}
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <h2 className="text-2xl font-bold text-slate-800">Archivos</h2>
+            </div>
+
+            <div className="flex items-center space-x-3">
+              <input 
+                value={query} 
+                onChange={e => { setQuery(e.target.value); setPage(1); }} 
+                placeholder="Buscar archivos..." 
+                className="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none" 
+              />
+
+              <select
+                value={sortOption}
+                onChange={(e) => { setSortOption(e.target.value); setPage(1); }}
+                className="px-3 py-2 border border-slate-300 rounded-lg bg-white text-sm"
+                aria-label="Ordenar archivos"
+              >
+                <option value="name-asc">Nombre A → Z</option>
+                <option value="name-desc">Nombre Z → A</option>
+                <option value="date-desc">Fecha (más reciente)</option>
+                <option value="date-asc">Fecha (más antigua)</option>
+                <option value="size-desc">Tamaño (mayor)</option>
+                <option value="size-asc">Tamaño (menor)</option>
+              </select>
+            </div>
           </div>
+
           {activeView === 'table' ? (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
@@ -443,9 +557,7 @@ function Filesexplorer() {
                               <button
                                 onClick={() => {
                                   if (f.type === 'folder') {
-                                    // aquí podrías navegar al contenido de la carpeta (demo simple)
-                                    setSelectedFile(f);
-                                    setSelectedPreviewUrl(null);
+                                    enterFolder(f);
                                   } else {
                                     navigate('/preview', { state: { file: f, previewUrl: f.url ?? demoPdf } });
                                   }
@@ -464,7 +576,7 @@ function Filesexplorer() {
                 
                 <div className="mt-6 flex items-center justify-between">
                   <div className="text-sm text-slate-600 font-medium">
-                    Mostrando {pageItems.length} de {filtered.length} archivos
+                    Mostrando {pageItems.length} de {sortedFiltered.length} archivos
                   </div>
                   <div className="flex items-center space-x-3">
                     <button 
@@ -563,20 +675,21 @@ function Filesexplorer() {
           ) : (
             <ViewContent
               activeView={activeView}
-              files={filtered}
+              files={sortedFiltered}
               onOpen={openSidePreview} 
             />
           )}
         </div>
       </div>
       <CreateFolderModal
-      isOpen={isCreateOpen}
-      onClose={() => setIsCreateOpen(false)}
-      onCreate={handleConfirmCreateFolder}
-      validateName={validateFolderName}
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onCreate={handleConfirmCreateFolder}
+        validateName={validateFolderName}
       />
     </div>
   );
 }
 
 export default Filesexplorer;
+// ...existing code...
