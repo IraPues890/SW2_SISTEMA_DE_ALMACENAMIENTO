@@ -11,14 +11,45 @@ const Login = () => {
   const navigate = useNavigate()
   const { login } = useContext(AuthContext)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Simulación de autenticación: rol por nombre de usuario (solo demo)
-    const role = username.toLowerCase().includes('admin') ? 'Administrador' : 'Usuario'
-    login({ username, role })
-    // Redirigir según rol
-    if (role === 'Administrador') navigate('/admin')
-    else navigate('/user')
+    
+    try {
+      // Llamada real al backend para verificar credenciales
+      const response = await fetch('http://localhost:3000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          email: username, // Usamos username como email
+          password: password
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const { usuario } = data.data;
+        login({ 
+          username: usuario.nombre, 
+          role: usuario.rol === 'admin' ? 'Administrador' : 'Usuario',
+          userId: usuario.id
+        });
+        
+        // Redirigir según rol
+        if (usuario.rol === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/user');
+        }
+      } else {
+        alert('Credenciales inválidas: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error en login:', error);
+      alert('Error de conexión con el servidor');
+    }
   };
 
   const handleLogoClick = (e) => {
@@ -115,15 +146,15 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Usuario Corporativo
+                Email
               </label>
               <input
-                type="text"
+                type="email"
                 placeholder="usuario@empresa.com"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full px-4 py-3 border border-slate-300 rounded-lg text-base outline-none bg-white text-slate-800 transition-all focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 hover:border-slate-400"
-                autoComplete="username"
+                autoComplete="email"
                 required
               />
             </div>

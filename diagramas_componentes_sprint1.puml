@@ -1,0 +1,755 @@
+@startuml diagramas_componentes_sprint1
+
+!define COMPONENT component
+!define INTERFACE interface
+!define DATABASE database
+
+title **🏗️ DIAGRAMAS DE COMPONENTES POR HISTORIA DE USUARIO**\n//Sprint 1 - Sistema UlStorage//
+
+skinparam componentStyle rectangle
+skinparam component {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    ArrowColor #A23B72
+}
+
+skinparam interface {
+    BackgroundColor #FFF3CD
+    BorderColor #856404
+}
+
+skinparam database {
+    BackgroundColor #D1ECF1
+    BorderColor #0C5460
+}
+
+' ===============================
+' SCRUM-5: INICIAR SESIÓN
+' ===============================
+!startsub SCRUM5
+
+package "🔐 SCRUM-5: Iniciar Sesión" as scrum5 {
+    
+    ' Frontend Components
+    package "🖥️ Frontend" as scrum5_frontend {
+        COMPONENT [📱 Componente Login] as login_comp
+        COMPONENT [📝 Formulario Login] as login_form
+        COMPONENT [⚠️ Manejador Errores] as error_handler
+    }
+    
+    ' Backend Components  
+    package "🔧 Backend" as scrum5_backend {
+        COMPONENT [🔐 Controlador Login] as auth_ctrl
+        COMPONENT [� Validador Credenciales] as credential_validator
+        COMPONENT [🔑 Comparador Contraseña] as pwd_validator
+    }
+    
+    ' Data Layer
+    package "🗄️ Data" as scrum5_data {
+        COMPONENT [👤 Repositorio Usuario] as user_repo
+        COMPONENT [👤 Modelo Usuario] as user_model
+        DATABASE "🐘 PostgreSQL" as db_users
+    }
+    
+    ' Flujo de componentes simplificado
+    login_comp --> login_form
+    login_form --> auth_ctrl
+    auth_ctrl --> credential_validator
+    credential_validator --> pwd_validator
+    credential_validator --> user_repo
+    user_repo --> user_model
+    user_model --> db_users
+    
+    ' Error handling
+    auth_ctrl --> error_handler
+    credential_validator --> error_handler
+}
+
+note right of scrum5 : **Criterio de Aceptación:**\nVerificación simple de email y contraseña\ncontra datos guardados en BD.\nSin tokens ni middleware complejo.
+
+!endsub
+
+' ===============================
+' SCRUM-6: CERRAR SESIÓN
+' ===============================
+!startsub SCRUM6
+
+package "🚪 SCRUM-6: Cerrar Sesión" as scrum6 {
+    
+    ' Frontend Components
+    package "🖥️ Frontend" as scrum6_frontend {
+        COMPONENT [🚪 Botón Cerrar Sesión] as logout_btn
+        COMPONENT [🔄 Manejador Redirección] as redirect_handler
+        COMPONENT [🧹 Limpiador Sesión] as session_cleaner
+    }
+    
+    ' Backend Components
+    package "🔧 Backend" as scrum6_backend {
+        COMPONENT [� Controlador Logout] as logout_ctrl
+        COMPONENT [📝 Logger Básico] as logout_log
+    }
+    
+    ' Data Layer
+    package "🗄️ Data" as scrum6_data {
+        DATABASE "🐘 PostgreSQL" as db_sessions
+    }
+    
+    ' Flujo de componentes simplificado
+    logout_btn --> logout_ctrl
+    logout_ctrl --> session_cleaner
+    logout_ctrl --> logout_log
+    logout_ctrl --> redirect_handler
+    logout_log --> db_sessions
+    
+}
+
+note right of scrum6 : **Criterio de Aceptación:**\nCerrar sesión simple limpiando\nsesión local sin manejo de tokens
+
+!endsub
+
+' ===============================
+' SCRUM-10: PANEL PRINCIPAL
+' ===============================
+!startsub SCRUM10
+
+package "📊 SCRUM-10: Panel Principal de Navegación" as scrum10 {
+    
+    ' Frontend Components (Arquitectura Real)
+    package "🖥️ Frontend" as scrum10_frontend {
+        COMPONENT [📊 DashUser/DashAdmin] as dashboard
+        COMPONENT [📁 ActiveFilesTable] as file_list
+        COMPONENT [🗂️ Árbol Carpetas] as folder_tree
+        COMPONENT [📈 GlobalMetrics] as metrics_panel
+        COMPONENT [👤 UserHeader] as user_header
+        COMPONENT [⚡ QuickActions] as quick_actions
+        COMPONENT [�️ ServersStatus] as servers_status
+    }
+    
+    ' Backend Components
+    package "🔧 Backend" as scrum10_backend {
+        COMPONENT [📄 Controlador Archivo] as file_ctrl
+        COMPONENT [📁 Controlador Carpeta] as folder_ctrl
+        COMPONENT [📊 Servicio Dashboard] as dash_svc
+        COMPONENT [📈 Servicio Métricas] as metrics_svc
+        COMPONENT [🗂️ Servicio Navegación] as nav_svc
+        COMPONENT [☁️ Controlador Proveedor] as provider_ctrl
+    }
+    
+    ' Data Layer
+    package "🗄️ Data" as scrum10_data {
+        COMPONENT [📄 Repositorio Archivo] as file_repo_dash
+        COMPONENT [📁 Repositorio Carpeta] as folder_repo_dash
+        COMPONENT [📊 Repositorio Métricas] as metrics_repo
+        DATABASE "🐘 PostgreSQL" as db_files
+    }
+    
+    ' Cloud Storage Multi-Proveedor
+    package "☁️ Storage" as scrum10_storage {
+        COMPONENT [🏭 Fábrica Almacenamiento] as storage_factory
+        COMPONENT [🅾️ Repositorio OCI] as oci_provider
+        COMPONENT [🟠 Repositorio AWS] as aws_provider
+        COMPONENT [🔵 Repositorio Azure] as azure_provider
+        COMPONENT [🟢 Repositorio GCP] as gcp_provider
+    }
+    
+    ' Flujo principal (Componentes Reales)
+    dashboard --> user_header
+    dashboard --> metrics_panel
+    dashboard --> quick_actions
+    dashboard --> file_list
+    dashboard --> servers_status
+    
+    file_list --> file_ctrl
+    folder_tree --> folder_ctrl
+    metrics_panel --> dash_svc
+    
+    file_ctrl --> dash_svc
+    folder_ctrl --> dash_svc
+    dash_svc --> metrics_svc
+    dash_svc --> nav_svc
+    
+    dash_svc --> file_repo_dash
+    dash_svc --> folder_repo_dash
+    metrics_svc --> metrics_repo
+    
+    file_repo_dash --> db_files
+    folder_repo_dash --> db_files
+    metrics_repo --> db_files
+    
+    dash_svc --> provider_ctrl
+    provider_ctrl --> storage_factory
+    storage_factory --> oci_provider
+    storage_factory --> aws_provider
+    storage_factory --> azure_provider
+    storage_factory --> gcp_provider
+}
+
+note right of scrum10 : **Criterio de Aceptación:**\nDashboard con vista general,\nlistado de archivos y navegación intuitiva\n\n**Arquitectura Multi-Cloud:**\n• AWS S3 para almacenamiento rápido\n• Azure Blob para integración empresarial\n• GCP Storage para analytics\n• OCI para costos optimizados\n• Factory Pattern para abstracción
+
+!endsub
+
+' ===============================
+' SCRUM-11: ACCIONES BÁSICAS
+' ===============================
+!startsub SCRUM11
+
+package "⚡ SCRUM-11: Acciones Básicas del Panel" as scrum11 {
+    
+    ' Frontend Components
+    package "🖥️ Frontend" as scrum11_frontend {
+        COMPONENT [🔘 Botones Acción] as action_buttons
+        COMPONENT [📤 Botón Subir] as upload_btn
+        COMPONENT [📁 Botón Crear Carpeta] as create_folder_btn
+        COMPONENT [🔍 Botón Búsqueda] as search_btn
+        COMPONENT [💡 Proveedor Tooltip] as tooltip_provider
+    }
+    
+    ' Routing Components
+    package "🛣️ Navigation" as scrum11_nav {
+        COMPONENT [🧭 Enrutador] as router
+        COMPONENT [🔗 Manejador Rutas] as route_handler
+    }
+    
+    ' Flujo de componentes
+    action_buttons --> upload_btn
+    action_buttons --> create_folder_btn
+    action_buttons --> search_btn
+    action_buttons --> tooltip_provider
+    
+    upload_btn --> router : "/upload"
+    create_folder_btn --> router : "/create-folder"
+    search_btn --> router : "/search"
+    
+    router --> route_handler
+}
+
+note right of scrum11 : **Criterio de Aceptación:**\nBotones de acciones principales visibles,\nnavegación responsive y tooltips
+
+!endsub
+
+' ===============================
+' SCRUM-12: SUBIR ARCHIVOS
+' ===============================
+!startsub SCRUM12
+
+package "📤 SCRUM-12: Subir Archivos" as scrum12 {
+    
+    ' Frontend Components
+    package "🖥️ Frontend" as scrum12_frontend {
+        COMPONENT [📤 Componente Subir] as upload_comp
+        COMPONENT [📁 Selector Archivo] as file_selector
+        COMPONENT [📊 Barra Progreso] as progress_bar
+        COMPONENT [✅ Validador Archivo] as file_validator_fe
+        COMPONENT [📋 Cola Subida] as upload_queue
+    }
+    
+    ' Backend Components
+    package "🔧 Backend" as scrum12_backend {
+        COMPONENT [📤 Controlador Subida] as upload_ctrl
+        COMPONENT [🔍 Validador Archivo] as file_validator_be
+        COMPONENT [📄 Servicio Archivo] as file_svc
+        COMPONENT [🏷️ Extractor Metadatos] as metadata_extractor
+        COMPONENT [🔄 Procesador Subida] as upload_processor
+    }
+    
+    ' Storage Layer Multi-Cloud
+    package "☁️ Storage" as scrum12_storage {
+        COMPONENT [🏭 Fábrica Almacenamiento] as storage_fact
+        COMPONENT [🅾️ Repositorio OCI] as oci_repo
+        COMPONENT [🟠 Repositorio AWS] as aws_repo
+        COMPONENT [🔵 Repositorio Azure] as azure_repo
+        COMPONENT [🟢 Repositorio GCP] as gcp_repo
+    }
+    
+    ' Data Layer
+    package "🗄️ Data" as scrum12_data {
+        COMPONENT [📄 Repositorio Archivo] as file_repo_up
+        COMPONENT [📝 Logger Básico] as log_repo
+        DATABASE "🐘 PostgreSQL" as db_upload
+    }
+    
+    ' Flujo completo de subida
+    upload_comp --> file_selector
+    file_selector --> file_validator_fe
+    file_validator_fe --> upload_queue
+    upload_queue --> progress_bar
+    
+    upload_comp --> upload_ctrl
+    upload_ctrl --> file_validator_be
+    file_validator_be --> upload_processor
+    upload_processor --> file_svc
+    upload_processor --> metadata_extractor
+    
+    file_svc --> storage_fact
+    storage_fact --> oci_repo
+    storage_fact --> aws_repo
+    storage_fact --> azure_repo
+    storage_fact --> gcp_repo
+    
+    file_svc --> file_repo_up
+    file_svc --> log_repo
+    file_repo_up --> db_upload
+    log_repo --> db_upload
+    
+    ' Feedback al frontend
+    upload_processor --> progress_bar
+}
+
+note right of scrum12 : **Criterio de Aceptación:**\nSubir archivos con barra de progreso,\nvalidación de tamaño y tipo
+
+!endsub
+
+' ===============================
+' SCRUM-13: DESCARGAR ARCHIVOS
+' ===============================
+!startsub SCRUM13
+
+package "📥 SCRUM-13: Descargar Archivos" as scrum13 {
+    
+    ' Frontend Components
+    package "🖥️ Frontend" as scrum13_frontend {
+        COMPONENT [📥 Botón Descargar] as download_btn
+        COMPONENT [📊 Progreso Descarga] as download_progress
+        COMPONENT [🔗 Gestor Descarga] as download_mgr
+    }
+    
+    ' Backend Components
+    package "🔧 Backend" as scrum13_backend {
+        COMPONENT [📥 Controlador Descarga] as download_ctrl
+        COMPONENT [👤 Validador Propietario] as perm_validator
+        COMPONENT [📄 Servicio Archivo] as file_svc_down
+        COMPONENT [🔄 Manejador Stream] as stream_handler
+    }
+    
+    ' Storage Layer Multi-Cloud
+    package "☁️ Storage" as scrum13_storage {
+        COMPONENT [🏭 Fábrica Almacenamiento] as storage_fact_down
+        COMPONENT [🅾️ Repositorio OCI] as oci_repo_down
+        COMPONENT [🟠 Repositorio AWS] as aws_repo_down
+        COMPONENT [🔵 Repositorio Azure] as azure_repo_down
+        COMPONENT [🟢 Repositorio GCP] as gcp_repo_down
+    }
+    
+    ' Data Layer
+    package "🗄️ Data" as scrum13_data {
+        COMPONENT [📄 Repositorio Archivo] as file_repo_down
+        COMPONENT [📝 Logger Básico] as log_repo_down
+        DATABASE "🐘 PostgreSQL" as db_download
+    }
+    
+    ' Flujo de descarga
+    download_btn --> download_ctrl
+    download_ctrl --> perm_validator
+    perm_validator --> file_svc_down
+    file_svc_down --> storage_fact_down
+    storage_fact_down --> oci_repo_down
+    storage_fact_down --> aws_repo_down
+    storage_fact_down --> azure_repo_down
+    storage_fact_down --> gcp_repo_down
+    
+    file_svc_down --> stream_handler
+    stream_handler --> download_mgr
+    download_mgr --> download_progress
+    
+    file_svc_down --> file_repo_down
+    file_svc_down --> log_repo_down
+    file_repo_down --> db_download
+    log_repo_down --> db_download
+}
+
+note right of scrum13 : **Criterio de Aceptación:**\nDescargar archivos sin pérdida de calidad,\nmanejo de archivos grandes
+
+!endsub
+
+' ===============================
+' SCRUM-14: PREVISUALIZAR ARCHIVOS
+' ===============================
+!startsub SCRUM14
+
+package "👁️ SCRUM-14: Previsualizar Archivos" as scrum14 {
+    
+    ' Frontend Components
+    package "🖥️ Frontend" as scrum14_frontend {
+        COMPONENT [👁️ Componente Vista Previa] as preview_comp
+        COMPONENT [📄 Visor PDF] as pdf_viewer
+        COMPONENT [🖼️ Visor Imagen] as image_viewer
+        COMPONENT [📝 Visor Texto] as text_viewer
+        COMPONENT [🔄 Fábrica Visor] as viewer_factory
+        COMPONENT [🎛️ Controles Vista Previa] as preview_controls
+    }
+    
+    ' Backend Components
+    package "🔧 Backend" as scrum14_backend {
+        COMPONENT [👁️ Controlador Vista Previa] as preview_ctrl
+        COMPONENT [👤 Validador Propietario] as perm_val_prev
+        COMPONENT [📄 Servicio Vista Previa] as preview_svc
+        COMPONENT [🔄 Generador Miniatura] as thumbnail_gen
+        COMPONENT [📋 Detector Tipo MIME] as mime_detector
+    }
+    
+    ' Storage Layer Multi-Cloud
+    package "☁️ Storage" as scrum14_storage {
+        COMPONENT [🏭 Fábrica Almacenamiento] as storage_fact_prev
+        COMPONENT [🅾️ Repositorio OCI] as oci_repo_prev
+        COMPONENT [🟠 Repositorio AWS] as aws_repo_prev
+        COMPONENT [🔵 Repositorio Azure] as azure_repo_prev
+        COMPONENT [🟢 Repositorio GCP] as gcp_repo_prev
+    }
+    
+    ' Data Layer
+    package "🗄️ Data" as scrum14_data {
+        COMPONENT [📄 Repositorio Archivo] as file_repo_prev
+        DATABASE "🐘 PostgreSQL" as db_preview
+    }
+    
+    ' Flujo de previsualización
+    preview_comp --> viewer_factory
+    viewer_factory --> pdf_viewer
+    viewer_factory --> image_viewer
+    viewer_factory --> text_viewer
+    preview_comp --> preview_controls
+    
+    preview_comp --> preview_ctrl
+    preview_ctrl --> perm_val_prev
+    preview_ctrl --> preview_svc
+    preview_svc --> mime_detector
+    preview_svc --> thumbnail_gen
+    
+    preview_svc --> storage_fact_prev
+    storage_fact_prev --> oci_repo_prev
+    storage_fact_prev --> aws_repo_prev
+    storage_fact_prev --> azure_repo_prev
+    storage_fact_prev --> gcp_repo_prev
+    
+    preview_svc --> file_repo_prev
+    file_repo_prev --> db_preview
+}
+
+note right of scrum14 : **Criterio de Aceptación:**\nVisor integrado para PDF, imágenes y texto,\nnavegación entre páginas
+
+!endsub
+
+' ===============================
+' SCRUM-15: ELIMINAR ARCHIVOS
+' ===============================
+!startsub SCRUM15
+
+package "🗑️ SCRUM-15: Eliminar Archivos" as scrum15 {
+    
+    ' Frontend Components
+    package "🖥️ Frontend" as scrum15_frontend {
+        COMPONENT [🗑️ Botón Eliminar] as delete_btn
+        COMPONENT [⚠️ Modal Confirmación] as confirm_modal
+        COMPONENT [🔄 Manejador Actualización] as refresh_handler
+    }
+    
+    ' Backend Components
+    package "🔧 Backend" as scrum15_backend {
+        COMPONENT [🗑️ Controlador Eliminar] as delete_ctrl
+        COMPONENT [👤 Validador Propietario] as perm_val_del
+        COMPONENT [📄 Servicio Archivo] as file_svc_del
+        COMPONENT [🧹 Servicio Limpieza] as cleanup_svc
+    }
+    
+    ' Storage Layer Multi-Cloud
+    package "☁️ Storage" as scrum15_storage {
+        COMPONENT [🏭 Fábrica Almacenamiento] as storage_fact_del
+        COMPONENT [🅾️ Repositorio OCI] as oci_repo_del
+        COMPONENT [🟠 Repositorio AWS] as aws_repo_del
+        COMPONENT [🔵 Repositorio Azure] as azure_repo_del
+        COMPONENT [🟢 Repositorio GCP] as gcp_repo_del
+    }
+    
+    ' Data Layer
+    package "🗄️ Data" as scrum15_data {
+        COMPONENT [📄 Repositorio Archivo] as file_repo_del
+        COMPONENT [📝 Logger Básico] as log_repo_del
+        DATABASE "🐘 PostgreSQL" as db_delete
+    }
+    
+    ' Flujo de eliminación
+    delete_btn --> confirm_modal
+    confirm_modal --> delete_ctrl
+    delete_ctrl --> perm_val_del
+    delete_ctrl --> file_svc_del
+    file_svc_del --> cleanup_svc
+    
+    cleanup_svc --> storage_fact_del
+    storage_fact_del --> oci_repo_del
+    storage_fact_del --> aws_repo_del
+    storage_fact_del --> azure_repo_del
+    storage_fact_del --> gcp_repo_del
+    
+    cleanup_svc --> file_repo_del
+    cleanup_svc --> log_repo_del
+    file_repo_del --> db_delete
+    log_repo_del --> db_delete
+    
+    delete_ctrl --> refresh_handler
+}
+
+note right of scrum15 : **Criterio de Aceptación:**\nConfirmación antes de eliminar,\nactualización automática de vista
+
+!endsub
+
+' ===============================
+' SCRUM-17: CREAR CARPETAS
+' ===============================
+!startsub SCRUM17
+
+package "📁 SCRUM-17: Crear Carpetas" as scrum17 {
+    
+    ' Frontend Components
+    package "🖥️ Frontend" as scrum17_frontend {
+        COMPONENT [📁 Botón Crear Carpeta] as create_btn
+        COMPONENT [📝 Modal Nombre Carpeta] as name_modal
+        COMPONENT [✅ Validador Carpeta] as folder_validator_fe
+    }
+    
+    ' Backend Components
+    package "🔧 Backend" as scrum17_backend {
+        COMPONENT [📁 Controlador Carpeta] as folder_ctrl_create
+        COMPONENT [✅ Validador Nombre] as name_validator
+        COMPONENT [📁 Servicio Carpeta] as folder_svc
+        COMPONENT [🔍 Verificador Duplicados] as duplicate_checker
+    }
+    
+    ' Storage Layer Multi-Cloud
+    package "☁️ Storage" as scrum17_storage {
+        COMPONENT [🏭 Fábrica Almacenamiento] as storage_fact_folder
+        COMPONENT [🅾️ Repositorio OCI] as oci_repo_folder
+        COMPONENT [🟠 Repositorio AWS] as aws_repo_folder
+        COMPONENT [🔵 Repositorio Azure] as azure_repo_folder
+        COMPONENT [🟢 Repositorio GCP] as gcp_repo_folder
+    }
+    
+    ' Data Layer
+    package "🗄️ Data" as scrum17_data {
+        COMPONENT [📁 Repositorio Carpeta] as folder_repo_create
+        DATABASE "🐘 PostgreSQL" as db_folder
+    }
+    
+    ' Flujo de creación de carpeta
+    create_btn --> name_modal
+    name_modal --> folder_validator_fe
+    folder_validator_fe --> folder_ctrl_create
+    folder_ctrl_create --> name_validator
+    name_validator --> duplicate_checker
+    duplicate_checker --> folder_svc
+    
+    folder_svc --> storage_fact_folder
+    storage_fact_folder --> oci_repo_folder
+    storage_fact_folder --> aws_repo_folder
+    storage_fact_folder --> azure_repo_folder
+    storage_fact_folder --> gcp_repo_folder
+    
+    folder_svc --> folder_repo_create
+    folder_repo_create --> db_folder
+}
+
+note right of scrum17 : **Criterio de Aceptación:**\nCrear carpetas con nombres válidos,\nvalidación de duplicados
+
+!endsub
+
+' ===============================
+' SCRUM-18: ORDENAR ARCHIVOS
+' ===============================
+!startsub SCRUM18
+
+package "🔤 SCRUM-18: Ordenar Archivos" as scrum18 {
+    
+    ' Frontend Components
+    package "🖥️ Frontend" as scrum18_frontend {
+        COMPONENT [🔤 Controles Ordenar] as sort_controls
+        COMPONENT [📊 Encabezado Tabla] as table_header
+        COMPONENT [🗂️ Cambiador Vista] as view_switcher
+        COMPONENT [🔍 Panel Filtro] as filter_panel
+        COMPONENT [💾 Persistencia Orden] as sort_persistence
+    }
+    
+    ' Backend Components
+    package "🔧 Backend" as scrum18_backend {
+        COMPONENT [🔤 Controlador Orden] as sort_ctrl
+        COMPONENT [🔍 Constructor Consulta] as query_builder
+        COMPONENT [📊 Servicio Ordenar] as sort_svc
+        COMPONENT [📄 Servicio Archivo] as file_svc_sort
+    }
+    
+    ' Data Layer
+    package "🗄️ Data" as scrum18_data {
+        COMPONENT [📄 Repositorio Archivo] as file_repo_sort
+        COMPONENT [🔍 Repositorio Búsqueda] as search_repo
+        DATABASE "🐘 PostgreSQL" as db_sort
+    }
+    
+    ' Flujo de ordenamiento
+    sort_controls --> table_header
+    table_header --> sort_ctrl
+    view_switcher --> sort_ctrl
+    filter_panel --> sort_ctrl
+    
+    sort_ctrl --> query_builder
+    query_builder --> sort_svc
+    sort_svc --> file_svc_sort
+    
+    file_svc_sort --> file_repo_sort
+    file_svc_sort --> search_repo
+    file_repo_sort --> db_sort
+    search_repo --> db_sort
+    
+    sort_ctrl --> sort_persistence
+}
+
+note right of scrum18 : **Criterio de Aceptación:**\nOrdenar por nombre, fecha, tamaño, tipo.\nFiltros persistentes durante sesión
+
+!endsub
+
+' ===============================
+' SCRUM-28: BÚSQUEDA DE ARCHIVOS
+' ===============================
+!startsub SCRUM28
+
+package "🔍 SCRUM-28: Búsqueda de Archivos" as scrum28 {
+    
+    ' Frontend Components
+    package "🖥️ Frontend" as scrum28_frontend {
+        COMPONENT [🔍 Componente Búsqueda] as search_comp
+        COMPONENT [📝 Campo Búsqueda] as search_input
+        COMPONENT [🎛️ Controles Filtro] as filter_controls
+        COMPONENT [📋 Lista Resultados] as results_list
+        COMPONENT [⚡ Búsqueda Tiempo Real] as realtime_search
+    }
+    
+    ' Backend Components
+    package "🔧 Backend" as scrum28_backend {
+        COMPONENT [🔍 Controlador Búsqueda] as search_ctrl
+        COMPONENT [🔍 Servicio Búsqueda] as search_svc
+        COMPONENT [📊 Servicio Indexación] as indexing_svc
+        COMPONENT [🎯 Optimizador Consulta] as query_optimizer
+    }
+    
+    ' Data Layer
+    package "🗄️ Data" as scrum28_data {
+        COMPONENT [🔍 Repositorio Búsqueda] as search_repo_main
+        COMPONENT [📊 Repositorio Índice] as index_repo
+        DATABASE "🐘 PostgreSQL" as db_search
+    }
+    
+    ' Flujo de búsqueda
+    search_comp --> search_input
+    search_input --> realtime_search
+    search_comp --> filter_controls
+    filter_controls --> search_ctrl
+    realtime_search --> search_ctrl
+    
+    search_ctrl --> search_svc
+    search_svc --> query_optimizer
+    query_optimizer --> indexing_svc
+    
+    search_svc --> search_repo_main
+    indexing_svc --> index_repo
+    search_repo_main --> db_search
+    index_repo --> db_search
+    
+    search_svc --> results_list
+}
+
+note right of scrum28 : **Criterio de Aceptación:**\nBúsqueda por nombre y tipo de archivo,\nresultados en tiempo real
+
+!endsub
+
+' ===============================
+' SCRUM-29: IMPRIMIR ARCHIVOS
+' ===============================
+!startsub SCRUM29
+
+package "🖨️ SCRUM-29: Imprimir Archivos" as scrum29 {
+    
+    ' Frontend Components
+    package "🖥️ Frontend" as scrum29_frontend {
+        COMPONENT [🖨️ Botón Imprimir] as print_btn
+        COMPONENT [⚙️ Diálogo Imprimir] as print_dialog
+        COMPONENT [📄 Vista Previa Impresión] as print_preview
+        COMPONENT [🎛️ Configuración Impresión] as print_settings
+    }
+    
+    ' Backend Components
+    package "🔧 Backend" as scrum29_backend {
+        COMPONENT [🖨️ Controlador Impresión] as print_ctrl
+        COMPONENT [📄 Servicio Impresión] as print_svc
+        COMPONENT [🔄 Convertidor Formato] as format_converter
+        COMPONENT [📊 Generador Imprimible] as printable_gen
+    }
+    
+    ' Browser API
+    package "🌐 Browser" as scrum29_browser {
+        COMPONENT [🖨️ API Impresión Navegador] as browser_print
+        COMPONENT [📄 Renderizador Documento] as doc_renderer
+    }
+    
+    ' Flujo de impresión
+    print_btn --> print_dialog
+    print_dialog --> print_settings
+    print_settings --> print_preview
+    print_preview --> print_ctrl
+    
+    print_ctrl --> print_svc
+    print_svc --> format_converter
+    format_converter --> printable_gen
+    
+    printable_gen --> doc_renderer
+    doc_renderer --> browser_print
+}
+
+note right of scrum29 : **Criterio de Aceptación:**\nImprimir desde vista previa,\nsoporte para PDF e imágenes
+
+!endsub
+
+' ===============================
+' RELACIONES ENTRE HISTORIAS
+' ===============================
+package "🔗 DEPENDENCIAS ENTRE HISTORIAS" as dependencies {
+    
+    scrum5 .down.> scrum10 : "Requiere autenticación"
+    scrum10 .down.> scrum11 : "Panel base para acciones"
+    scrum11 .down.> scrum12 : "Botón subir archivo"
+    scrum12 .down.> scrum14 : "Archivos para previsualizar"
+    scrum12 .down.> scrum15 : "Archivos para eliminar"
+    scrum17 .down.> scrum18 : "Carpetas para ordenar"
+    scrum18 .down.> scrum28 : "Estructura para búsqueda"
+    scrum14 .down.> scrum29 : "Vista previa para imprimir"
+}
+
+' ===============================
+' LEYENDA ARQUITECTÓNICA
+' ===============================
+legend bottom left
+|= Símbolo |= Significado |= Patrón Aplicado |
+|🔐| Verificación Credenciales | Comparación Simple |
+|📤📥| Gestión Archivos | Patrón Repository |
+|📊| Panel Control/Métricas | Patrón Facade |
+|🏭| Fábrica Multi-Cloud | Patrón Factory |
+|🔍| Búsqueda | Patrón Observer |
+|👤| Validación Propietario | Patrón Decorator |
+|📝| Logging Básico | Logger Simple |
+|🅾️| Oracle Cloud (OCI) | Repository Pattern |
+|🟠| Amazon Web Services | Repository Pattern |
+|🔵| Microsoft Azure | Repository Pattern |
+|🟢| Google Cloud Platform | Repository Pattern |
+
+**🏗️ Principios SOLID aplicados en Sprint 1:**
+• **S**RP: Cada componente tiene una responsabilidad específica
+• **O**CP: Extensible para nuevos tipos de archivo/almacenamiento
+• **L**SP: Las interfaces permiten intercambiar implementaciones
+• **I**SP: Interfaces específicas por funcionalidad
+• **D**IP: Dependencias hacia abstracciones, no concreciones
+
+**📋 Nota Sprint 1:** 
+• Sistema básico sin roles/permisos avanzados
+• Validaciones de propietario únicamente
+• Autenticación simple: verificación email/password vs BD
+• Sin JWT, tokens, ni middleware de autenticación
+• Arquitectura multi-cloud: AWS, Azure, GCP, OCI
+endlegend
+
+@enduml

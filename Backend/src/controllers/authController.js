@@ -1,8 +1,12 @@
-const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
 const Usuario = require('../db/models/usuario');
-const { Op } = require('sequelize');
 
+/**
+ * Controlador de autenticación simplificado para Sprint 1
+ * - Solo verifica credenciales contra la base de datos
+ * - Sin JWT tokens, middleware o sesiones complejas
+ * - Autenticación básica: email/password vs BD
+ */
 class AuthController {
   
   // Registrar nuevo usuario
@@ -43,23 +47,11 @@ class AuthController {
         activo: true
       });
 
-      // Generar token JWT
-      const token = jwt.sign(
-        { 
-          id: nuevoUsuario.id, 
-          email: nuevoUsuario.email,
-          rol: nuevoUsuario.rol 
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-      );
-
       res.status(201).json({
         success: true,
         message: 'Usuario registrado exitosamente',
         data: {
-          usuario: nuevoUsuario.toPublicJSON(),
-          token
+          usuario: nuevoUsuario.toPublicJSON()
         }
       });
 
@@ -123,23 +115,11 @@ class AuthController {
         ultimo_login: new Date()
       });
 
-      // Generar token JWT
-      const token = jwt.sign(
-        { 
-          id: usuario.id, 
-          email: usuario.email,
-          rol: usuario.rol 
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-      );
-
       res.json({
         success: true,
         message: 'Login exitoso',
         data: {
-          usuario: usuario.toPublicJSON(),
-          token
+          usuario: usuario.toPublicJSON()
         }
       });
 
@@ -153,10 +133,11 @@ class AuthController {
     }
   }
 
-  // Obtener perfil del usuario actual
+  // Obtener usuario por ID (sin middleware de autenticación)
   static async getProfile(req, res) {
     try {
-      const usuario = await Usuario.findByPk(req.user.id);
+      const { userId } = req.params;
+      const usuario = await Usuario.findByPk(userId);
       
       if (!usuario) {
         return res.status(404).json({
@@ -181,13 +162,12 @@ class AuthController {
     }
   }
 
-  // Logout (para invalidar tokens si usas blacklist)
+  // Logout simple (sin manejo de tokens)
   static async logout(req, res) {
     try {
-      // Aquí podrías implementar una blacklist de tokens si lo necesitas
       res.json({
         success: true,
-        message: 'Logout exitoso'
+        message: 'Sesión cerrada exitosamente'
       });
     } catch (error) {
       console.error('Error en logout:', error);
