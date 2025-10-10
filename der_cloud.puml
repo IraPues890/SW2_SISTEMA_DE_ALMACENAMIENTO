@@ -77,6 +77,7 @@ package "Archivos" {
     +getEtiquetas(): List<Etiqueta>
     +previsualizar(): Object
     +descargar(): binary
+    +imprimir(): void
   }
 
   class Version {
@@ -98,6 +99,8 @@ package "Gestión" {
     +listarArchivos(carpeta: Carpeta): List<Archivo>
     +previsualizarArchivo(archivo: Archivo): Object
     +descargarArchivo(archivo: Archivo): binary
+    +buscarArchivos(query: string, carpeta: Carpeta): List<Archivo>
+    +imprimirArchivo(archivo: Archivo): void
   }
 
   class GestorCarpetas <<Facade>> {
@@ -313,6 +316,22 @@ ProveedorFactory ..> ProveedorAlmacenamiento : "crea"
 ProveedorAlmacenamiento <|-- OCIStorage : "extiende"
 ProveedorAlmacenamiento <|-- AWSStorage : "extiende" 
 ProveedorAlmacenamiento <|-- GCPStorage : "extiende"
+
+' Servicios adicionales
+package "Servicios" {
+  class BuscadorService {
+    +buscar(query: string, carpeta: Carpeta): List<Archivo>
+  }
+
+  class PrintService {
+    +imprimir(archivo: Archivo): void
+  }
+}
+
+' Relaciones con servicios
+GestorArchivos ..> BuscadorService : "usa"
+GestorArchivos ..> PrintService : "usa"
+PrintService ..> Archivo : "imprime"
 
 ' Posicionamiento visual (layout hints)
 Usuario -[hidden]-> GestorArchivos

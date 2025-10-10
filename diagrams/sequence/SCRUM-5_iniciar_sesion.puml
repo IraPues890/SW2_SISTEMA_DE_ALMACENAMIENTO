@@ -5,6 +5,7 @@ actor Usuario
 participant "Plataforma web" as Frontend
 participant "Backend / Auth API" as Backend
 participant "Auth Service" as AuthService
+participant "DB Usuarios" as DB
 
 activate Usuario
 Usuario -> Frontend: 1. Abrir formulario de login
@@ -13,11 +14,15 @@ Frontend -> Backend: 2. Enviar credenciales {email, password}
 activate Backend
 Backend -> AuthService: 3. Verificar credenciales
 activate AuthService
-AuthService --> Backend: 4. Resultado verificación OK
+AuthService -> DB: 4. Consultar y comparar credenciales
+activate DB
+DB --> AuthService: 5. Resultado (match: true/false)
+deactivate DB
+AuthService --> Backend: 6. Resultado verificación OK/FAIL
 deactivate AuthService
-Backend --> Frontend: 5. 200 OK {token, userInfo}
+Backend --> Frontend: 7. 200 OK {userInfo, authenticated=true} / 401
 deactivate Backend
-Frontend -> Usuario: 6. Mostrar dashboard (guardar token)
+Frontend -> Usuario: 8. Mostrar dashboard (no almacenar tokens)
 deactivate Frontend
 deactivate Usuario
 @enduml
