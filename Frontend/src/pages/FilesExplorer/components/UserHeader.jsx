@@ -1,9 +1,9 @@
 import React from 'react'
 
-export default function UserHeader({ name, role, type }) {
+export function UserHeader({ name, role, type }) {
   return (
     <header className="bg-white/10 backdrop-blur-md border-b border-white/20 shadow-lg">
-      <div className="w-full px-4 lg:px-6 py-4">
+      <div className="max-w-7xl mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
@@ -21,5 +21,5 @@ export default function UserHeader({ name, role, type }) {
         </div>
       </div>
     </header>
-  )
+  );
 }
