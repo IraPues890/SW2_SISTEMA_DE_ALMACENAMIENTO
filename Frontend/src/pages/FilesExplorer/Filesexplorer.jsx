@@ -56,10 +56,10 @@ function ViewSwitch({ views, activeView, onChange }) {
 }
 
 // Componente para acciones de archivos
-function FileActions({ onCreateFolder, onUploadFile }) {
+function FileActions({ onCreateFolder, onUploadFile, onDownloadSelected }) {
   const actions = [
     { key: 'upload', icon: '📤', text: 'Subir archivo',     color: 'bg-gradient-to-r from-green-600 to-emerald-700', onClick: onUploadFile },
-    { key: 'download', icon: '📥', text: 'Descargar archivo', color: 'bg-gradient-to-r from-blue-600 to-cyan-700' },
+    { key: 'download', icon: '📥', text: 'Descargar archivo', color: 'bg-gradient-to-r from-blue-600 to-cyan-700', onClick: onDownloadSelected },
     { key: 'new-folder', icon: '➕', text: 'Crear carpeta',   color: 'bg-gradient-to-r from-yellow-600 to-orange-700', onClick: onCreateFolder },
     { key: 'organize', icon: '📂', text: 'Organizar carpetas', color: 'bg-gradient-to-r from-purple-600 to-indigo-700' }
   ];
@@ -286,6 +286,7 @@ function Filesexplorer() {
   const navigate = useNavigate()
   const [selectedFile, setSelectedFile] = useState(null)
   const [selectedPreviewUrl, setSelectedPreviewUrl] = useState(null)
+  const [selectedFileIds, setSelectedFileIds] = useState([]);
 
   // current folder (null = root)
   const [currentFolderId, setCurrentFolderId] = useState(null)
@@ -350,6 +351,35 @@ function Filesexplorer() {
   const totalPages = Math.max(1, Math.ceil(sortedFiltered.length / perPage))
   const pageItems = sortedFiltered.slice((page - 1) * perPage, page * perPage)
 
+  // Lógica de selección
+  const handleToggleSelection = (fileId) => {
+    setSelectedFileIds((prev) =>
+      prev.includes(fileId)
+        ? prev.filter((id) => id !== fileId)
+        : [...prev, fileId]
+    );
+  };
+
+  const handleToggleSelectAll = () => {
+    const currentPageIds = pageItems.map((f) => f.id);
+    const allSelectedOnPage = currentPageIds.every((id) => selectedFileIds.includes(id));
+
+    if (allSelectedOnPage) {
+      // Deseleccionar todos en la página actual
+      setSelectedFileIds((prev) => prev.filter((id) => !currentPageIds.includes(id)));
+    } else {
+      // Seleccionar todos en la página actual
+      const newIds = currentPageIds.filter((id) => !selectedFileIds.includes(id));
+      setSelectedFileIds((prev) => [...prev, ...newIds]);
+    }
+  };
+
+  const areAllOnPageSelected = useMemo(() => {
+    const currentPageIds = pageItems.map((f) => f.id);
+    return currentPageIds.length > 0 && currentPageIds.every((id) => selectedFileIds.includes(id));
+  }, [pageItems, selectedFileIds]);
+
+
   // Construir breadcrumb (lista de nodos desde root hasta current)
   const breadcrumbNodes = useMemo(() => {
     const nodes = [];
@@ -374,6 +404,7 @@ function Filesexplorer() {
     setSelectedFile(null)
     setSelectedPreviewUrl(null)
     setPage(1)
+    setSelectedFileIds([])
   }
 
   // Subir nivel (clic en breadcrumb)
@@ -382,6 +413,7 @@ function Filesexplorer() {
     setSelectedFile(null)
     setSelectedPreviewUrl(null)
     setPage(1)
+    setSelectedFileIds([])
   }
 
   function openSidePreview(f) {
@@ -409,6 +441,30 @@ function Filesexplorer() {
         currentPath: 'Raíz > Proyectos > 2025',
         returnTo: '/files-explorer' 
       } 
+    });
+  }
+
+  function handleDownloadSelected() {
+    if (selectedFileIds.length === 0) {
+      alert('Seleccionar al menos un archivo');
+      return;
+    }
+
+    selectedFileIds.forEach(fileId => {
+      const fileToDownload = files.find(f => f.id === fileId);
+      if (fileToDownload && fileToDownload.type !== 'folder') {
+        // Simulación de descarga
+        const content = `Archivo: ${fileToDownload.name}`;
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileToDownload.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
     });
   }
 
@@ -464,7 +520,7 @@ function Filesexplorer() {
       <div className="max-w-7xl mx-auto px-6 py-8">
         <Metrics totalFiles={files.length} usedSpace={'1.2 GB'} breadcrumb={breadcrumbString} />
         <ViewSwitch views={VIEWS} activeView={activeView} onChange={setActiveView} />
-        <FileActions onCreateFolder={handleCreateFolder} onUploadFile={handleUploadFile} />
+        <FileActions onCreateFolder={handleCreateFolder} onUploadFile={handleUploadFile} onDownloadSelected={handleDownloadSelected} />
 
         <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6">
           <div className="flex items-center justify-between mb-6">
@@ -518,6 +574,7 @@ function Filesexplorer() {
                   <table className="w-full">
                     <thead>
                       <tr className="border-b-2 border-slate-200 bg-slate-50">
+                        <th className="py-4 px-4 text-center w-12"/>
                         <th className="py-4 px-4 text-left font-semibold text-slate-700">Nombre</th>
                         <th className="py-4 px-4 text-left font-semibold text-slate-700">Tamaño (KB)</th>
                         <th className="py-4 px-4 text-left font-semibold text-slate-700">Fecha</th>
@@ -528,6 +585,15 @@ function Filesexplorer() {
                     <tbody>
                       {pageItems.map((f) => (
                         <tr key={f.id} className={`border-b border-slate-100 transition-colors ${selectedFile?.id === f.id ? 'bg-blue-50' : 'hover:bg-slate-50'}`}>
+                          <td className="py-4 px-4 text-center">
+                            <input 
+                              type="checkbox" 
+                              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                              aria-label={`Seleccionar archivo ${f.name}`}
+                              checked={selectedFileIds.includes(f.id)}
+                              onChange={() => handleToggleSelection(f.id)}
+                            />
+                          </td>
                           <td className="py-4 px-4">
                             <div className="flex items-center space-x-3">
                               <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
@@ -559,7 +625,7 @@ function Filesexplorer() {
                                   }}
                                   className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-700 text-white rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-1"
                                 >
-                                  📥 Descargar
+                                  📥
                                 </button>
                               )}
 
@@ -701,4 +767,3 @@ function Filesexplorer() {
 }
 
 export default Filesexplorer;
-// ...existing code...
