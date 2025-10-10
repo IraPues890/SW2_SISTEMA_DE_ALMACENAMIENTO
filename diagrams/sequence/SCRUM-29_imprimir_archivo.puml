@@ -1,25 +1,51 @@
 @startuml SCRUM-29_ImprimirArchivo
-title SCRUM-29: Imprimir archivo
+title SCRUM-29: Imprimir archivo (encolar y procesar)
 
 actor Usuario
 participant "Plataforma web" as Frontend
 participant "Backend / API" as Backend
+participant "GestorArchivos (Facade)" as Gestor
+participant "DB: PRINT_JOBS" as PrintJobsDB
+participant "PrintService (Worker)" as PrintService
 participant "Storage Provider" as Storage
 
 Usuario -> Frontend: 1. Click "Imprimir"
 activate Usuario
-Usuario -> Frontend: 1. Click "Imprimir"
 activate Frontend
-Frontend -> Backend: 2. GET /storage/:provider/preview?fileName=...
+Frontend -> Backend: 2. POST /storage/:provider/files/:id/print
 activate Backend
-Backend -> Storage: 3. Obtener URL/stream del archivo
-activate Storage
-Storage --> Backend: 4. URL o stream
-deactivate Storage
-Backend --> Frontend: 5. 200 {previewUrl}
+Backend -> Gestor: 3. imprimirArchivo(archivoId, usuario)
+activate Gestor
+Gestor -> PrintJobsDB: 4. INSERT PRINT_JOB (estado=queued)
+activate PrintJobsDB
+PrintJobsDB --> Gestor: 5. jobId
+deactivate PrintJobsDB
+Gestor --> Backend: 6. jobId
+deactivate Gestor
+Backend --> Frontend: 7. 202 {jobId}
 deactivate Backend
-Frontend -> Frontend: 6. Abrir preview (iframe) y llamar window.print()
-Frontend -> Usuario: 7. Mostrar diálogo de impresión
+Frontend -> Usuario: 8. Mostrar encolado (jobId)
 deactivate Frontend
 deactivate Usuario
+
+' Worker loop (async)
+PrintService -> PrintJobsDB: 9. Obtener next job (estado=queued)
+activate PrintService
+PrintJobsDB --> PrintService: 10. job details
+deactivate PrintJobsDB
+PrintService -> Storage: 11. Descargar archivo/stream
+activate Storage
+Storage --> PrintService: 12. Stream/bytes
+deactivate Storage
+PrintService -> PrintService: 13. Generar PDF / render
+PrintService -> Storage: 14. Guardar PDF en bucket (output_path)
+activate Storage
+Storage --> PrintService: 15. output_path
+deactivate Storage
+PrintService -> PrintJobsDB: 16. UPDATE PRINT_JOB (estado=done, output_path)
+PrintJobsDB --> PrintService: 17. OK
+deactivate PrintService
+
+PrintService -> Frontend: 18. Notificar usuario (webhook / websocket / email) [opcional]
+
 @enduml
