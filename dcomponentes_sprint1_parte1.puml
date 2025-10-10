@@ -1,0 +1,235 @@
+@startuml diagrama_sprint1_parte1
+
+title DIAGRAMAS DE COMPONENTES - PARTE 1\nSprint 1 - Sistema UlStorage\nHistorias: SCRUM-5, SCRUM-6, SCRUM-10, SCRUM-11
+
+skinparam componentStyle rectangle
+skinparam component {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    ArrowColor #A23B72
+}
+
+skinparam interface {
+    BackgroundColor #FFF3CD
+    BorderColor #856404
+}
+
+skinparam database {
+    BackgroundColor #D1ECF1
+    BorderColor #0C5460
+}
+
+' ===============================
+' SCRUM-5: INICIAR SESIÓN
+' ===============================
+package "SCRUM-5: Iniciar Sesión" as scrum5 {
+    
+    ' Frontend Components
+    package "Frontend" as scrum5_frontend {
+        component [Componente Login] as login_comp
+        component [Formulario Login] as login_form
+        component [Manejador Errores] as error_handler
+    }
+    
+    ' Backend Components  
+    package "Backend" as scrum5_backend {
+        component [Controlador Login] as auth_ctrl
+        component [Validador Credenciales] as credential_validator
+        component [Comparador Contraseña] as pwd_validator
+    }
+    
+    ' Data Layer
+    package "Data" as scrum5_data {
+        component [Repositorio Usuario] as user_repo
+        component [Modelo Usuario] as user_model
+        database "PostgreSQL" as db_users
+    }
+    
+    ' Flujo de componentes simplificado
+    login_comp --> login_form
+    login_form --> auth_ctrl
+    auth_ctrl --> credential_validator
+    credential_validator --> pwd_validator
+    credential_validator --> user_repo
+    user_repo --> user_model
+    user_model --> db_users
+    
+    ' Error handling
+    auth_ctrl --> error_handler
+    credential_validator --> error_handler
+}
+
+note right of scrum5 : **Criterio de Aceptación:**\nVerificación simple de email y contraseña\ncontra datos guardados en BD.\nSin tokens ni middleware complejo.
+
+' ===============================
+' SCRUM-6: CERRAR SESIÓN
+' ===============================
+package "SCRUM-6: Cerrar Sesión" as scrum6 {
+    
+    ' Frontend Components
+    package "Frontend" as scrum6_frontend {
+        component [Botón Cerrar Sesión] as logout_btn
+        component [Manejador Redirección] as redirect_handler
+        component [Limpiador Sesión] as session_cleaner
+    }
+    
+    ' Backend Components
+    package "Backend" as scrum6_backend {
+        component [Controlador Logout] as logout_ctrl
+        component [Logger Básico] as logout_log
+    }
+    
+    ' Data Layer
+    package "Data" as scrum6_data {
+        database "PostgreSQL" as db_sessions
+    }
+    
+    ' Flujo de componentes simplificado
+    logout_btn --> logout_ctrl
+    logout_ctrl --> session_cleaner
+    logout_ctrl --> logout_log
+    logout_ctrl --> redirect_handler
+    logout_log --> db_sessions
+}
+
+note right of scrum6 : **Criterio de Aceptación:**\nCerrar sesión simple limpiando\nsesión local sin manejo de tokens
+
+' ===============================
+' SCRUM-10: PANEL PRINCIPAL
+' ===============================
+package "SCRUM-10: Panel Principal de Navegación" as scrum10 {
+    
+    ' Frontend Components (Arquitectura Real)
+    package "Frontend" as scrum10_frontend {
+        component [DashUser/DashAdmin] as dashboard
+        component [ActiveFilesTable] as file_list
+        component [Árbol Carpetas] as folder_tree
+        component [GlobalMetrics] as metrics_panel
+        component [UserHeader] as user_header
+        component [QuickActions] as quick_actions
+        component [ServersStatus] as servers_status
+    }
+    
+    ' Backend Components
+    package "Backend" as scrum10_backend {
+        component [Controlador Archivo] as file_ctrl
+        component [Controlador Carpeta] as folder_ctrl
+        component [Servicio Dashboard] as dash_svc
+        component [Servicio Métricas] as metrics_svc
+        component [Servicio Navegación] as nav_svc
+        component [Controlador Proveedor] as provider_ctrl
+    }
+    
+    ' Data Layer
+    package "Data" as scrum10_data {
+        component [Repositorio Archivo] as file_repo_dash
+        component [Repositorio Carpeta] as folder_repo_dash
+        component [Repositorio Métricas] as metrics_repo
+        database "PostgreSQL" as db_files
+    }
+    
+    ' Cloud Storage Multi-Proveedor
+    package "Storage" as scrum10_storage {
+        component [Fábrica Almacenamiento] as storage_factory
+        component [Repositorio OCI] as oci_provider
+        component [Repositorio AWS] as aws_provider
+        component [Repositorio Azure] as azure_provider
+        component [Repositorio GCP] as gcp_provider
+    }
+    
+    ' Flujo principal (Componentes Reales)
+    dashboard --> user_header
+    dashboard --> metrics_panel
+    dashboard --> quick_actions
+    dashboard --> file_list
+    dashboard --> servers_status
+    
+    file_list --> file_ctrl
+    folder_tree --> folder_ctrl
+    metrics_panel --> dash_svc
+    
+    file_ctrl --> dash_svc
+    folder_ctrl --> dash_svc
+    dash_svc --> metrics_svc
+    dash_svc --> nav_svc
+    
+    dash_svc --> file_repo_dash
+    dash_svc --> folder_repo_dash
+    metrics_svc --> metrics_repo
+    
+    file_repo_dash --> db_files
+    folder_repo_dash --> db_files
+    metrics_repo --> db_files
+    
+    dash_svc --> provider_ctrl
+    provider_ctrl --> storage_factory
+    storage_factory --> oci_provider
+    storage_factory --> aws_provider
+    storage_factory --> azure_provider
+    storage_factory --> gcp_provider
+}
+
+note right of scrum10 : **Criterio de Aceptación:**\nDashboard con vista general,\nlistado de archivos y navegación intuitiva\n\n**Arquitectura Multi-Cloud:**\n• AWS S3 para almacenamiento rápido\n• Azure Blob para integración empresarial\n• GCP Storage para analytics\n• OCI para costos optimizados\n• Factory Pattern para abstracción
+
+' ===============================
+' SCRUM-11: ACCIONES BÁSICAS
+' ===============================
+package "SCRUM-11: Acciones Básicas del Panel" as scrum11 {
+    
+    ' Frontend Components
+    package "Frontend" as scrum11_frontend {
+        component [Botones Acción] as action_buttons
+        component [Botón Subir] as upload_btn
+        component [Botón Crear Carpeta] as create_folder_btn
+        component [Botón Búsqueda] as search_btn
+        component [Proveedor Tooltip] as tooltip_provider
+    }
+    
+    ' Routing Components
+    package "Navigation" as scrum11_nav {
+        component [Enrutador] as router
+        component [Manejador Rutas] as route_handler
+    }
+    
+    ' Flujo de componentes
+    action_buttons --> upload_btn
+    action_buttons --> create_folder_btn
+    action_buttons --> search_btn
+    action_buttons --> tooltip_provider
+    
+    upload_btn --> router : "/upload"
+    create_folder_btn --> router : "/create-folder"
+    search_btn --> router : "/search"
+    
+    router --> route_handler
+}
+
+note right of scrum11 : **Criterio de Aceptación:**\nBotones de acciones principales visibles,\nnavegación responsive y tooltips
+
+' ===============================
+' RELACIONES BÁSICAS
+' ===============================
+scrum5 .down.> scrum10 : "Requiere autenticación"
+scrum10 .down.> scrum11 : "Panel base para acciones"
+
+' ===============================
+' LEYENDA
+' ===============================
+legend bottom left
+|= Componente |= Responsabilidad |= Patrón Aplicado |
+| Controlador | Gestión Requests HTTP | MVC Controller |
+| Repositorio | Acceso a Datos | Repository Pattern |
+| Servicio | Lógica de Negocio | Service Layer |
+| Fábrica | Creación de Objetos | Factory Pattern |
+
+**Principios SOLID aplicados:**
+• SRP: Cada componente una responsabilidad
+• OCP: Extensible para nuevos proveedores
+• LSP: Interfaces intercambiables
+• ISP: Interfaces específicas por funcionalidad
+• DIP: Dependencias hacia abstracciones
+
+**Nota Sprint 1:** Autenticación simple sin JWT
+endlegend
+
+@enduml

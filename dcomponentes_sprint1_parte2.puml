@@ -1,0 +1,295 @@
+@startuml diagrama_sprint1_parte2
+
+title DIAGRAMAS DE COMPONENTES - PARTE 2\nSprint 1 - Sistema UlStorage\nHistorias: SCRUM-12, SCRUM-13, SCRUM-14, SCRUM-15
+
+skinparam componentStyle rectangle
+skinparam component {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    ArrowColor #A23B72
+}
+
+skinparam interface {
+    BackgroundColor #FFF3CD
+    BorderColor #856404
+}
+
+skinparam database {
+    BackgroundColor #D1ECF1
+    BorderColor #0C5460
+}
+
+' ===============================
+' SCRUM-12: SUBIR ARCHIVOS
+' ===============================
+package "SCRUM-12: Subir Archivos" as scrum12 {
+    
+    ' Frontend Components
+    package "Frontend" as scrum12_frontend {
+        component [Componente Subir] as upload_comp
+        component [Selector Archivo] as file_selector
+        component [Barra Progreso] as progress_bar
+        component [Validador Archivo] as file_validator_fe
+        component [Cola Subida] as upload_queue
+    }
+    
+    ' Backend Components
+    package "Backend" as scrum12_backend {
+        component [Controlador Subida] as upload_ctrl
+        component [Validador Archivo] as file_validator_be
+        component [Servicio Archivo] as file_svc
+        component [Extractor Metadatos] as metadata_extractor
+        component [Procesador Subida] as upload_processor
+    }
+    
+    ' Storage Layer Multi-Cloud
+    package "Storage" as scrum12_storage {
+        component [Fábrica Almacenamiento] as storage_fact
+        component [Repositorio OCI] as oci_repo
+        component [Repositorio AWS] as aws_repo
+        component [Repositorio Azure] as azure_repo
+        component [Repositorio GCP] as gcp_repo
+    }
+    
+    ' Data Layer
+    package "Data" as scrum12_data {
+        component [Repositorio Archivo] as file_repo_up
+        component [Logger Básico] as log_repo
+        database "PostgreSQL" as db_upload
+    }
+    
+    ' Flujo completo de subida
+    upload_comp --> file_selector
+    file_selector --> file_validator_fe
+    file_validator_fe --> upload_queue
+    upload_queue --> progress_bar
+    
+    upload_comp --> upload_ctrl
+    upload_ctrl --> file_validator_be
+    file_validator_be --> upload_processor
+    upload_processor --> file_svc
+    upload_processor --> metadata_extractor
+    
+    file_svc --> storage_fact
+    storage_fact --> oci_repo
+    storage_fact --> aws_repo
+    storage_fact --> azure_repo
+    storage_fact --> gcp_repo
+    
+    file_svc --> file_repo_up
+    file_svc --> log_repo
+    file_repo_up --> db_upload
+    log_repo --> db_upload
+    
+    ' Feedback al frontend
+    upload_processor --> progress_bar
+}
+
+note right of scrum12 : **Criterio de Aceptación:**\nSubir archivos con barra de progreso,\nvalidación de tamaño y tipo
+
+' ===============================
+' SCRUM-13: DESCARGAR ARCHIVOS
+' ===============================
+package "SCRUM-13: Descargar Archivos" as scrum13 {
+    
+    ' Frontend Components
+    package "Frontend" as scrum13_frontend {
+        component [Botón Descargar] as download_btn
+        component [Progreso Descarga] as download_progress
+        component [Gestor Descarga] as download_mgr
+    }
+    
+    ' Backend Components
+    package "Backend" as scrum13_backend {
+        component [Controlador Descarga] as download_ctrl
+        component [Validador Propietario] as perm_validator
+        component [Servicio Archivo] as file_svc_down
+        component [Manejador Stream] as stream_handler
+    }
+    
+    ' Storage Layer Multi-Cloud
+    package "Storage" as scrum13_storage {
+        component [Fábrica Almacenamiento] as storage_fact_down
+        component [Repositorio OCI] as oci_repo_down
+        component [Repositorio AWS] as aws_repo_down
+        component [Repositorio Azure] as azure_repo_down
+        component [Repositorio GCP] as gcp_repo_down
+    }
+    
+    ' Data Layer
+    package "Data" as scrum13_data {
+        component [Repositorio Archivo] as file_repo_down
+        component [Logger Básico] as log_repo_down
+        database "PostgreSQL" as db_download
+    }
+    
+    ' Flujo de descarga
+    download_btn --> download_ctrl
+    download_ctrl --> perm_validator
+    perm_validator --> file_svc_down
+    file_svc_down --> storage_fact_down
+    storage_fact_down --> oci_repo_down
+    storage_fact_down --> aws_repo_down
+    storage_fact_down --> azure_repo_down
+    storage_fact_down --> gcp_repo_down
+    
+    file_svc_down --> stream_handler
+    stream_handler --> download_mgr
+    download_mgr --> download_progress
+    
+    file_svc_down --> file_repo_down
+    file_svc_down --> log_repo_down
+    file_repo_down --> db_download
+    log_repo_down --> db_download
+}
+
+note right of scrum13 : **Criterio de Aceptación:**\nDescargar archivos sin pérdida de calidad,\nmanejo de archivos grandes
+
+' ===============================
+' SCRUM-14: PREVISUALIZAR ARCHIVOS
+' ===============================
+package "SCRUM-14: Previsualizar Archivos" as scrum14 {
+    
+    ' Frontend Components
+    package "Frontend" as scrum14_frontend {
+        component [Componente Vista Previa] as preview_comp
+        component [Visor PDF] as pdf_viewer
+        component [Visor Imagen] as image_viewer
+        component [Visor Texto] as text_viewer
+        component [Fábrica Visor] as viewer_factory
+        component [Controles Vista Previa] as preview_controls
+    }
+    
+    ' Backend Components
+    package "Backend" as scrum14_backend {
+        component [Controlador Vista Previa] as preview_ctrl
+        component [Validador Propietario] as perm_val_prev
+        component [Servicio Vista Previa] as preview_svc
+        component [Generador Miniatura] as thumbnail_gen
+        component [Detector Tipo MIME] as mime_detector
+    }
+    
+    ' Storage Layer Multi-Cloud
+    package "Storage" as scrum14_storage {
+        component [Fábrica Almacenamiento] as storage_fact_prev
+        component [Repositorio OCI] as oci_repo_prev
+        component [Repositorio AWS] as aws_repo_prev
+        component [Repositorio Azure] as azure_repo_prev
+        component [Repositorio GCP] as gcp_repo_prev
+    }
+    
+    ' Data Layer
+    package "Data" as scrum14_data {
+        component [Repositorio Archivo] as file_repo_prev
+        database "PostgreSQL" as db_preview
+    }
+    
+    ' Flujo de previsualización
+    preview_comp --> viewer_factory
+    viewer_factory --> pdf_viewer
+    viewer_factory --> image_viewer
+    viewer_factory --> text_viewer
+    preview_comp --> preview_controls
+    
+    preview_comp --> preview_ctrl
+    preview_ctrl --> perm_val_prev
+    preview_ctrl --> preview_svc
+    preview_svc --> mime_detector
+    preview_svc --> thumbnail_gen
+    
+    preview_svc --> storage_fact_prev
+    storage_fact_prev --> oci_repo_prev
+    storage_fact_prev --> aws_repo_prev
+    storage_fact_prev --> azure_repo_prev
+    storage_fact_prev --> gcp_repo_prev
+    
+    preview_svc --> file_repo_prev
+    file_repo_prev --> db_preview
+}
+
+note right of scrum14 : **Criterio de Aceptación:**\nVisor integrado para PDF, imágenes y texto,\nnavegación entre páginas
+
+' ===============================
+' SCRUM-15: ELIMINAR ARCHIVOS
+' ===============================
+package "SCRUM-15: Eliminar Archivos" as scrum15 {
+    
+    ' Frontend Components
+    package "Frontend" as scrum15_frontend {
+        component [Botón Eliminar] as delete_btn
+        component [Modal Confirmación] as confirm_modal
+        component [Manejador Actualización] as refresh_handler
+    }
+    
+    ' Backend Components
+    package "Backend" as scrum15_backend {
+        component [Controlador Eliminar] as delete_ctrl
+        component [Validador Propietario] as perm_val_del
+        component [Servicio Archivo] as file_svc_del
+        component [Servicio Limpieza] as cleanup_svc
+    }
+    
+    ' Storage Layer Multi-Cloud
+    package "Storage" as scrum15_storage {
+        component [Fábrica Almacenamiento] as storage_fact_del
+        component [Repositorio OCI] as oci_repo_del
+        component [Repositorio AWS] as aws_repo_del
+        component [Repositorio Azure] as azure_repo_del
+        component [Repositorio GCP] as gcp_repo_del
+    }
+    
+    ' Data Layer
+    package "Data" as scrum15_data {
+        component [Repositorio Archivo] as file_repo_del
+        component [Logger Básico] as log_repo_del
+        database "PostgreSQL" as db_delete
+    }
+    
+    ' Flujo de eliminación
+    delete_btn --> confirm_modal
+    confirm_modal --> delete_ctrl
+    delete_ctrl --> perm_val_del
+    delete_ctrl --> file_svc_del
+    file_svc_del --> cleanup_svc
+    
+    cleanup_svc --> storage_fact_del
+    storage_fact_del --> oci_repo_del
+    storage_fact_del --> aws_repo_del
+    storage_fact_del --> azure_repo_del
+    storage_fact_del --> gcp_repo_del
+    
+    cleanup_svc --> file_repo_del
+    cleanup_svc --> log_repo_del
+    file_repo_del --> db_delete
+    log_repo_del --> db_delete
+    
+    delete_ctrl --> refresh_handler
+}
+
+note right of scrum15 : **Criterio de Aceptación:**\nConfirmación antes de eliminar,\nactualización automática de vista
+
+' ===============================
+' RELACIONES ENTRE HISTORIAS
+' ===============================
+scrum12 .down.> scrum14 : "Archivos para previsualizar"
+scrum12 .down.> scrum15 : "Archivos para eliminar"
+scrum14 .down.> scrum13 : "Vista previa antes descarga"
+
+' ===============================
+' LEYENDA
+' ===============================
+legend bottom left
+|= Patrón |= Implementación |= Beneficio |
+| Repository | Acceso uniforme a Storage | Abstracción multi-cloud |
+| Factory | Creación de proveedores | Extensibilidad |
+| Strategy | Validadores por tipo | Flexibilidad |
+| Observer | Progress callbacks | Feedback tiempo real |
+
+**Arquitectura Multi-Cloud:**
+• OCI: Costos optimizados
+• AWS: Performance y disponibilidad
+• Azure: Integración empresarial
+• GCP: Analytics y ML
+endlegend
+
+@enduml

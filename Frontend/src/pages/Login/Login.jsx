@@ -77,7 +77,7 @@ const Login = () => {
 
   const handleQuickUser = () => {
     login({ username: 'user_demo', role: 'Usuario' })
-    navigate('/user')
+    navigate('/explorer')
   }
 
   const handleQuickPreview = () => {
