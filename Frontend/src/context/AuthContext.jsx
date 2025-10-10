@@ -5,12 +5,11 @@ export const AuthContext = createContext(null)
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
 
-  function login({ username, role }) {
-    // En una implementación real, aquí harías POST al backend para autenticar
-    // y guardar token. Ahora simulamos el login localmente.
-    const payload = { username, role }
+  function login({ username, role, userId }) {
+    // Login simple sin tokens - solo guardamos datos básicos del usuario
+    const payload = { username, role, userId }
     setUser(payload)
-    // Persistencia simple
+    // Persistencia simple en localStorage
     try { localStorage.setItem('ulstorage_user', JSON.stringify(payload)) } catch (e) {}
   }
 
