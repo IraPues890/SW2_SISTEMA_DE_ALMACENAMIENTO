@@ -1,24 +1,33 @@
 @startuml SCRUM-28_BuscarArchivos
-title SCRUM-28: Buscar archivos
+title SCRUM-28: Buscar archivos (delegación a BuscadorService)
 
 actor Usuario
 participant "Plataforma web" as Frontend
 participant "Backend / API" as Backend
-participant "Search / Storage" as Storage
+participant "GestorArchivos (Facade)" as Gestor
+participant "BuscadorService / Index" as Buscador
+participant "Storage / Index (DB or Elastic)" as Storage
 
 Usuario -> Frontend: 1. Ingresar término en buscador
 activate Usuario
-Usuario -> Frontend: 1. Ingresar término en buscador
 activate Frontend
 Frontend -> Backend: 2. GET /storage/:provider/search?q=termino&page=1
 activate Backend
-Backend -> Storage: 3. Query search / elastic / prefix
+Backend -> Gestor: 3. buscarArchivos(query, carpeta)
+activate Gestor
+Gestor -> Buscador: 4. buscar(query, carpeta)
+activate Buscador
+Buscador -> Storage: 5. Query (search_vector @@ plainto_tsquery(...) / Elastic query)
 activate Storage
-Storage --> Backend: 4. Resultados
+Storage --> Buscador: 6. Resultados (matches + metadata)
 deactivate Storage
-Backend --> Frontend: 5. 200 {data: [matches]}
+Buscador --> Gestor: 7. Resultados filtrados/paginados
+deactivate Buscador
+Gestor --> Backend: 8. Resultados
+deactivate Gestor
+Backend --> Frontend: 9. 200 {data: [matches]}
 deactivate Backend
-Frontend -> Usuario: 6. Mostrar resultados
+Frontend -> Usuario: 10. Mostrar resultados
 deactivate Frontend
 deactivate Usuario
 @enduml

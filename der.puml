@@ -66,6 +66,7 @@ package "Archivos" {
     +getEtiquetas(): List<Etiqueta>
     +previsualizar(): Object
     +descargar(): binary
+    +imprimir(): void
   }
 
   class Version {
@@ -85,10 +86,25 @@ package "Archivos" {
     +listarArchivos(carpeta: Carpeta): List<Archivo>
     +previsualizarArchivo(archivo: Archivo): Object
     +descargarArchivo(archivo: Archivo): binary
+    +buscarArchivos(query: string, carpeta: Carpeta): List<Archivo>
+    +imprimirArchivo(archivo: Archivo): void
   }
 
   class VersionFactory <<Factory>> {
     +crearVersion(archivo: Archivo, usuario: Usuario): Version
+  }
+}
+
+' ======================
+' SERVICIOS TRANSVERSALES
+' ======================
+package "Servicios" {
+  class BuscadorService {
+    +buscar(query: string, carpeta: Carpeta): List<Archivo>
+  }
+
+  class PrintService {
+    +imprimir(archivo: Archivo): void
   }
 }
 
@@ -231,4 +247,10 @@ CompartirService --> Rol
 CompartirService --> Carpeta
 CompartirService --> Usuario : acceso_carpeta
 AuthService --> IRepositorioUsuarios
+GestorArchivos --> BuscadorService
+GestorArchivos --> PrintService
+PrintService --> Archivo : imprime
+
+' Nota: BuscadorService encapsula la lógica de búsquedas y filtros;
+' PrintService se encarga del render/driver de impresión para distintos tipos.
 @enduml
