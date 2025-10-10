@@ -160,7 +160,7 @@ function FileEmoji({ type }) {
   return <span>{map[type] ?? '📄'}</span>;
 }
 
-// Nuevo por MAU
+// Tamaño de íconos
 function FileIcon({ file, size = 'medium', onOpen }) {
   const sz = ICON_SIZES[size] ?? ICON_SIZES.medium;
   return (
