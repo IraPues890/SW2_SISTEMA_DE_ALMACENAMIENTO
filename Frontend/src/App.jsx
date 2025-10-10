@@ -5,7 +5,7 @@ import Dashboardadmin from './pages/Dashboard/Admin/DashAdmin';
 import Dashboarduser from './pages/Dashboard/User/DashUser';
 import Previewfiles from './pages/PreviewFiles/PreviewFiles';
 import Uploadfiles from './pages/UploadFiles/UploadFiles';
-import Filesexplorer from './pages/FilesExplorer/FilesExplorer';
+import Filesexplorer from './pages/FilesExplorer/Filesexplorer';
 import ProtectedRoute from './routes/ProtectedRoute'
 
 function App() {

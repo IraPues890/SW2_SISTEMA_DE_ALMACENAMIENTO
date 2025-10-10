@@ -1,0 +1,23 @@
+@startuml SCRUM-5_IniciarSesion
+title SCRUM-5: Iniciar sesión
+
+actor Usuario
+participant "Plataforma web" as Frontend
+participant "Backend / Auth API" as Backend
+participant "Auth Service" as AuthService
+
+activate Usuario
+Usuario -> Frontend: 1. Abrir formulario de login
+activate Frontend
+Frontend -> Backend: 2. Enviar credenciales {email, password}
+activate Backend
+Backend -> AuthService: 3. Verificar credenciales
+activate AuthService
+AuthService --> Backend: 4. Resultado verificación OK
+deactivate AuthService
+Backend --> Frontend: 5. 200 OK {token, userInfo}
+deactivate Backend
+Frontend -> Usuario: 6. Mostrar dashboard (guardar token)
+deactivate Frontend
+deactivate Usuario
+@enduml

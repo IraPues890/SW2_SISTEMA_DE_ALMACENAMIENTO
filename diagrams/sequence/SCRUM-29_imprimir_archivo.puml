@@ -1,0 +1,25 @@
+@startuml SCRUM-29_ImprimirArchivo
+title SCRUM-29: Imprimir archivo
+
+actor Usuario
+participant "Plataforma web" as Frontend
+participant "Backend / API" as Backend
+participant "Storage Provider" as Storage
+
+Usuario -> Frontend: 1. Click "Imprimir"
+activate Usuario
+Usuario -> Frontend: 1. Click "Imprimir"
+activate Frontend
+Frontend -> Backend: 2. GET /storage/:provider/preview?fileName=...
+activate Backend
+Backend -> Storage: 3. Obtener URL/stream del archivo
+activate Storage
+Storage --> Backend: 4. URL o stream
+deactivate Storage
+Backend --> Frontend: 5. 200 {previewUrl}
+deactivate Backend
+Frontend -> Frontend: 6. Abrir preview (iframe) y llamar window.print()
+Frontend -> Usuario: 7. Mostrar diálogo de impresión
+deactivate Frontend
+deactivate Usuario
+@enduml

@@ -1,0 +1,24 @@
+@startuml SCRUM-18_OrdenarArchivos
+title SCRUM-18: Ordenar archivos
+
+actor Usuario
+participant "Plataforma web" as Frontend
+participant "Backend / API" as Backend
+participant "Storage / DB" as Storage
+
+Usuario -> Frontend: 1. Seleccionar criterio de orden
+activate Usuario
+Usuario -> Frontend: 1. Seleccionar criterio de orden
+activate Frontend
+Frontend -> Backend: 2. GET /storage/:provider/list?sort=criteria&order=asc
+activate Backend
+Backend -> Storage: 3. Listar con orden/paginación
+activate Storage
+Storage --> Backend: 4. Lista ordenada
+deactivate Storage
+Backend --> Frontend: 5. 200 {data ordenada}
+deactivate Backend
+Frontend -> Usuario: 6. Renderizar
+deactivate Frontend
+deactivate Usuario
+@enduml

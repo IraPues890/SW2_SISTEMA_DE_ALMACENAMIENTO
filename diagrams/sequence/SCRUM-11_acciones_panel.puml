@@ -1,0 +1,24 @@
+@startuml SCRUM-11_AccionesPanel
+title SCRUM-11: Acciones básicas en panel
+
+actor Usuario
+participant "Plataforma web" as Frontend
+participant "Backend / API" as Backend
+participant "Storage Provider" as Storage
+
+Usuario -> Frontend: 1. Seleccionar acción (e.g., renombrar)
+activate Usuario
+Usuario -> Frontend: 1. Seleccionar acción (e.g., renombrar)
+activate Frontend
+Frontend -> Backend: 2. PUT /storage/:provider/object?action=rename {oldName,newName}
+activate Backend
+Backend -> Storage: 3. Ejecutar rename/move
+activate Storage
+Storage --> Backend: 4. OK
+deactivate Storage
+Backend --> Frontend: 5. 200 {updated metadata}
+deactivate Backend
+Frontend -> Usuario: 6. Actualizar UI
+deactivate Frontend
+deactivate Usuario
+@enduml

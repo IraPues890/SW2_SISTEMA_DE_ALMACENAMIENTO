@@ -1,0 +1,6 @@
+{
+  // Recomendación de extensiones para este workspace
+  "recommendations": [
+    "jebbs.plantuml"
+  ]
+}

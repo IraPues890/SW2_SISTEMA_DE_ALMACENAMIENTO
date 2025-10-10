@@ -1,0 +1,25 @@
+@startuml SCRUM-6_CerrarSesion
+title SCRUM-6: Cerrar sesión
+
+actor Usuario
+participant "Plataforma web" as Frontend
+participant "Backend / Auth API" as Backend
+participant "DB Sesiones" as DB
+
+Usuario -> Frontend: 1. Click "Cerrar sesión"
+activate Usuario
+Usuario -> Frontend: 1. Click "Cerrar sesión"
+activate Frontend
+Frontend -> Frontend: 2. Eliminar token local (localStorage/cookie)
+Frontend -> Backend: 3. POST /auth/logout {token}
+activate Backend
+Backend -> DB: 4. Invalidate token
+activate DB
+DB --> Backend: 5. OK
+deactivate DB
+Backend --> Frontend : 6. 200 OK
+deactivate Backend
+Frontend -> Usuario: 7. Redirigir a pantalla de login
+deactivate Frontend
+deactivate Usuario
+@enduml
