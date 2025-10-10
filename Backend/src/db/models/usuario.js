@@ -2,6 +2,7 @@
 const {
   Model
 } = require('sequelize');
+const bcrypt = require('bcrypt');
 module.exports = (sequelize, DataTypes) => {
   class Usuario extends Model {
     /**
@@ -63,6 +64,36 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Usuario',
+    hooks: {
+      // Hook para hashear la contraseña antes de crear
+      beforeCreate: async (usuario) => {
+        if (usuario.password) {
+          const saltRounds = 12;
+          usuario.password_hash = await bcrypt.hash(usuario.password, saltRounds);
+          delete usuario.password;
+        }
+      },
+      // Hook para hashear la contraseña antes de actualizar
+      beforeUpdate: async (usuario) => {
+        if (usuario.password) {
+          const saltRounds = 12;
+          usuario.password_hash = await bcrypt.hash(usuario.password, saltRounds);
+          delete usuario.password;
+        }
+      }
+    }
   });
+
+  // Métodos de instancia
+  Usuario.prototype.verificarPassword = async function(password) {
+    return await bcrypt.compare(password, this.password_hash);
+  };
+
+  Usuario.prototype.toPublicJSON = function() {
+    const values = { ...this.dataValues };
+    delete values.password_hash;
+    return values;
+  };
+
   return Usuario;
 };
