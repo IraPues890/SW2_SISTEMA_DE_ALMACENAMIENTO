@@ -126,7 +126,7 @@ function Metrics({ totalFiles, usedSpace, breadcrumb }) {
 }
 
 // S: Componente para mostrar la vista activa
-function ViewContent({ activeView, files, onOpen }) {
+function ViewContent({ activeView, files, onOpen, selectedFileIds, onToggleSelection }) {
   if (activeView === 'table') return null;
 
   const size =
@@ -136,7 +136,7 @@ function ViewContent({ activeView, files, onOpen }) {
 
   return (
     <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-white/20 p-6">
-      <IconGrid files={files} viewSize={size} onOpen={onOpen} />
+      <IconGrid files={files} viewSize={size} onOpen={onOpen} selectedFileIds={selectedFileIds} onToggleSelection={onToggleSelection} />
     </div>
   );
 }
@@ -155,28 +155,49 @@ const ICON_SIZES = {
 };
 
 // Tamaño de íconos
-function FileIcon({ file, size = 'medium', onOpen }) {
+function FileIcon({ file, size = 'medium', onOpen, selected, onToggleSelection }) {
   const sz = ICON_SIZES[size] ?? ICON_SIZES.medium;
+
+  const handleCheckboxClick = (e) => {
+    e.stopPropagation(); // Evita que se active el onOpen del botón principal
+    onToggleSelection?.(file.id);
+  };
+
   return (
-    <button
-      onClick={() => onOpen?.(file)}
-      className="group bg-white/95 border border-white/20 rounded-xl p-4 shadow hover:shadow-lg transition-all hover:-translate-y-0.5 text-left"
-      title={file.name}
-    >
-      <div className={`mx-auto ${sz.box} rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow`}>
-        <span className={`text-white ${sz.icon}`}>
-          {file.type === 'xlsx' ? '📊' : file.type === 'csv' ? '📋' : file.type === 'png' ? '🖼️' : file.type === 'pptx' ? '📄': file.type === 'pdf' ? '📄' : '📁'}
-        </span>
+    <div className="relative">
+      <button
+        onClick={() => onOpen?.(file)}
+        className={`group bg-white/95 border rounded-xl p-4 shadow hover:shadow-lg transition-all hover:-translate-y-0.5 text-left w-full ${selected ? 'border-blue-500 ring-2 ring-blue-200' : 'border-transparent'}`}
+        title={file.name}
+      >
+        <div className={`mx-auto ${sz.box} rounded-xl bg-gradient-to-br from-purple-500 to-blue-600 flex items-center justify-center shadow`}>
+          <span className={`text-white ${sz.icon}`}>
+            {file.type === 'xlsx' ? '📊' : file.type === 'csv' ? '📋' : file.type === 'png' ? '🖼️' : file.type === 'pptx' ? '📄': file.type === 'pdf' ? '📄' : '📁'}
+          </span>
+        </div>
+        <div className="mt-3">
+          <div className={`font-medium text-slate-800 line-clamp-2 ${sz.name}`}>{file.name}</div>
+          <div className="text-slate-500 text-xs mt-1">{file.size} KB • {file.type.toUpperCase()}</div>
+        </div>
+      </button>
+      <div 
+        className="absolute top-2 left-2 cursor-pointer"
+        onClick={handleCheckboxClick}
+      >
+        <input
+          type="checkbox"
+          checked={selected}
+          readOnly
+          className={`pointer-events-none rounded border-slate-400 bg-white/50 text-blue-600 focus:ring-blue-500
+            ${size === 'large' ? 'h-5 w-5' : size === 'medium' ? 'h-4 w-4' : 'h-3.5 w-3.5'}`}
+          aria-label={`Seleccionar archivo ${file.name}`}
+        />
       </div>
-      <div className="mt-3">
-        <div className={`font-medium text-slate-800 line-clamp-2 ${sz.name}`}>{file.name}</div>
-        <div className="text-slate-500 text-xs mt-1">{file.size} KB • {file.type.toUpperCase()}</div>
-      </div>
-    </button>
+    </div>
   );
 }
 
-function IconGrid({ files, viewSize, onOpen }) {
+function IconGrid({ files, viewSize, onOpen, selectedFileIds, onToggleSelection }) {
   const cols =
     viewSize === 'large'
       ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
@@ -189,7 +210,14 @@ function IconGrid({ files, viewSize, onOpen }) {
   return (
     <div className={`grid ${cols} gap-5`}>
       {files.map(f => (
-        <FileIcon key={f.id} file={f} size={viewSize} onOpen={onOpen} />
+        <FileIcon 
+          key={f.id} 
+          file={f} 
+          size={viewSize} 
+          onOpen={onOpen}
+          selected={selectedFileIds.includes(f.id)}
+          onToggleSelection={onToggleSelection}
+        />
       ))}
     </div>
   );
@@ -752,6 +780,8 @@ function Filesexplorer() {
               activeView={activeView}
               files={sortedFiltered}
               onOpen={openSidePreview} 
+              selectedFileIds={selectedFileIds}
+              onToggleSelection={handleToggleSelection}
             />
           )}
         </div>
