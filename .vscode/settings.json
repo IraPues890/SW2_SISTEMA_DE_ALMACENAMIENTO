@@ -1,0 +1,8 @@
+{
+  "plantuml.server": "https://www.plantuml.com/plantuml",
+  "plantuml.previewAutoUpdate": true,
+  "plantuml.render": "PlantUMLServer",
+  "files.associations": {
+    "*.puml": "plantuml"
+  }
+}

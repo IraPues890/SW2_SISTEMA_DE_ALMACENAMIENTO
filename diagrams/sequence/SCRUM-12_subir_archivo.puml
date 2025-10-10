@@ -1,0 +1,30 @@
+@startuml SCRUM-12_SubirArchivo
+title SCRUM-12: Subir archivo
+
+actor Usuario
+participant "Plataforma web" as Frontend
+participant "Backend / API (upload)" as Backend
+participant "Storage Provider" as Storage
+participant "DB Metadatos" as DB
+
+Usuario -> Frontend: 1. Seleccionar archivo y click "Subir"
+activate Usuario
+Usuario -> Frontend: 1. Seleccionar archivo y click "Subir"
+activate Frontend
+Frontend -> Frontend: 2. Preparar FormData (file, path, metadata)
+Frontend -> Backend: 3. POST /storage/:provider/upload (multipart/form-data)
+activate Backend
+Backend -> Storage: 4. Subir objeto (stream o SDK)
+activate Storage
+Storage --> Backend: 5. URL / object metadata
+deactivate Storage
+Backend -> DB: 6. Guardar metadatos (name,url,size,date,owner)
+activate DB
+DB --> Backend: 7. OK
+deactivate DB
+Backend --> Frontend: 8. 201 Created {file metadata}
+deactivate Backend
+Frontend -> Usuario: 9. Mostrar progreso/éxito y actualizar lista
+deactivate Frontend
+deactivate Usuario
+@enduml
