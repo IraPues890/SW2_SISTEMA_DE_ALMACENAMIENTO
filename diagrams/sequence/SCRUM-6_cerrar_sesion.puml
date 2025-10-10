@@ -8,12 +8,11 @@ participant "DB Sesiones" as DB
 
 Usuario -> Frontend: 1. Click "Cerrar sesión"
 activate Usuario
-Usuario -> Frontend: 1. Click "Cerrar sesión"
 activate Frontend
-Frontend -> Frontend: 2. Eliminar token local (localStorage/cookie)
-Frontend -> Backend: 3. POST /auth/logout {token}
+Frontend -> Frontend: 2. Eliminar credenciales locales (si existen)
+Frontend -> Backend: 3. POST /auth/logout (session_id or user_id)
 activate Backend
-Backend -> DB: 4. Invalidate token
+Backend -> DB: 4. Marcar sesión como invalidada / eliminar registro
 activate DB
 DB --> Backend: 5. OK
 deactivate DB

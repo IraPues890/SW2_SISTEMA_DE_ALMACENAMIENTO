@@ -1,11 +1,11 @@
-# 📋 BACKLOG DEL SPRINT 1 - SISTEMA ULSTORAGE
+# BACKLOG DEL SPRINT 1 - SISTEMA ULSTORAGE
 
-## 🎯 **Objetivo del Sprint**
+## **Objetivo del Sprint**
 Realizar el MVP funcional para el usuario, implementando las funcionalidades básicas de autenticación, gestión de archivos y navegación del sistema de almacenamiento centralizado.
 
 ---
 
-## 📅 **Información del Sprint**
+## **Información del Sprint**
 - **Duración**: 15 septiembre - 11 octubre (12 actividades)
 - **Story Points Totales**: 875 
 - **Estado**: En progreso
@@ -13,9 +13,9 @@ Realizar el MVP funcional para el usuario, implementando las funcionalidades bá
 
 ---
 
-## 📚 **Historias de Usuario del Sprint 1**
+## **Historias de Usuario del Sprint 1**
 
-### 🔐 **AUTENTICACIÓN**
+### **AUTENTICACIÓN**
 
 #### **SCRUM-5**: Iniciar Sesión
 **Como** usuario **deseo** iniciar sesión en la plataforma con credenciales **para** acceder a mi espacio de almacenamiento
@@ -49,7 +49,7 @@ Realizar el MVP funcional para el usuario, implementando las funcionalidades bá
 
 ---
 
-### 🖥️ **INTERFAZ Y NAVEGACIÓN**
+### **INTERFAZ Y NAVEGACIÓN**
 
 #### **SCRUM-10**: Panel Principal de Navegación
 **Como** usuario **deseo** ver un panel principal con listado de archivos y carpetas conectados a la nube **para** navegar de forma intuitiva
@@ -83,7 +83,7 @@ Realizar el MVP funcional para el usuario, implementando las funcionalidades bá
 
 ---
 
-### 📤 **GESTIÓN DE ARCHIVOS**
+### **GESTIÓN DE ARCHIVOS**
 
 #### **SCRUM-12**: Subir Archivos
 **Como** usuario **deseo** subir archivos desde mi computadora a la nube **para** almacenarlos
@@ -149,7 +149,7 @@ Realizar el MVP funcional para el usuario, implementando las funcionalidades bá
 
 ---
 
-### 📁 **ORGANIZACIÓN**
+### **ORGANIZACIÓN**
 
 #### **SCRUM-17**: Crear Carpetas
 **Como** usuario **deseo** crear carpetas en la nube desde la plataforma **para** organizar mis archivos
@@ -183,7 +183,7 @@ Realizar el MVP funcional para el usuario, implementando las funcionalidades bá
 
 ---
 
-### 🔍 **BÚSQUEDA Y GESTIÓN**
+### **BÚSQUEDA Y GESTIÓN**
 
 #### **SCRUM-28**: Búsqueda de Archivos
 **Como** usuario **deseo** buscar mis archivos **para** ahorrar tiempo
@@ -217,14 +217,14 @@ Realizar el MVP funcional para el usuario, implementando las funcionalidades bá
 
 ---
 
-## 📊 **Métricas del Sprint**
+## **Métricas del Sprint**
 
 ### **Distribución por Tipo**
-- 🔐 **Autenticación**: 2 historias (4 SP)
-- 🖥️ **Interfaz**: 2 historias (9.5 SP) 
-- 📤 **Gestión Archivos**: 4 historias (11 SP)
-- 📁 **Organización**: 2 historias (9 SP)
-- 🔍 **Búsqueda**: 2 historias (6 SP)
+- **Autenticación**: 2 historias (4 SP)
+- **Interfaz**: 2 historias (9.5 SP) 
+- **Gestión Archivos**: 4 historias (11 SP)
+- **Organización**: 2 historias (9 SP)
+- **Búsqueda**: 2 historias (6 SP)
 
 ### **Prioridad Alta (Críticas)**
 - SCRUM-5: Iniciar Sesión
@@ -239,34 +239,34 @@ Realizar el MVP funcional para el usuario, implementando las funcionalidades bá
 
 ---
 
-## 🎯 **Definición de "Terminado" (DoD)**
+## **Definición de "Terminado" (DoD)**
 
 Para que una historia se considere completada debe cumplir:
 
 ### **Criterios Técnicos:**
-- ✅ Código implementado siguiendo principios SOLID
-- ✅ Patrones de diseño aplicados correctamente  
-- ✅ Pruebas unitarias implementadas
-- ✅ Documentación técnica actualizada
-- ✅ Code review aprobado
+- Código implementado siguiendo principios SOLID
+- Patrones de diseño aplicados correctamente  
+- Pruebas unitarias implementadas
+- Documentación técnica actualizada
+- Code review aprobado
 
 ### **Criterios Funcionales:**
-- ✅ Todos los criterios de aceptación cumplidos
-- ✅ Pruebas de integración exitosas
-- ✅ UI/UX validado con stakeholders
-- ✅ Rendimiento aceptable (< 3s carga)
-- ✅ Compatibilidad cross-browser
+- Todos los criterios de aceptación cumplidos
+- Pruebas de integración exitosas
+- UI/UX validado con stakeholders
+- Rendimiento aceptable (< 3s carga)
+- Compatibilidad cross-browser
 
 ### **Criterios de Calidad:**
-- ✅ Sin bugs críticos
-- ✅ Accesibilidad básica implementada
-- ✅ Responsive design funcionando
-- ✅ Seguridad validada
-- ✅ Deploy en ambiente de pruebas exitoso
+- Sin bugs críticos
+- Accesibilidad básica implementada
+- Responsive design funcionando
+- Seguridad validada
+- Deploy en ambiente de pruebas exitoso
 
 ---
 
-## 🚀 **Plan de Entrega**
+## **Plan de Entrega**
 
 ### **Semana 1 (15-21 sept)**
 - SCRUM-5: Iniciar Sesión
@@ -291,18 +291,18 @@ Para que una historia se considere completada debe cumplir:
 
 ---
 
-## 📝 **Notas del Sprint**
+## **Notas del Sprint**
 
 ### **Riesgos Identificados:**
-- ⚠️ **Integración con múltiples proveedores cloud** puede ser compleja
-- ⚠️ **Manejo de archivos grandes** requiere optimización
-- ⚠️ **Autenticación JWT** debe ser robusta desde el inicio
+- **Integración con múltiples proveedores cloud** puede ser compleja
+- **Manejo de archivos grandes** requiere optimización
+- **Autenticación JWT** debe ser robusta desde el inicio
 
 ### **Decisiones Técnicas:**
-- 🔧 **Backend**: Node.js + Express + Sequelize  
-- 🎨 **Frontend**: React + Vite + Tailwind CSS
-- 🗄️ **Base de Datos**: PostgreSQL
-- ☁️ **Storage**: Oracle Cloud Infrastructure (primario)
+- **Backend**: Node.js + Express + Sequelize  
+- **Frontend**: React + Vite + Tailwind CSS
+- **Base de Datos**: PostgreSQL
+- **Storage**: Oracle Cloud Infrastructure (primario)
 
 ### **Stakeholders:**
 - **Product Owner**: Profesor de Software 2

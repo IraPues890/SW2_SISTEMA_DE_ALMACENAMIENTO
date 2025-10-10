@@ -1,24 +1,47 @@
 @startuml SCRUM-14_Previsualizar
-title SCRUM-14: Previsualizar archivo
+title SCRUM-14: Previsualizar archivo (y encolar impresión)
 
 actor Usuario
 participant "Plataforma web" as Frontend
 participant "Backend / API" as Backend
+participant "GestorArchivos (Facade)" as Gestor
 participant "Storage Provider" as Storage
+participant "DB: PRINT_JOBS" as PrintJobsDB
 
 Usuario -> Frontend: 1. Click "Previsualizar"
 activate Usuario
-Usuario -> Frontend: 1. Click "Previsualizar"
 activate Frontend
 Frontend -> Backend: 2. GET /storage/:provider/preview?fileName=...
 activate Backend
-Backend -> Storage: 3. Obtener URL o signed URL
+Backend -> Gestor: 3. previsualizarArchivo(archivo)
+activate Gestor
+Gestor -> Storage: 4. Obtener signed URL/stream
 activate Storage
-Storage --> Backend: 4. URL
+Storage --> Gestor: 5. URL/stream
 deactivate Storage
-Backend --> Frontend: 5. 200 {previewUrl}
+Gestor --> Backend: 6. previewUrl
+deactivate Gestor
+Backend --> Frontend: 7. 200 {previewUrl}
 deactivate Backend
-Frontend -> Usuario: 6. Abrir iframe/modal con previewUrl
+Frontend -> Usuario: 8. Abrir iframe/modal con previewUrl
+
+' Acción adicional: usuario desea imprimir
+Usuario -> Frontend: 9. Click "Imprimir"
+activate Usuario
+Frontend -> Backend: 10. POST /storage/:provider/files/:id/print
+activate Backend
+Backend -> Gestor: 11. imprimirArchivo(archivoId, usuario)
+activate Gestor
+Gestor -> PrintJobsDB: 12. INSERT PRINT_JOB (estado=queued)
+activate PrintJobsDB
+PrintJobsDB --> Gestor: 13. jobId
+deactivate PrintJobsDB
+Gestor --> Backend: 14. jobId
+deactivate Gestor
+Backend --> Frontend: 15. 202 {jobId}
+deactivate Backend
+Frontend -> Usuario: 16. Mostrar job encolado (jobId)
 deactivate Frontend
 deactivate Usuario
+
 @enduml

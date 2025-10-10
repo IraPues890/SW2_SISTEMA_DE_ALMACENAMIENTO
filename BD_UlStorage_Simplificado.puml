@@ -41,6 +41,8 @@ class archivos as "ARCHIVOS" << (T,#FFAAAA) >> {
     + proveedor: VARCHAR(10)
     + bucket_path: VARCHAR(500)
     + hash_archivo: VARCHAR(255)
+    + texto_indexado: TEXT
+    +search_vector: tsvector
     + created_at: TIMESTAMP
     + updated_at: TIMESTAMP
 }
@@ -92,12 +94,25 @@ class logs as "ACTIVITY_LOGS" << (T,#FFAAAA) >> {
     + created_at: TIMESTAMP
 }
 
+class print_jobs as "PRINT_JOBS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + archivo_id: int [FK]
+    + usuario_id: int [FK]
+    + estado: VARCHAR(20) -- queued|processing|done|failed
+    + output_path: VARCHAR(500)
+    + job_type: VARCHAR(50)
+    + error_message: VARCHAR(1024)
+    + created_at: TIMESTAMP
+    + completed_at: TIMESTAMP
+}
+
 users ||--o{ carpetas
 users ||--o{ archivos 
 users ||--o{ etiquetas
 users ||--o{ versiones
 users ||--o{ permisos
 users ||--o{ logs
+users ||--o{ print_jobs
 
 carpetas ||--o{ carpetas
 carpetas ||--o{ archivos
@@ -106,11 +121,20 @@ archivos ||--o{ versiones
 archivos ||--o{ archivo_etiquetas
 archivos ||--o{ permisos
 archivos ||--o{ logs
+archivos ||--o{ print_jobs
 
 etiquetas ||--o{ archivo_etiquetas
 
 title **BD ULSTORAGE - SISTEMA DE ALMACENAMIENTO HÍBRIDO**
 note top : BD PostgreSQL almacena METADATOS
 note top : Cloud Storage (OCI/AWS/GCP/Azure) almacena ARCHIVOS FÍSICOS
+
+note bottom
+    Recomendaciones:
+    - Para búsqueda full-text en PostgreSQL usar columna 'search_vector' (tsvector) y
+        crear índice GIN: CREATE INDEX ON archivos USING GIN(search_vector);
+    - Mantener 'texto_indexado' con el contenido extraído (o metadatos) que alimenta el vector.
+    - 'PRINT_JOBS' permite procesar impresiones de forma asíncrona y auditar resultados.
+end note
 
 @enduml
