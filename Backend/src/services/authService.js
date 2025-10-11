@@ -1,4 +1,4 @@
-const Usuario = require('../db/models/usuario');
+const { Usuario } = require('../db/models');
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
 
