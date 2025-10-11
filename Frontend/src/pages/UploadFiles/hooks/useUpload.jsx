@@ -4,6 +4,7 @@ export default function useUpload(initial = {}) {
   const [selectedFile, setSelectedFile] = useState(initial.selectedFile || null)
   const [destFolder, setDestFolder] = useState(initial.destFolder || 'Raíz > Proyectos')
   const [overwrite, setOverwrite] = useState(initial.overwrite || false)
+  const [selectedCloud, setSelectedCloud] = useState(initial.selectedCloud || 'aws');
   const [progress, setProgress] = useState(0)
   const uploadIntervalRef = useRef(null)
 
@@ -35,6 +36,7 @@ export default function useUpload(initial = {}) {
     selectedFile, setSelectedFile,
     destFolder, setDestFolder,
     overwrite, setOverwrite,
+    selectedCloud, setSelectedCloud,
     progress, setProgress,
     startUpload,
     cancel

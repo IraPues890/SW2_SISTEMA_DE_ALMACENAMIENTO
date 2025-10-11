@@ -1,4 +1,4 @@
-const Usuario = require('../db/models/usuario');
+const { Usuario } = require('../db/models');
 const bcrypt = require('bcrypt');
 const { Op } = require('sequelize');
 
@@ -22,12 +22,16 @@ class AuthService {
         throw new Error('EMAIL_ALREADY_EXISTS');
       }
 
+      // Hashear contraseña manualmente
+      const saltRounds = 12;
+      const hashedPassword = await bcrypt.hash(userData.password, saltRounds);
+
       // Crear usuario
       const newUser = await Usuario.create({
         nombre: userData.nombre.trim(),
         apellido: userData.apellido?.trim() || '',
         email: userData.email.toLowerCase().trim(),
-        password: userData.password, // El modelo se encarga del hash
+        password_hash: hashedPassword, // Usar password_hash directamente
         telefono: userData.telefono?.trim() || null,
         rol: userData.rol || 'user',
         activo: true
