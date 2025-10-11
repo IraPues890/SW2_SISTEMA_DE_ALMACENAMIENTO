@@ -1,31 +1,77 @@
 const fs = require("fs");
 const path = require("path");
-const { PutObjectCommand, ListObjectsV2Command, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const awsClient = require("./awsClient");
 const IStorageRepository = require("../IStorageRepository");
 
 class AmazonRepository extends IStorageRepository {
     constructor() {
         super();
-        this.client = awsClient.getClient();
-        this.bucketName = "giomar-nos-debe-broster";
-        // Alternativa: this.bucketName = process.env.AWS_BUCKET
+        this.s3 = awsClient.getClient();
+        this.bucketName = awsClient.getBucketName();
     }
 
+    async uploadFile(fileName, fileBuffer) {
+        try {
+            const params = {
+                Bucket: this.bucketName,
+                Key: fileName,
+                Body: fileBuffer,
+                ServerSideEncryption: 'AES256'
+            };
+
+            const result = await this.s3.upload(params).promise();
+            return result.Location;
+        } catch (error) {
+            throw new Error(`Error uploading to AWS S3: ${error.message}`);
+        }
+    }
+
+    async downloadFile(fileName) {
+        try {
+            const params = {
+                Bucket: this.bucketName,
+                Key: fileName
+            };
+
+            const result = await this.s3.getObject(params).promise();
+            return result.Body;
+        } catch (error) {
+            throw new Error(`Error downloading from AWS S3: ${error.message}`);
+        }
+    }
+
+    async deleteFile(fileName) {
+        try {
+            const params = {
+                Bucket: this.bucketName,
+                Key: fileName
+            };
+
+            await this.s3.deleteObject(params).promise();
+            return true;
+        } catch (error) {
+            throw new Error(`Error deleting from AWS S3: ${error.message}`);
+        }
+    }
+
+    async listFiles(prefix = '') {
+        try {
+            const params = {
+                Bucket: this.bucketName,
+                Prefix: prefix
+            };
+
+            const result = await this.s3.listObjectsV2(params).promise();
+            return result.Contents || [];
+        } catch (error) {
+            throw new Error(`Error listing files from AWS S3: ${error.message}`);
+        }
+    }
+
+    // Mantener compatibilidad con métodos anteriores
     async upload(filePath, fileName) {
-        const command = new PutObjectCommand({
-            Bucket: this.bucketName,
-            Key: fileName,
-            Body: fs.createReadStream(filePath),
-        });
-
-        await this.client.send(command);
-
-        return {
-            fileName,
-            bucket: this.bucketName,
-            uploaded: true,
-        };
+        const fileBuffer = fs.readFileSync(filePath);
+        return await this.uploadFile(fileName, fileBuffer);
     }
 
     async listObjects() {
