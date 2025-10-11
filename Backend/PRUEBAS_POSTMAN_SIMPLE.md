@@ -2,13 +2,13 @@
 
 ## ⚙️ Configuración Base
 - **Collection Name:** UlStorage Auth
-- **Base URL:** `http://localhost:3000/api/auth`
+- **Base URL:** `http://localhost:3000/auth`
 
 ---
 
 ## 1. **LOGIN ADMIN**
 - **Method:** POST
-- **URL:** `http://localhost:3000/api/auth/login`
+- **URL:** `http://localhost:3000/auth/login`
 - **Body (raw JSON):**
 ```json
 {
@@ -21,7 +21,7 @@
 
 ## 2. **LOGIN USER**
 - **Method:** POST  
-- **URL:** `http://localhost:3000/api/auth/login`
+- **URL:** `http://localhost:3000/auth/login`
 - **Body (raw JSON):**
 ```json
 {
@@ -34,7 +34,7 @@
 
 ## 3. **REGISTER USER**
 - **Method:** POST
-- **URL:** `http://localhost:3000/api/auth/register`
+- **URL:** `http://localhost:3000/auth/register`
 - **Body (raw JSON):**
 ```json
 {
@@ -48,13 +48,13 @@
 
 ## 4. **GET PROFILE**
 - **Method:** GET
-- **URL:** `http://localhost:3000/api/auth/profile/1`
+- **URL:** `http://localhost:3000/auth/profile/1`
 
 ---
 
 ## 5. **UPDATE PROFILE**
 - **Method:** PUT
-- **URL:** `http://localhost:3000/api/auth/profile/1`
+- **URL:** `http://localhost:3000/auth/profile/1`
 - **Body (raw JSON):**
 ```json
 {
@@ -67,43 +67,43 @@
 
 ## 6. **DELETE USER**
 - **Method:** DELETE
-- **URL:** `http://localhost:3000/api/auth/profile/11`
+- **URL:** `http://localhost:3000/auth/profile/11`
 
 ---
 
 ## 7. **LOGOUT**
 - **Method:** POST
-- **URL:** `http://localhost:3000/api/auth/logout`
+- **URL:** `http://localhost:3000/auth/logout`
 
 ---
 
 ## 8. **GET ALL USERS**
 - **Method:** GET
-- **URL:** `http://localhost:3000/api/auth/users`
+- **URL:** `http://localhost:3000/auth/users`
 
 ---
 
 ## 9. **FILTER USERS (ADMIN)**
 - **Method:** GET
-- **URL:** `http://localhost:3000/api/auth/users?rol=admin`
+- **URL:** `http://localhost:3000/auth/users?rol=admin`
 
 ---
 
 ## 10. **FILTER USERS (ACTIVE)**
 - **Method:** GET
-- **URL:** `http://localhost:3000/api/auth/users?activo=true`
+- **URL:** `http://localhost:3000/auth/users?activo=true`
 
 ---
 
 ## 11. **TOGGLE USER STATUS**
 - **Method:** PUT
-- **URL:** `http://localhost:3000/api/auth/users/5/status`
+- **URL:** `http://localhost:3000/auth/users/5/status`
 
 ---
 
 ## 12. **CHANGE USER ROLE**
 - **Method:** PUT
-- **URL:** `http://localhost:3000/api/auth/users/4/role`
+- **URL:** `http://localhost:3000/auth/users/4/role`
 - **Body (raw JSON):**
 ```json
 {
@@ -117,7 +117,7 @@
 
 ## 13. **LOGIN INVALID**
 - **Method:** POST
-- **URL:** `http://localhost:3000/api/auth/login`
+- **URL:** `http://localhost:3000/auth/login`
 - **Body (raw JSON):**
 ```json
 {
@@ -130,7 +130,7 @@
 
 ## 14. **REGISTER INVALID**
 - **Method:** POST
-- **URL:** `http://localhost:3000/api/auth/register`
+- **URL:** `http://localhost:3000/auth/register`
 - **Body (raw JSON):**
 ```json
 {
@@ -144,7 +144,7 @@
 
 ## 15. **USER NOT FOUND**
 - **Method:** GET
-- **URL:** `http://localhost:3000/api/auth/profile/999`
+- **URL:** `http://localhost:3000/auth/profile/999`
 
 ---
 
