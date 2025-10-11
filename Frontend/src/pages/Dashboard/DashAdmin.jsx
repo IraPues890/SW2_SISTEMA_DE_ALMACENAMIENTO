@@ -57,9 +57,17 @@ function DashAdmin() {
                 <p className="text-blue-200 text-sm">{admin.getPosicion} • {admin.getRole}</p>
               </div>
             </div>
-            <div className="text-right">
-              <p className="text-white text-sm">Panel de Administración</p>
-              <p className="text-blue-300 text-xs">Sistema UlStorage</p>
+            <div className="flex items-center space-x-6">
+              <div className="text-right">
+                <p className="text-white text-sm">Panel de Administración</p>
+                <p className="text-blue-300 text-xs">Sistema UlStorage</p>
+              </div>
+              <button
+                onClick={() => navigate('/admin/pago-servicios')}
+                className="ml-4 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-700 text-white rounded shadow hover:from-green-600 hover:to-emerald-800 transition-all duration-200 font-semibold"
+              >
+                Pago de servicios
+              </button>
             </div>
           </div>
         </div>
