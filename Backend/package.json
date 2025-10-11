@@ -17,7 +17,8 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.896.0",
     "@azure/storage-blob": "^12.28.0",
-    "@google-cloud/storage": "^7.17.1",
+    "@google-cloud/storage": "^7.17.2",
+    "aws-sdk": "^2.1692.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -26,7 +27,7 @@
     "multer": "^2.0.2",
     "oci-common": "^2.118.0",
     "oci-objectstorage": "^2.118.0",
-    "oci-sdk": "^2.118.0",
+    "oci-sdk": "^2.119.0",
     "pg": "^8.16.3",
     "sequelize": "^6.37.7",
     "sequelize-cli": "^6.6.3"
