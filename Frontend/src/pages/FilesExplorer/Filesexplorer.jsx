@@ -226,7 +226,6 @@ function Filesexplorer() {
                           <td className="py-4 px-4"><span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 uppercase">{f.type}</span></td>
                           <td className="py-4 px-4">
                             <div className="flex space-x-2">
-                              {f.type !== 'folder' && (<button onClick={() => handleDownloadSelected([f.id])} className="px-3 py-1.5 bg-gradient-to-r from-blue-600 to-cyan-700 text-white rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-1">📥</button>)}
                               <button onClick={() => openSidePreview(f)} className="px-3 py-1.5 bg-gradient-to-r from-slate-600 to-slate-700 text-white rounded-lg text-sm font-medium shadow-md hover:shadow-lg transition-all duration-200">{f.type === 'folder' ? 'Abrir' : 'Ver'}</button>
                             </div>
                           </td>
@@ -262,7 +261,6 @@ function Filesexplorer() {
                       </div>
                       <div className="flex flex-col space-y-2">
                         {selectedFile.type !== 'folder' && (<button onClick={() => handleDownloadSelected([selectedFile.id])} className="px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200">📥 Descargar archivo</button>)}
-                        <button onClick={() => window.print()} className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-700 text-white rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200">🖨️ Imprimir</button>
                       </div>
                     </div>
                   ) : (
