@@ -109,12 +109,13 @@ function Filesexplorer() {
     setSelectedPreviewUrl(f.url ?? demoPdf);
   }
 
-  function handleDownloadSelected() {
-    if (selectedFileIds.length === 0) {
+  function handleDownloadSelected(fileIds) {
+    const idsToDownload = Array.isArray(fileIds) ? fileIds : selectedFileIds;
+    if (!idsToDownload || idsToDownload.length === 0) {
       alert('Seleccionar al menos un archivo');
       return;
     }
-    selectedFileIds.forEach(fileId => {
+    idsToDownload.forEach(fileId => {
       const fileToDownload = files.find(f => f.id === fileId);
       if (fileToDownload && fileToDownload.type !== 'folder') {
         const content = `Archivo: ${fileToDownload.name}`;
