@@ -86,6 +86,9 @@ module.exports = (sequelize, DataTypes) => {
 
   // Métodos de instancia
   Usuario.prototype.verificarPassword = async function(password) {
+    if (!password || !this.password_hash) {
+      return false; // Si no hay password o hash, no coincide
+    }
     return await bcrypt.compare(password, this.password_hash);
   };
 
