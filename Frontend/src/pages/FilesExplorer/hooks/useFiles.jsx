@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
 
 const demoFiles = [
-    { id: 1, name: 'informe2025.pdf', size: '2300', date: '30/09/2025', type: 'pdf', parentId: null },
-    { id: 2, name: 'reporte_ventas.xlsx', size: '1200', date: '29/09/2025', type: 'xlsx', parentId: null },
-    { id: 3, name: 'datos_clientes.csv', size: '800', date: '28/09/2025', type: 'csv', parentId: null },
-    { id: 4, name: 'grafico_anual.png', size: '500', date: '27/09/2025', type: 'png', parentId: null },
-    { id: 5, name: 'presentacion.pptx', size: '4500', date: '25/09/2025', type: 'pptx', parentId: null },
+    { id: 1, name: 'informe2025.pdf', size: '2300', date: '30/09/2025', type: 'pdf', parentId: null, url: 'https://drive.google.com/file/d/1b6ZAymwziRp62wUPJygTsMMGdfbjH9oB/view?usp=drive_link' },
+    { id: 2, name: 'reporte_ventas.xlsx', size: '1200', date: '29/09/2025', type: 'xlsx', parentId: null, url: 'https://docs.google.com/spreadsheets/d/1k02PRDG5DW_sGh1iM4vryIgMdrbO5JAt/edit?gid=1225352679#gid=1225352679' },
+    { id: 3, name: 'datos_clientes.csv', size: '800', date: '28/09/2025', type: 'csv', parentId: null, url: 'https://drive.google.com/file/d/1EsLOeRZdm1sjZKWH2Va_OKA02JmYJVW7/view?usp=sharing' },
+    { id: 4, name: 'grafico_anual.png', size: '500', date: '27/09/2025', type: 'png', parentId: null, url: 'https://drive.google.com/file/d/1LqTRDDGHyCQcyELh_SCWnY2g11xmK1Co/view?usp=sharing' },
+    { id: 5, name: 'presentacion.pptx', size: '4500', date: '25/09/2025', type: 'pptx', parentId: null, url: 'https://docs.google.com/presentation/d/1oJjLOOOvamp4CNq8uzESltCT-MAoCqv6/edit?slide=id.p1#slide=id.p1' },
 ];
 
 export function useFiles() {
