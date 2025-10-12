@@ -64,6 +64,23 @@ router.post('/upload',
 );
 
 /**
+ * @route GET /api/files/s3-presign
+ * @desc Obtener URL presignada para subir directamente a S3
+ * @access Private
+ */
+router.get('/s3-presign',
+    authenticateToken,
+    (req, res, next) => {
+        // validar query params
+        if (!req.query.key || !req.query.contentType) {
+            return res.status(400).json({ success: false, message: 'key and contentType query params required' });
+        }
+        next();
+    },
+    require('../controllers/presignController').getS3Presign
+);
+
+/**
  * @route GET /api/files/:id/download
  * @desc Descargar un archivo por ID
  * @access Private
