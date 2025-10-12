@@ -2,8 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --bg: #ffffff;
+  --surface: #f5f5f5;
+  --text: #111827; /* gray-900 */
+  --muted: #6b7280; /* gray-500 */
+}
+
+.dark {
+  /* Two-tone dark-blue gradient */
+  --bg-start: #06142a; /* darker navy */
+  --bg-end:   #1b2e4a; /* lighter navy */
+  --bg: linear-gradient(180deg, var(--bg-start), var(--bg-end));
+  --surface: #0b2338; /* surface color for cards */
+  --text: #f8fafc; /* near-white text */
+  --muted: #9fb0bf; /* muted light blue-gray */
+}
+
+/* Dark-mode overrides to force consistent deep-blue background and surface colors.
+   These selectors target common Tailwind background/gradient classes so components
+   that use explicit light backgrounds are overridden in dark mode. Use !important
+   because Tailwind utility classes are highly specific. If you prefer selective
+   control, we can update individual components instead. */
+.dark .min-h-screen {
+  background-image: var(--bg) !important;
+  background-color: var(--bg-start) !important;
+}
+
+/* Replace usable white/near-white surfaces with our --surface color */
+.dark [class*="bg-white"] {
+  background-image: none !important;
+  background-color: var(--surface) !important;
+  color: var(--text) !important;
+}
+
+/* Keep gradient backgrounds for buttons and decorative elements in dark mode */
+/* We only override component surfaces and whites; gradients are left intact */
+
+/* Ensure elements using bg-gray-* or bg-slate-* are darkened */
+.dark [class*="bg-gray-"] , .dark [class*="bg-slate-"] , .dark [class*="bg-black"] {
+  /* gray/slate/black backgrounds used for surfaces become our surface */
+  background-color: var(--surface) !important;
+  color: var(--text) !important;
+}
+
+/* Slightly tint borders in dark mode for visibility */
+.dark [class*="border-"] {
+  border-color: rgba(255,255,255,0.06) !important;
+}
+
+/* Keep buttons and badges readable by ensuring text color is correct in dark */
+.dark .text-slate-800, .dark .text-slate-700 {
+  color: var(--text) !important;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
-  background: #f5f5f5;
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }

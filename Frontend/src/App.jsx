@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import ThemeToggle from './components/ThemeToggle'
 
 import Login from './pages/Login/Login';
 import DashAdmin from './pages/Dashboard/DashAdmin';
@@ -10,7 +11,10 @@ import ProtectedRoute from './routes/ProtectedRoute'
 
 function App() {
   return (
-    <div>
+  <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)', color: 'var(--text)' }}>
+      <header className="flex justify-end p-3">
+        <ThemeToggle />
+      </header>
       <Routes>
         <Route path='/' element={<Login />} />
 
