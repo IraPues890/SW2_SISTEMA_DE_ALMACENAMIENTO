@@ -37,7 +37,9 @@ const testConnection = async () => {
     await sequelize.authenticate();
     console.log('Conexión a PostgreSQL establecida correctamente.');
   } catch (error) {
-    console.error('No se pudo conectar a la base de datos:', error.message);
+    console.error('No se pudo conectar a la base de datos:', error && error.message ? error.message : error);
+    // Rethrow so callers (e.g. server startup) can act on the failure
+    throw error;
   }
 };
 
