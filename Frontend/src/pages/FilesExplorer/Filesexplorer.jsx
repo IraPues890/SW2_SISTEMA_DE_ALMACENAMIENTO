@@ -5,7 +5,6 @@ import { UserHeader } from './components/UserHeader';
 import { Metrics } from './components/Metrics';
 import { FileActions } from './components/FileActions';
 import { ViewSwitch, ViewContent, VIEWS } from './components/ViewComponents';
-import { FilePreviewer } from './components/FilePreviewer';
 
 // Mover CreateFolderModal a su propio archivo también sería una buena práctica.
 function CreateFolderModal({ isOpen, onClose, onCreate, validateName }) {
@@ -107,7 +106,7 @@ function Filesexplorer() {
       return;
     }
     setSelectedFile(f);
-    setSelectedPreviewUrl(f.url ?? demoPdf);
+    // No establecemos la URL aquí, se calculará en el `useMemo`
   }
 
   function handleDownloadSelected(fileIds) {
@@ -156,6 +155,28 @@ function Filesexplorer() {
     setSelectedFile(newFolder);
     setIsCreateOpen(false);
   }
+
+  const previewUrl = useMemo(() => {
+    if (!selectedFile || !selectedFile.URL) return null;
+
+    const url = selectedFile.URL;
+
+    // Para Google Docs, Sheets, Slides
+    if (url.includes('docs.google.com')) {
+      // Reemplaza /edit con /preview para hacerla incrustable
+      return url.replace('/edit', '/preview');
+    }
+
+    // Para Google Drive (funciona para PDF, imágenes, CSV, etc.)
+    if (url.includes('drive.google.com/file/d/')) {
+      const fileId = url.split('/d/')[1].split('/')[0];
+      // La URL de 'preview' es la más fiable para incrustar en iframes.
+      return `https://drive.google.com/file/d/${fileId}/preview`;
+    }
+
+    // Para otras URLs directas
+    return url;
+  }, [selectedFile]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-slate-900">
@@ -257,7 +278,7 @@ function Filesexplorer() {
                       </div>
                       <div className="mb-4">
                         <div className="bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-200" style={{height: 300}}>
-                          <FilePreviewer file={selectedFile} url={selectedPreviewUrl} />
+                          {selectedFile.type === 'folder' ? (<div className="w-full h-full flex items-center justify-center text-slate-500">Esta es una carpeta. (Sin vista previa)</div>) : (<iframe src={previewUrl} title={`Preview ${selectedFile.name}`} className="w-full h-full border-0" />)}
                         </div>
                       </div>
                       <div className="flex flex-col space-y-2">

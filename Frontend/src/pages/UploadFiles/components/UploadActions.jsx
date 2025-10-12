@@ -1,6 +1,10 @@
-import React from 'react'
+import React, { useContext } from 'react'
+import { AuthContext } from '../../../context/AuthContext'
 
 export default function UploadActions({ onUpload, onCancel, disabled }) {
+  const { user } = useContext(AuthContext)
+  // In this app user doesn't have a JWT; we pass a placeholder or empty string
+  const token = user?.token || ''
   return (
     <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-white/20 p-6">
       <div className="flex space-x-4">
@@ -11,7 +15,7 @@ export default function UploadActions({ onUpload, onCancel, disabled }) {
               : 'bg-gradient-to-r from-green-600 to-emerald-700 text-white hover:from-green-700 hover:to-emerald-800 focus:ring-green-500/50'
           }`}
           disabled={disabled}
-          onClick={onUpload}
+          onClick={() => onUpload(token)}
         >
           ✅ Subir archivo
         </button>
