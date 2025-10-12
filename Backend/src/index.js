@@ -1,49 +1,50 @@
-require("dotenv").config();
+require('dotenv').config();
 
-const express = require("express");
-const cors = require("cors");
-const routes = require("./routes");
-// Test DB connection utility
+const express = require('express');
+const cors = require('cors');
+const routes = require('./routes');
 const { testConnection } = require('./db/config/database');
 
 const app = express();
 
-// Configurar CORS con soporte para múltiples orígenes (CORS_ORIGIN puede ser una lista separada por comas)
-const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173').split(',').map(s => s.trim());
-app.use(cors({
-  origin: function(origin, callback) {
-    // Allow non-browser requests (e.g., curl, server-side) with no origin
-    if (!origin) return callback(null, true);
-    // Allow explicit configured origins
-    if (corsOrigins.indexOf(origin) !== -1) {
-      return callback(null, true);
-    }
-    // Allow any localhost origin (different dev ports)
-    if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) {
-      return callback(null, true);
-    }
-    // Not allowed
-    return callback(new Error('CORS origin not allowed'), false);
-  },
-  credentials: true
-}));
+// CORS: allow configured origins and any localhost
+const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((s) => s.trim());
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true); // non-browser clients
+      if (corsOrigins.indexOf(origin) !== -1) return callback(null, true);
+      if (/^https?:\/\/localhost(:\d+)?$/.test(origin)) return callback(null, true);
+      return callback(new Error('CORS origin not allowed'), false);
+    },
+    credentials: true,
+  })
+);
 
-// Middleware global (JSON, logs, etc.)
+// Global middleware
 app.use(express.json());
 
-// Expose API under /api to match frontend requests
-app.use("/api", routes);
+// Mount API
+app.use('/api', routes);
 
-// Start the server only after testing DB connection
+// Start server immediately to not block non-DB endpoints (e.g., S3 presign)
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Servidor corriendo en http://localhost:${port}`);
+});
+
+// Check DB connection in background and log result
 (async () => {
   try {
     await testConnection();
-    app.listen(3000, () => {
-      console.log("Servidor corriendo en http://localhost:3000");
-    });
+    console.log('Conexión a la base de datos OK.');
   } catch (err) {
-    console.error('No se arrancó el servidor porque falló la conexión a la base de datos.');
-    process.exit(1);
+    console.warn('No se pudo conectar a la base de datos al iniciar. Continuando sin BD.');
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(err && err.message ? err.message : err);
+    }
   }
 })();
 

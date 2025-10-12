@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom'
 
+
 // helper: parsear fechas en formato DD/MM/YYYY de forma segura
 function parseDMY(dateStr) {
   if (!dateStr) return new Date(0);
