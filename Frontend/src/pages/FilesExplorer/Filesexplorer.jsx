@@ -5,6 +5,7 @@ import { UserHeader } from './components/UserHeader';
 import { Metrics } from './components/Metrics';
 import { FileActions } from './components/FileActions';
 import { ViewSwitch, ViewContent, VIEWS } from './components/ViewComponents';
+import { FilePreviewer } from './components/FilePreviewer';
 
 // Mover CreateFolderModal a su propio archivo también sería una buena práctica.
 function CreateFolderModal({ isOpen, onClose, onCreate, validateName }) {
@@ -256,7 +257,7 @@ function Filesexplorer() {
                       </div>
                       <div className="mb-4">
                         <div className="bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-200" style={{height: 300}}>
-                          {selectedFile.type === 'folder' ? (<div className="w-full h-full flex items-center justify-center text-slate-500">Esta es una carpeta. (Sin vista previa)</div>) : (<iframe src={selectedPreviewUrl && (selectedPreviewUrl.endsWith('.pdf') ? `https://docs.google.com/gview?url=${encodeURIComponent(selectedPreviewUrl)}&embedded=true` : selectedPreviewUrl)} title={`Preview ${selectedFile.name}`} className="w-full h-full border-0" />)}
+                          <FilePreviewer file={selectedFile} url={selectedPreviewUrl} />
                         </div>
                       </div>
                       <div className="flex flex-col space-y-2">
