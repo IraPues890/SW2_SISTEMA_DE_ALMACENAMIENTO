@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
 
 const demoFiles = [
-    { id: 1, name: 'informe2025.pdf', size: '2300', date: '30/09/2025', type: 'pdf', parentId: null },
-    { id: 2, name: 'reporte_ventas.xlsx', size: '1200', date: '29/09/2025', type: 'xlsx', parentId: null },
-    { id: 3, name: 'datos_clientes.csv', size: '800', date: '28/09/2025', type: 'csv', parentId: null },
-    { id: 4, name: 'grafico_anual.png', size: '500', date: '27/09/2025', type: 'png', parentId: null },
-    { id: 5, name: 'presentacion.pptx', size: '4500', date: '25/09/2025', type: 'pptx', parentId: null },
+    { id: '1', name: 'informe2025.pdf', size: '2300', date: '30/09/2025', type: 'pdf', parentId: null },
+    { id: '2', name: 'reporte_ventas.xlsx', size: '1200', date: '29/09/2025', type: 'xlsx', parentId: null },
+    { id: '3', name: 'datos_clientes.csv', size: '800', date: '28/09/2025', type: 'csv', parentId: null },
+    { id: '4', name: 'grafico_anual.png', size: '500', date: '27/09/2025', type: 'png', parentId: null },
+    { id: '5', name: 'presentacion.pptx', size: '4500', date: '25/09/2025', type: 'pptx', parentId: null },
 ];
 
 export function useFiles() {
