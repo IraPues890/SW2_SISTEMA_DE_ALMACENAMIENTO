@@ -63,9 +63,15 @@ export function useFiles() {
         setFiles(prev => [file, ...prev]);
     };
 
+    const deleteFiles = (ids) => {
+        const idSet = Array.isArray(ids) ? ids : [ids];
+        setFiles(prev => prev.filter(f => !idSet.includes(f.id)));
+    };
+
     return {
         files,
         addFile,
+        deleteFiles,
         query,
         setQuery,
         sortOption,
