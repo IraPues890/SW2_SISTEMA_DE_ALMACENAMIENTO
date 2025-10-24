@@ -164,6 +164,10 @@ export default function Filesexplorer() {
               onOpen={openSidePreview}
               selectedFileIds={selectedFileIds}
               onToggleSelection={handleToggleSelection}
+              page={page}
+              totalPages={totalPages}
+              setPage={setPage}
+              filteredCount={sortedFiltered.length}
             />
           )}
         </ExplorerLayout>
