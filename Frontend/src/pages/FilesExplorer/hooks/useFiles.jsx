@@ -1,28 +1,81 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { SORT_OPTIONS_CONFIG, DEFAULT_SORT_OPTION } from '../config/SortOptions';
+import { getFiles } from '../services/apiServices';
 
-const demoFiles = [
-    { id: 1, name: 'informe2025.pdf', size: '2300', date: '30/09/2025', type: 'pdf', parentId: null, URL: 'https://drive.google.com/file/d/1b6ZAymwziRp62wUPJygTsMMGdfbjH9oB/view?usp=sharing' },
-    { id: 2, name: 'reporte_ventas.xlsx', size: '1200', date: '29/09/2025', type: 'xlsx', parentId: null, URL: 'https://docs.google.com/spreadsheets/d/1k02PRDG5DW_sGh1iM4vryIgMdrbO5JAt/edit?usp=sharing&ouid=100955731275521423402&rtpof=true&sd=true' },
-    { id: 3, name: 'datos_clientes.csv', size: '800', date: '28/09/2025', type: 'csv', parentId: null, URL: 'https://drive.google.com/file/d/1EsLOeRZdm1sjZKWH2Va_OKA02JmYJVW7/view?usp=sharing' },
-    { id: 4, name: 'grafico_anual.png', size: '500', date: '27/09/2025', type: 'png', parentId: null, URL: 'https://drive.google.com/file/d/1LqTRDDGHyCQcyELh_SCWnY2g11xmK1Co/view?usp=sharing' },
-    { id: 5, name: 'presentacion.pptx', size: '4500', date: '25/09/2025', type: 'pptx', parentId: null, URL: 'https://docs.google.com/presentation/d/1oJjLOOOvamp4CNq8uzESltCT-MAoCqv6/edit?usp=sharing&ouid=100955731275521423402&rtpof=true&sd=true' },
-];
+function transformApiData(apiData) {
+  const getFileType = (key, size) => {
+    if (key.endsWith('/') && size === 0) return 'folder';
+    const extension = key.split('.').pop();
+    if (extension === key || !extension) return 'file'; // Sin extensión
+    return extension.toLowerCase();
+  };
+
+  return apiData.map(item => {
+    const { Key, Size, LastModified } = item;
+    const type = getFileType(Key, Size);
+
+    // Partes de la ruta, eliminando strings vacíos (ej. del slash final)
+    const parts = Key.split('/').filter(p => p.length > 0);
+
+    let name = parts[parts.length - 1] || Key; // El último segmento
+    let parentId = null;
+
+    if (parts.length > 1) {
+      // Si hay más de un segmento (ej. ['carpeta', 'archivo.pdf']), tiene padre
+      const parentParts = parts.slice(0, parts.length - 1);
+      parentId = parentParts.join('/') + '/'; // Reconstruir la ruta padre
+    }
+
+    return {
+      id: Key,
+      name: name,
+      parentId: parentId, // <-- null si parts.length <= 1
+      size: (Size / 1024).toFixed(0),
+      date: new Date(LastModified).toLocaleDateString('es-PE'),
+      type: type,
+      URL: null,
+    };
+  });
+}
 
 export function useFiles() {
-    const [files, setFiles] = useState(demoFiles);
+    const [files, setFiles] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState(null);
+
     const [query, setQuery] = useState('');
     const [sortOption, setSortOption] = useState(DEFAULT_SORT_OPTION); 
     const [currentFolderId, setCurrentFolderId] = useState(null);
     const [page, setPage] = useState(1);
     const perPage = 5;
 
+    const refetchFiles = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const apiData = await getFiles(); 
+            const transformedData = transformApiData(apiData);
+            setFiles(transformedData);
+        } catch (err) {
+            console.error('[useFiles] 4. CATCH: Error capturado!', err.message);
+            setError(err.message || 'Error al cargar los archivos');
+            setFiles([]);
+        } finally {
+            console.log('[useFiles] 5. FINALLY: Limpiando carga.');
+            setIsLoading(false);
+        }
+    }, []); // Ya no depende de currentFolderId, siempre trae todo
+    
+    useEffect(() => {
+        refetchFiles();
+    }, [refetchFiles]);
+
     const filtered = useMemo(() => {
         const q = query.trim().toLowerCase();
         let items = files.filter(f => (f.parentId ?? null) === currentFolderId);
         if (!q) return items;
         return items.filter(f => f.name.toLowerCase().includes(q) || f.type.toLowerCase().includes(q));
-    }, [files, query, currentFolderId]);
+    }, [files, query, currentFolderId]); // <-- Añadida dependencia de currentFolderId
 
     const sortedFiltered = useMemo(() => {
         const items = [...(filtered ?? [])];
@@ -42,7 +95,7 @@ export function useFiles() {
         const nodes = [];
         let id = currentFolderId;
         while (id != null) {
-            const node = files.find(f => f.id === id);
+            const node = files.find(f => f.id === id); // Busca en la lista completa
             if (!node) break;
             nodes.push(node);
             id = node.parentId ?? null;
@@ -64,8 +117,11 @@ export function useFiles() {
         setFiles(prev => prev.filter(f => !idSet.includes(f.id)));
     };
 
-    return {
+return {
         files,
+        isLoading,
+        error,
+        refetchFiles,
         addFile,
         deleteFiles,
         query,
@@ -77,7 +133,7 @@ export function useFiles() {
         page,
         setPage,
         perPage,
-        pageItems,
+        pageItems, 
         totalPages,
         sortedFiltered,
         breadcrumbNodes,
