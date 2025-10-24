@@ -1,4 +1,5 @@
 import React from 'react';
+import { SORT_OPTIONS_LIST } from '../config/SortOptions';
 
 export default function SearchSortControls({ query, setQuery, sortOption, setSortOption, setPage }) {
   return (
@@ -15,12 +16,12 @@ export default function SearchSortControls({ query, setQuery, sortOption, setSor
         className="px-3 py-2 border border-slate-300 rounded-lg bg-white text-sm"
         aria-label="Ordenar archivos"
       >
-        <option value="name-asc">Nombre A → Z</option>
-        <option value="name-desc">Nombre Z → A</option>
-        <option value="date-desc">Fecha (más reciente)</option>
-        <option value="date-asc">Fecha (más antigua)</option>
-        <option value="size-desc">Tamaño (mayor)</option>
-        <option value="size-asc">Tamaño (menor)</option>
+        {/* Mapeamos la lista de opciones dinámicamente */}
+        {SORT_OPTIONS_LIST.map(opt => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
       </select>
     </div>
   );
