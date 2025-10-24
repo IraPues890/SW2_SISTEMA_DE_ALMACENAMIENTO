@@ -1,14 +1,8 @@
-import React from 'react'
+import React from 'react';
 
-export function FileActions({ onCreateFolder, onUploadFile, onDownloadSelected, onDeleteSelected, controls = null }) {
-  const actions = [
-    { key: 'upload', icon: '📤', text: 'Subir archivo',     color: 'bg-gradient-to-r from-green-600 to-emerald-700', onClick: onUploadFile },
-    { key: 'download', icon: '📥', text: 'Descargar archivo', color: 'bg-gradient-to-r from-blue-600 to-cyan-700', onClick: onDownloadSelected },
-    { key: 'delete', icon: '🗑️', text: 'Eliminar archivo', color: 'bg-gradient-to-r from-red-600 to-rose-700', onClick: onDeleteSelected },
-    { key: 'new-folder', icon: '➕', text: 'Crear carpeta',   color: 'bg-gradient-to-r from-yellow-600 to-orange-700', onClick: onCreateFolder },
-    { key: 'organize', icon: '📂', text: 'Organizar carpetas', color: 'bg-gradient-to-r from-purple-600 to-indigo-700' }
-  ];
-
+// AHORA: Recibe 'actions' como props y simplemente las renderiza.
+// También recibe 'controls' como antes.
+export function FileActions({ actions = [], controls = null }) {
   return (
     <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6 mb-6 w-full max-w-full">
       <div className="flex items-start justify-between mb-4">
