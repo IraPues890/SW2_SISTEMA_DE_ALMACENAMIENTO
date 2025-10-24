@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { SORT_OPTIONS_CONFIG, DEFAULT_SORT_OPTION } from '../config/SortOptions';
 
 const demoFiles = [
     { id: 1, name: 'informe2025.pdf', size: '2300', date: '30/09/2025', type: 'pdf', parentId: null, URL: 'https://drive.google.com/file/d/1b6ZAymwziRp62wUPJygTsMMGdfbjH9oB/view?usp=sharing' },
@@ -11,7 +12,7 @@ const demoFiles = [
 export function useFiles() {
     const [files, setFiles] = useState(demoFiles);
     const [query, setQuery] = useState('');
-    const [sortOption, setSortOption] = useState('name-asc');
+    const [sortOption, setSortOption] = useState(DEFAULT_SORT_OPTION); 
     const [currentFolderId, setCurrentFolderId] = useState(null);
     const [page, setPage] = useState(1);
     const perPage = 5;
@@ -26,16 +27,11 @@ export function useFiles() {
     const sortedFiltered = useMemo(() => {
         const items = [...(filtered ?? [])];
         if (!items.length) return items;
-        const collator = new Intl.Collator('es', { numeric: true, sensitivity: 'base' });
-        switch (sortOption) {
-            case 'name-asc': items.sort((a, b) => collator.compare(a.name, b.name)); break;
-            case 'name-desc': items.sort((a, b) => collator.compare(b.name, a.name)); break;
-            case 'date-asc': items.sort((a, b) => new Date(a.date) - new Date(b.date)); break;
-            case 'date-desc': items.sort((a, b) => new Date(b.date) - new Date(a.date)); break;
-            case 'size-asc': items.sort((a, b) => Number(a.size) - Number(b.size)); break;
-            case 'size-desc': items.sort((a, b) => Number(b.size) - Number(a.size)); break;
-            default: break;
+        const sortFunction = SORT_OPTIONS_CONFIG[sortOption]?.fn;
+        if (typeof sortFunction === 'function') {
+            items.sort(sortFunction);
         }
+        
         return items;
     }, [filtered, sortOption]);
 
