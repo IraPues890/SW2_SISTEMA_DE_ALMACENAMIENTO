@@ -1,4 +1,5 @@
 import React from 'react';
+import PaginationControls from './PaginationControls';
 
 export const VIEWS = [
   { key: 'table', label: 'Tabla', icon: '📋' },
@@ -13,6 +14,7 @@ const ICON_SIZES = {
   small:  { box: 'w-14 h-14', icon: 'text-2xl', name: 'text-xs' },
 };
 
+// --- (FileIcon no cambia) ---
 function FileIcon({ file, size = 'medium', onOpen, selected, onToggleSelection }) {
   const sz = ICON_SIZES[size] ?? ICON_SIZES.medium;
   const handleCheckboxClick = (e) => {
@@ -42,6 +44,7 @@ function FileIcon({ file, size = 'medium', onOpen, selected, onToggleSelection }
   );
 }
 
+// --- (IconGrid no cambia) ---
 function IconGrid({ files, viewSize, onOpen, selectedFileIds, onToggleSelection }) {
   const cols = viewSize === 'large' ? 'grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' : viewSize === 'medium' ? 'grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8' : 'grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10';
   return (
@@ -51,6 +54,7 @@ function IconGrid({ files, viewSize, onOpen, selectedFileIds, onToggleSelection 
   );
 }
 
+// --- (ViewSwitch no cambia) ---
 export function ViewSwitch({ activeView, onChange }) {
   return (
     <div className="bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6 mb-6">
@@ -69,12 +73,40 @@ export function ViewSwitch({ activeView, onChange }) {
   );
 }
 
-export function ViewContent({ activeView, files, onOpen, selectedFileIds, onToggleSelection }) {
+// --- COMPONENTE ACTUALIZADO ---
+export function ViewContent({ 
+  activeView, 
+  files, // <-- Ahora serán los pageItems
+  onOpen, 
+  selectedFileIds, 
+  onToggleSelection,
+  // --- Nuevas props de paginación ---
+  page,
+  totalPages,
+  setPage,
+  filteredCount
+}) {
   if (activeView === 'table') return null;
   const size = activeView === 'large' ? 'large' : activeView === 'small' ? 'small' : 'medium';
+  
   return (
     <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-xl border border-white/20 p-6">
-      <IconGrid files={files} viewSize={size} onOpen={onOpen} selectedFileIds={selectedFileIds} onToggleSelection={onToggleSelection} />
+      <IconGrid 
+        files={files} // <-- Le pasamos los pageItems
+        viewSize={size} 
+        onOpen={onOpen} 
+        selectedFileIds={selectedFileIds} 
+        onToggleSelection={onToggleSelection} 
+      />
+      
+      {/* Añadimos los controles de paginación */}
+      <PaginationControls 
+        page={page}
+        totalPages={totalPages}
+        setPage={setPage}
+        itemsLength={files.length}
+        totalLength={filteredCount}
+      />
     </div>
   );
 }
