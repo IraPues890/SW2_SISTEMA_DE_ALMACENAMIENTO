@@ -1,4 +1,4 @@
-@startuml
+@startuml SCRUM-27_Sistema_de_alertas_y_monitoreo
 title SCRUM-27: Sistema de Alertas y Monitoreo
 
 actor Usuario
