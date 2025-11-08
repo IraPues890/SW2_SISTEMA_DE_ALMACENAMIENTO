@@ -317,6 +317,9 @@ ProveedorAlmacenamiento <|-- OCIStorage : "extiende"
 ProveedorAlmacenamiento <|-- AWSStorage : "extiende" 
 ProveedorAlmacenamiento <|-- GCPStorage : "extiende"
 
+ProveedorFactory ..> SecureConnectionManager : "usa"
+CloudRepositorio ..> SecureConnectionManager : "usa"
+
 ' Servicios adicionales
 package "Servicios" {
   class BuscadorService {
@@ -326,12 +329,40 @@ package "Servicios" {
   class PrintService {
     +imprimir(archivo: Archivo): void
   }
+
+  class ActivityLogService {
+    +registrarAccion(usuario: Usuario, accion: string, meta: Object): void
+    +exportarLogs(formato: string): binary
+  }
+
+  class AlertService {
+    +enviarAlerta(nivel: string, mensaje: string, destinatarios: List<Usuario>): void
+    +configurarCanal(canal: string, config: Object): void
+  }
+
+  class StorageQuotaService {
+    +verificarCuota(usuario: Usuario, tamaño: number): boolean
+    +consumirCuota(usuario: Usuario, tamaño: number): void
+    +liberarCuota(usuario: Usuario, tamaño: number): void
+  }
+
+  class SecureConnectionManager {
+    +obtenerCredenciales(proveedor: string): Object
+    +rotarCredenciales(proveedor: string): void
+    +validarConexion(proveedor: string): boolean
+  }
 }
 
 ' Relaciones con servicios
 GestorArchivos ..> BuscadorService : "usa"
 GestorArchivos ..> PrintService : "usa"
+GestorArchivos ..> ActivityLogService : "usa"
+GestorArchivos ..> StorageQuotaService : "usa"
+GestorArchivos ..> AlertService : "usa"
 PrintService ..> Archivo : "imprime"
+
+ActivityLogService ..> Archivo : "audita"
+AlertService ..> Administrador : "notifica"
 
 ' Posicionamiento visual (layout hints)
 Usuario -[hidden]-> GestorArchivos
