@@ -41,6 +41,9 @@ router.get("/:provider/list", async (req, res) => {
       message: "Lista de objetos obtenida correctamente",
       data: objects
     });
+
+    
+
   } catch (err) {
     console.error(err);
     res.status(500).json({
