@@ -1,5 +1,4 @@
 const API_URL = 'http://localhost:3000/api/storage/aws/list?bucket=giomar-nos-debe-broster' // HARCODEADO PORQUE MATARON EL BACKEND MALDITOS
-const API_URL2 = 'http://localhost:3000/api/storage/aws/download/?bucket=giomar-nos-debe-broster&fileName=mininon.jpg'
 
 async function handleResponse(response) {
     if (!response.ok) {
@@ -13,6 +12,32 @@ async function handleResponse(response) {
     }
 }
 
+// ESTO DEBERÍA SER CAPAZ DE MANEJAR MÚLTIPLES ARCHIVOS (IDs)
+async function triggerBrowserDownload(response,id) {
+  try {
+    const blob = await response.blob();
+    console.log(blob);
+    // Creamos una URL temporal en memoria
+    const downloadUrl = URL.createObjectURL(blob);
+
+    // Creamos un enlace <a> fantasma para hacer clic
+    const a = document.createElement('a');
+    a.href = downloadUrl;
+    a.download = id;
+    
+    // Simulamos el clic y limpiamos
+    document.body.appendChild(a);
+    a.click();
+    
+    // Limpiamos la URL de memoria y el enlace
+    URL.revokeObjectURL(downloadUrl);
+    a.remove();
+
+  } catch (error) {
+    console.error('Error al descargar el archivo:', error.message);
+  }
+}
+
 export async function getFiles() {
     try {
         const response = await fetch(API_URL);
@@ -22,10 +47,11 @@ export async function getFiles() {
     }
 }
 
-export async function downloadFiles() {
+export async function downloadFiles(id) {
     try {
-        const response = await fetch(API_URL2);
-        return handleResponse(response);
+        const API_URL = `http://localhost:3000/api/storage/aws/download/?bucket=giomar-nos-debe-broster&fileName=${id}`
+        const response = await fetch(API_URL);
+        return triggerBrowserDownload(response,id);
     } catch (err) {
         throw err; // Relanza el error para que useFiles lo atrape
     }
