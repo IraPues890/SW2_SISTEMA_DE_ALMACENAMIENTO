@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const awsClient = require("./awsClient");
 const IStorageRepository = require("../IStorageRepository");
+const { PutObjectCommand, ListObjectsV2Command, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 
 class AmazonRepository extends IStorageRepository {
     constructor() {
@@ -75,19 +76,18 @@ class AmazonRepository extends IStorageRepository {
     }
 
     async listObjects() {
-        const command = new ListObjectsV2Command({
-            Bucket: this.bucketName,
-        });
 
-        const response = await this.client.send(command);
-
+        const params = {
+                Bucket: this.bucketName
+            };
+        const result = await this.s3.listObjectsV2(params).promise();
+        console.log('Respuesta de S3:', result);
         const objects =
-            response.Contents?.map((obj) => ({
+            result.Contents?.map((obj) => ({
                 fileName: obj.Key,
                 size: obj.Size,
                 lastModified: obj.LastModified,
             })) || [];
-
         return {
             bucket: this.bucketName,
             objects,
