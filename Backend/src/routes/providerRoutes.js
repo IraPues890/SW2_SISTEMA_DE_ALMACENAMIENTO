@@ -64,10 +64,6 @@ router.get("/:provider/download", async (req, res) => {
     const repo = StorageFactory(provider);
     const result = await repo.downloadObject(fileName);
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-    
-    // Opcional: Es buena idea poner el tipo de contenido si lo sabes
-    // res.setHeader('Content-Type', 'image/jpeg'); 
-    // res.setHeader('Content-Type', 'application/pdf');
     res.send(result);
     
   } catch (err) {
@@ -78,6 +74,44 @@ router.get("/:provider/download", async (req, res) => {
   }
 });
 
+router.post("/:provider/download-bulk", async (req, res) => {
+  try {
+    const { provider } = req.params;
+    const { fileNames } = req.body;
+
+    if (!fileNames || !Array.isArray(fileNames) || fileNames.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Se requiere un array 'fileNames' en el body."
+      });
+    }
+
+    const repo = StorageFactory(provider);
+    
+    const { archiveStream, archiveName } = await repo.downloadBulk(fileNames);
+
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${archiveName}"`);
+
+    archiveStream.on('error', function(err) {
+      console.error('Error del stream de Archiver:', err.message);
+      res.status(500).json({
+        success: false,
+        message: "Error al crear el archivo zip", error: err.message
+      });
+    });
+
+    archiveStream.pipe(res);
+
+  } catch (err) {
+    if (!res.headersSent) {
+      res.status(500).json({
+        success: false,
+        message: "Error al descargar archivos", error: err.message
+      });
+    }
+  }
+});
 
 // DELETE /storage/:provider/delete/:fileName
 router.delete("/:provider/delete/:fileName", async (req, res) => {
