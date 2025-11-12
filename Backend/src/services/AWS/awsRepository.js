@@ -27,7 +27,7 @@ class AmazonRepository extends IStorageRepository {
         }
     }
 
-    async downloadFile(fileName) {
+    async downloadObject(fileName) {
         try {
             const params = {
                 Bucket: this.bucketName,
@@ -55,20 +55,6 @@ class AmazonRepository extends IStorageRepository {
         }
     }
 
-    async listFiles(prefix = '') {
-        try {
-            const params = {
-                Bucket: this.bucketName,
-                Prefix: prefix
-            };
-
-            const result = await this.s3.listObjectsV2(params).promise();
-            return result.Contents || [];
-        } catch (error) {
-            throw new Error(`Error listing files from AWS S3: ${error.message}`);
-        }
-    }
-
     // Mantener compatibilidad con métodos anteriores
     async upload(filePath, fileName) {
         const fileBuffer = fs.readFileSync(filePath);
@@ -81,7 +67,6 @@ class AmazonRepository extends IStorageRepository {
                 Bucket: this.bucketName
             };
         const result = await this.s3.listObjectsV2(params).promise();
-        console.log('Respuesta de S3:', result);
         const objects =
             result.Contents?.map((obj) => ({
                 fileName: obj.Key,
@@ -91,32 +76,6 @@ class AmazonRepository extends IStorageRepository {
         return {
             bucket: this.bucketName,
             objects,
-        };
-    }
-
-    async downloadObject(fileName, destinationPath) {
-        const command = new GetObjectCommand({
-            Bucket: this.bucketName,
-            Key: fileName,
-        });
-
-        const dir = path.dirname(destinationPath);
-        await fs.promises.mkdir(dir, { recursive: true });
-
-        const response = await this.client.send(command);
-        const writeStream = fs.createWriteStream(destinationPath);
-
-        await new Promise((resolve, reject) => {
-            response.Body.pipe(writeStream)
-                .on("finish", resolve)
-                .on("error", reject);
-        });
-
-        return {
-            fileName,
-            bucket: this.bucketName,
-            destination: destinationPath,
-            downloaded: true,
         };
     }
 

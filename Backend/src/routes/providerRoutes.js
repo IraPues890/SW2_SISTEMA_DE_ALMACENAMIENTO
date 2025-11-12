@@ -42,7 +42,7 @@ router.get("/:provider/list", async (req, res) => {
       data: objects
     });
 
-    
+
 
   } catch (err) {
     console.error(err);
@@ -60,17 +60,21 @@ router.get("/:provider/download", async (req, res) => {
     const { provider } = req.params;
     const { fileName } = req.query;
 
+    console.log(fileName);
     const repo = StorageFactory(provider);
-    const destinationPath = path.join("downloads", fileName);
-    const result = await repo.downloadObject(fileName, destinationPath);
-
-    res.download(result.destination, path.basename(fileName), err => {
-      if (err) console.error("Error al enviar archivo:", err);
-    });
+    const result = await repo.downloadObject(fileName);
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    
+    // Opcional: Es buena idea poner el tipo de contenido si lo sabes
+    // res.setHeader('Content-Type', 'image/jpeg'); 
+    // res.setHeader('Content-Type', 'application/pdf');
+    res.send(result);
+    
   } catch (err) {
-    res.status(500).json({ 
-    success: false,
-    message: "Error al descargar archivo", error: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Error al descargar archivo", error: err.message
+    });
   }
 });
 
