@@ -4,7 +4,6 @@ import { getFiles } from '../services/apiServices';
 
 function transformApiData(apiData) {
   return apiData.objects.map(item => {
-    console.log(item);
     const { fileName, size, lastModified } = item;
 
     // Partes de la ruta, eliminando strings vacíos (ej. del slash final)
