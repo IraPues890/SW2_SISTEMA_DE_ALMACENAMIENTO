@@ -1,8 +1,9 @@
 const fs = require("fs");
-const path = require("path");
+const archiver = require('archiver');
 const awsClient = require("./awsClient");
 const IStorageRepository = require("../IStorageRepository");
 const { PutObjectCommand, ListObjectsV2Command, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
+const { filestorage } = require("oci-sdk");
 
 class AmazonRepository extends IStorageRepository {
     constructor() {
@@ -41,6 +42,42 @@ class AmazonRepository extends IStorageRepository {
         }
     }
 
+    async downloadBulk(fileNames) {
+        try {
+            const archive = archiver('zip', {
+                zlib: { level: 9 }
+            });
+            const archiveName = `files.zip`;
+            const processFiles = async () => {
+                for (const fileName of fileNames) {
+                    try {
+                        const s3Object = await this.s3.getObject({
+                            Bucket: this.bucketName,
+                            Key: fileName
+                        }).promise();
+
+                        archive.append(s3Object.Body, { name: fileName });
+
+                    } catch (s3Error) {
+                        console.error(`Error al obtener ${fileName}: ${s3Error.message}`);
+                        archive.append(`Error al obtener ${fileName}`, { name: `${fileName}-ERROR.txt` });
+                    }
+                }
+                archive.finalize();
+            };
+
+            processFiles().catch(err => {
+                archive.emit('error', err);
+            });
+
+            return { archiveStream: archive, archiveName: archiveName };
+
+        } catch (error) {
+            // Este catch solo atrapará errores ANTES de crear el stream
+            throw new Error(`Error preparando el zip: ${error.message}`);
+        }
+    }
+
     async deleteFile(fileName) {
         try {
             const params = {
@@ -64,8 +101,8 @@ class AmazonRepository extends IStorageRepository {
     async listObjects() {
 
         const params = {
-                Bucket: this.bucketName
-            };
+            Bucket: this.bucketName
+        };
         const result = await this.s3.listObjectsV2(params).promise();
         const objects =
             result.Contents?.map((obj) => ({
@@ -94,20 +131,20 @@ class AmazonRepository extends IStorageRepository {
             deleted: true,
         };
     }
-    
+
     async createFolder(folderName) {
         const params = {
-          Bucket: this.bucketName,
-          Key: folderName.endsWith("/") ? folderName : `${folderName}/`,
-          Body: "",
+            Bucket: this.bucketName,
+            Key: folderName.endsWith("/") ? folderName : `${folderName}/`,
+            Body: "",
         };
 
         await this.client.send(new PutObjectCommand(params));
 
         return {
-          folderName: params.Key,
-          bucket: this.bucketName,
-          created: true,
+            folderName: params.Key,
+            bucket: this.bucketName,
+            created: true,
         };
     }
 }
