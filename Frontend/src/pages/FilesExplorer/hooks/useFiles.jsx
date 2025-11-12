@@ -3,19 +3,12 @@ import { SORT_OPTIONS_CONFIG, DEFAULT_SORT_OPTION } from '../config/SortOptions'
 import { getFiles } from '../services/apiServices';
 
 function transformApiData(apiData) {
-  const getFileType = (key, size) => {
-    if (key.endsWith('/') && size === 0) return 'folder';
-    const extension = key.split('.').pop();
-    if (extension === key || !extension) return 'file'; // Sin extensión
-    return extension.toLowerCase();
-  };
-
-  return apiData.map(item => {
-    const { Key, Size, LastModified } = item;
-    const type = getFileType(Key, Size);
+  return apiData.objects.map(item => {
+    console.log(item);
+    const { fileName, size, lastModified } = item;
 
     // Partes de la ruta, eliminando strings vacíos (ej. del slash final)
-    const parts = Key.split('/').filter(p => p.length > 0);
+    const parts = fileName.split('/').filter(p => p.length > 0);
 
     let name = parts[parts.length - 1] || Key; // El último segmento
     let parentId = null;
@@ -27,12 +20,11 @@ function transformApiData(apiData) {
     }
 
     return {
-      id: Key,
+      id: fileName,
       name: name,
       parentId: parentId, // <-- null si parts.length <= 1
-      size: (Size / 1024).toFixed(0),
-      date: new Date(LastModified).toLocaleDateString('es-PE'),
-      type: type,
+      size: (size / 1024).toFixed(0),
+      date: new Date(lastModified).toLocaleDateString('es-PE'),
       URL: null,
     };
   });
@@ -53,15 +45,14 @@ export function useFiles() {
         setIsLoading(true);
         setError(null);
         try {
-            const apiData = await getFiles(); 
+            const apiData = await getFiles();
+            console.log(apiData);
             const transformedData = transformApiData(apiData);
             setFiles(transformedData);
         } catch (err) {
-            console.error('[useFiles] 4. CATCH: Error capturado!', err.message);
             setError(err.message || 'Error al cargar los archivos');
             setFiles([]);
         } finally {
-            console.log('[useFiles] 5. FINALLY: Limpiando carga.');
             setIsLoading(false);
         }
     }, []); // Ya no depende de currentFolderId, siempre trae todo

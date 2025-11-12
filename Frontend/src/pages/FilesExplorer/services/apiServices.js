@@ -1,4 +1,4 @@
-const API_URL = 'http://150.136.242.193:3000/aws/list?bucket=giomar-nos-debe-broster' // HARCODEADO PORQUE MATARON EL BACKEND MALDITOS
+const API_URL = 'http://localhost:3000/api/storage/aws/list?bucket=giomar-nos-debe-broster' // HARCODEADO PORQUE MATARON EL BACKEND MALDITOS
 
 async function handleResponse(response) {
     if (!response.ok) {

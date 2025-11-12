@@ -1,5 +1,5 @@
 export async function getPresignedUrl(file, authToken) {
-  const key = `${Date.now()}-${file.name}`;
+  const key = `${file.name}`;
   const params = new URLSearchParams({ key, contentType: file.type });
   const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
   const presignUrl = `${API_BASE}/api/files/s3-presign?${params}`;
