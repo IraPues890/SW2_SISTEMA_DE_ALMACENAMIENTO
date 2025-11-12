@@ -84,7 +84,6 @@ export default function Filesexplorer() {
 
   const handleDownloadSelected = () => {
     let fileIds = selectedFileIds;
-    console.log(fileIds);
     if (fileIds.length > 1) {
         console.log("se han seleccionado varios archivos, hay que manejarlo de algún modo")
     } else if (fileIds.length === 0) {
