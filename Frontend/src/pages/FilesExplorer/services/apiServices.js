@@ -67,3 +67,19 @@ export async function downloadFiles(id) {
         throw err;
     }
 }
+
+export async function deleteFiles(id) {
+    try {
+        const API_URL = `http://localhost:3000/api/storage/aws/delete/${id}`
+        const response = await fetch(API_URL, {
+            method: 'DELETE',
+            headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ fileName: id })
+        });
+        return handleResponse(response);
+    } catch (err) {
+        throw err; // Relanza el error para que useFiles lo atrape
+    }
+}

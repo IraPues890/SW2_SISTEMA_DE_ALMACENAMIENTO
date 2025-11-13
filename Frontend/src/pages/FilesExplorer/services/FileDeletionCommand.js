@@ -1,5 +1,7 @@
 // Simple Command object that encapsulates deletion logic.
 // For now it executes a provided delete function (in-memory or API) — demonstrates Command pattern and DIP.
+import { deleteFiles } from './apiServices';
+
 export default class FileDeletionCommand {
   constructor(deleteFn) {
     if (typeof deleteFn !== 'function') throw new Error('deleteFn must be a function');
@@ -8,6 +10,6 @@ export default class FileDeletionCommand {
 
   async execute(ids) {
     // Could add logging, undo stack, or API calls here.
-    return await this.deleteFn(ids);
+    return await deleteFiles(ids);
   }
 }
