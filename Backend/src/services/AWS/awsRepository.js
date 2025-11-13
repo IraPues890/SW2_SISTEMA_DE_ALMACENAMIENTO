@@ -78,20 +78,6 @@ class AmazonRepository extends IStorageRepository {
         }
     }
 
-    async deleteFile(fileName) {
-        try {
-            const params = {
-                Bucket: this.bucketName,
-                Key: fileName
-            };
-
-            await this.s3.deleteObject(params).promise();
-            return true;
-        } catch (error) {
-            throw new Error(`Error deleting from AWS S3: ${error.message}`);
-        }
-    }
-
     // Mantener compatibilidad con métodos anteriores
     async upload(filePath, fileName) {
         const fileBuffer = fs.readFileSync(filePath);
@@ -117,19 +103,16 @@ class AmazonRepository extends IStorageRepository {
     }
 
     async deleteObject(fileName) {
-
-        const command = new DeleteObjectCommand({
-            Bucket: this.bucketName,
-            Key: fileName,
-        });
-
-        await this.client.send(command);
-
-        return {
-            fileName,
-            bucket: this.bucketName,
-            deleted: true,
-        };
+        try {
+            const params = {
+                Bucket: this.bucketName,
+                Key: fileName
+            };
+            await this.s3.deleteObject(params).promise();
+            return true;
+        } catch (error) {
+            throw new Error(`Error deleting from AWS S3: ${error.message}`);
+        }
     }
 
     async createFolder(folderName) {
