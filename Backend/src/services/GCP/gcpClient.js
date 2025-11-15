@@ -1,5 +1,5 @@
 const { Storage } = require("@google-cloud/storage");
-require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 class GoogleClient {
     constructor() {
