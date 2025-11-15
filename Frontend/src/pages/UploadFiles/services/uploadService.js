@@ -1,34 +1,34 @@
-export async function getPresignedUrl(file, authToken) {
-  const key = `${file.name}`;
-  const params = new URLSearchParams({ key, contentType: file.type });
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
-  const presignUrl = `${API_BASE}/api/files/s3-presign?${params}`;
-
-  const res = await fetch(presignUrl, {
-    headers: { Authorization: `Bearer ${authToken}` },
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
+async function getPresignedUrl(file) {
+  const res = await fetch(`${API_BASE}/api/storage/aws/upload`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      fileName: file.name,
+      fileType: file.type
+    })
   });
 
-  if (!res.ok) throw new Error(await res.text());
   const data = await res.json();
-  if (!data.success) throw new Error(data.message || "Presign failed");
-
   return data.url;
 }
 
-export function uploadToS3(url, file, onProgress) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
-    });
-    xhr.onload = () => {
-      xhr.status >= 200 && xhr.status < 300
-        ? resolve()
-        : reject(new Error(`Upload failed ${xhr.status}`));
-    };
-    xhr.onerror = () => reject(new Error("Network error"));
-    xhr.open("PUT", url);
-    xhr.setRequestHeader("Content-Type", file.type);
-    xhr.send(file);
+
+export async function uploadFileToS3(file) {
+  console.warn(file);
+  const presignedUrl = await getPresignedUrl(file);
+
+  const upload = await fetch(presignedUrl, {
+    method: "PUT",
+    body: file,
+    headers: {
+      headers: {
+        "Content-Type": file.type,
+      }
+    }
   });
+
+  if (!upload.ok) throw new Error("Error subiendo archivo");
+
+  return presignedUrl.split("?")[0]; // URL final del objeto
 }
