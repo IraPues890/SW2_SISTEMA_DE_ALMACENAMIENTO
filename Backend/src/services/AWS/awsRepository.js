@@ -1,9 +1,6 @@
-const fs = require("fs");
 const archiver = require('archiver');
 const awsClient = require("./awsClient");
 const IStorageRepository = require("../IStorageRepository");
-const { PutObjectCommand, ListObjectsV2Command, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
-const { filestorage } = require("oci-sdk");
 
 class AmazonRepository extends IStorageRepository {
     constructor() {
@@ -12,16 +9,15 @@ class AmazonRepository extends IStorageRepository {
         this.bucketName = awsClient.getBucketName();
     }
 
-    async uploadFile(fileName, fileBuffer) {
+    async upload(fileName) {
         try {
             const params = {
                 Bucket: this.bucketName,
                 Key: fileName,
-                Body: fileBuffer,
-                ServerSideEncryption: 'AES256'
             };
 
             const result = await this.s3.upload(params).promise();
+            console.log(result.Location);
             return result.Location;
         } catch (error) {
             throw new Error(`Error uploading to AWS S3: ${error.message}`);
@@ -78,12 +74,6 @@ class AmazonRepository extends IStorageRepository {
         }
     }
 
-    // Mantener compatibilidad con métodos anteriores
-    async upload(filePath, fileName) {
-        const fileBuffer = fs.readFileSync(filePath);
-        return await this.uploadFile(fileName, fileBuffer);
-    }
-
     async listObjects() {
 
         const params = {
@@ -115,20 +105,23 @@ class AmazonRepository extends IStorageRepository {
         }
     }
 
-    async createFolder(folderName) {
-        const params = {
-            Bucket: this.bucketName,
-            Key: folderName.endsWith("/") ? folderName : `${folderName}/`,
-            Body: "",
-        };
+    async getSignedUrl(fileName, fileType) {
+        try {
+            console.log(fileName);
+            const params = {
+                Bucket: this.bucketName,
+                Key: fileName,
+                Expires: 3600,
+                ContentType: fileType,
+            };
+            
+            const url = await this.s3.getSignedUrl("putObject", params);
+            return url;
 
-        await this.client.send(new PutObjectCommand(params));
-
-        return {
-            folderName: params.Key,
-            bucket: this.bucketName,
-            created: true,
-        };
+        } catch (err) {
+            console.error("Error generando presigned URL:", err);
+            throw err;
+        }
     }
 }
 
