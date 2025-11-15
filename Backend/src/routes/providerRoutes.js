@@ -1,30 +1,38 @@
 const express = require("express");
 const multer = require("multer");
-const path = require("path");
 const StorageFactory = require("../services/storageFactory");
 
 const router = express.Router();
-const upload = multer({ dest: "uploads/" });
 
 // POST /storage/:provider/upload
-router.post("/:provider/upload", upload.single("file"), async (req, res) => {
+router.post("/:provider/upload", async (req, res) => {
   try {
-    const repo = StorageFactory(req.params.provider);
-    const folderPath = req.body.path ? `${req.body.path}/` : "";
-    const fileName = `${folderPath}${req.file.originalname}`;
+    const { provider } = req.params;
+    const { fileName, fileType } = req.body;
+    if (provider === "aws") {
+      const repo = StorageFactory("aws");
+      const url = await repo.getSignedUrl(fileName, fileType);
 
-    const result = await repo.upload(req.file.path, fileName);
+      return res.json({
+        success: true,
+        url
+      });
+    }
+
+    const repo = StorageFactory(provider);
+    const result = await repo.upload(fileName);
 
     res.json({
       success: true,
-      message: `Archivo ${req.file.originalname} subido correctamente`,
+      message: `Archivo ${fileName} subido correctamente`,
       data: result,
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({
       success: false,
-      message: "Error al subir archivo",
+      message: "Error en servicio de subida de archivos",
       error: err.message,
     });
   }
@@ -65,7 +73,7 @@ router.get("/:provider/download", async (req, res) => {
     const result = await repo.downloadObject(fileName);
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     res.send(result);
-    
+
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -87,13 +95,13 @@ router.post("/:provider/download-bulk", async (req, res) => {
     }
 
     const repo = StorageFactory(provider);
-    
+
     const { archiveStream, archiveName } = await repo.downloadBulk(fileNames);
 
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename="${archiveName}"`);
 
-    archiveStream.on('error', function(err) {
+    archiveStream.on('error', function (err) {
       console.error('Error del stream de Archiver:', err.message);
       res.status(500).json({
         success: false,
