@@ -16,7 +16,7 @@ class OracleClient {
       this.client = new OCI.objectstorage.ObjectStorageClient(config);
 
       this.bucketName = process.env.OCI_BUCKET_NAME;
-      console.log('CLIENTE ORACLE INICIALIZADO!');
+      console.log('CLIENTE ORACLE INICIALIZADO CON ÉXITO!!');
 
     } catch (error) {
       console.warn('CLIENTE ORACLE FALLÓ: ', error.message);
