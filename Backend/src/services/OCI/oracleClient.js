@@ -1,47 +1,28 @@
-const oci = require('oci-sdk');
-const fs = require('fs');
-require('dotenv').config();
+const OCI = require('oci-sdk');
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 class OracleClient {
   constructor() {
     try {
-      // Configuración usando variables de entorno
-      const configurationFilePath = "~/.oci/config";
-      const configProfile = "DEFAULT";
-
-      // Crear configuración desde variables de entorno
-      const provider = new oci.common.ConfigFileAuthenticationDetailsProvider(
-        configurationFilePath,
-        configProfile
-      );
-
-      // Configuración alternativa usando .env directamente
       const config = {
-        tenancyId: process.env.OCI_TENANCY_ID,
-        userId: process.env.OCI_USER_ID,
+        tenancy: process.env.OCI_TENANCY_ID,
+        user: process.env.OCI_USER_ID,
         fingerprint: process.env.OCI_FINGERPRINT,
-        privateKey: process.env.OCI_PRIVATE_KEY_PATH ? 
-          fs.readFileSync(process.env.OCI_PRIVATE_KEY_PATH, 'utf8') : null,
-        region: process.env.OCI_REGION || 'us-ashburn-1',
-        compartmentId: process.env.OCI_COMPARTMENT_ID
+        privateKey: process.env.OCI_PRIVATE_KEY_PATH.replace(/\\n/g, '\n'),
+        region: process.env.OCI_REGION
       };
 
-      this.client = new oci.objectstorage.ObjectStorageClient({
-        authenticationDetailsProvider: provider
-      });
+      this.client = new OCI.objectstorage.ObjectStorageClient(config);
 
       this.bucketName = process.env.OCI_BUCKET_NAME;
-      this.namespace = process.env.OCI_NAMESPACE;
-      this.compartmentId = process.env.OCI_COMPARTMENT_ID;
-      console.log('✅ Oracle Cloud Storage client initialized successfully');
+      console.log('CLIENTE ORACLE INICIALIZADO!');
 
     } catch (error) {
-      console.warn('⚠️  Oracle Cloud Storage initialization failed:', error.message);
+      console.warn('CLIENTE ORACLE FALLÓ: ', error.message);
       // Fallback para desarrollo local
       this.client = null;
       this.bucketName = null;
-      this.namespace = null;
-      this.compartmentId = null;
     }
   }
 
@@ -51,14 +32,6 @@ class OracleClient {
 
   getBucketName() {
     return this.bucketName;
-  }
-
-  getNamespace() {
-    return this.namespace;
-  }
-
-  getCompartmentId() {
-    return this.compartmentId;
   }
 
   isAvailable() {
