@@ -34,12 +34,9 @@ class OracleRepository extends IStorageRepository {
       bucketName: this.bucketName,
       fields: "size,timeCreated",
     };
-    console.log(listObjectsRequest);
 
-    this.client.endpoint = `https://objectstorage.${process.env.OCI_REGION}.oraclecloud.com`;
-    console.log("Endpoint:", this.client.endpoint);
     const response = await this.client.listObjects(listObjectsRequest);
-    console.log(response.listObjects)
+
 ;    const objects = response.listObjects.objects.map(obj => ({
       fileName: obj.name,
       size: obj.size,
