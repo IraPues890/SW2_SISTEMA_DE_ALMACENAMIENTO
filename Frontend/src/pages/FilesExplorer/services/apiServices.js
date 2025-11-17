@@ -1,4 +1,12 @@
-const API_URL = 'http://localhost:3000/api/storage/aws/list?bucket=giomar-nos-debe-broster' // HARCODEADO PORQUE MATARON EL BACKEND MALDITOS
+const API_URL = 'http://localhost:3000/api/storage/' // HARCODEADO PORQUE MATARON EL BACKEND MALDITOS
+
+const API_URL_AWS = 'http://localhost:3000/api/storage/aws/list'
+const API_URL_OCI = 'http://localhost:3000/api/storage/oracle/list'
+
+const PROVIDERS = [
+  API_URL_AWS,
+  API_URL_OCI
+];
 
 async function handleResponse(response) {
     if (!response.ok) {
@@ -37,13 +45,28 @@ async function triggerBrowserDownload(response, id) {
     }
 }
 
-export async function getFiles() {
-    try {
-        const response = await fetch(API_URL);
-        return handleResponse(response);
-    } catch (err) {
-        throw err; // Relanza el error para que useFiles lo atrape
-    }
+export async function getAllFiles() {
+  try {
+    const allApiData = await Promise.all(
+      PROVIDERS.map(url =>
+        fetch(url)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+          })
+      )
+    );
+    const allObjectArrays = allApiData.map(data => data.data);
+    const combinedObjects = allObjectArrays.flat();
+    // Ahora combinedObjects es: [ file1, file2, file3, file4, file5 ]
+    console.log(combinedObjects);
+    return { objects: combinedObjects };
+
+  } catch (err) {
+    throw err;
+  }
 }
 
 export async function downloadFiles(id) {
