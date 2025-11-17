@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const oracleClient = require("./oracleClient");
 const IStorageRepository = require("../IStorageRepository");
+const OCI = require("oci-objectstorage");
 
 class OracleRepository extends IStorageRepository {
   constructor() {
@@ -11,21 +12,33 @@ class OracleRepository extends IStorageRepository {
     this.namespace = oracleClient.getNamespace();
   }
 
-  async upload(filePath, fileName) {
-    const putObjectRequest = {
+  async getSignedUrl(fileName) {
+    if (!this.client) {
+      throw new Error("Cliente de Oracle no está disponible.");
+    }
+
+    const createParDetails = {
+      name: `par-upload-${fileName}-${Date.now()}`,
+      objectName: fileName,
+      accessType: OCI.models.PreauthenticatedRequest.AccessType.ObjectWrite,
+      timeExpires: new Date(Date.now() + 60 * 60 * 1000)
+    };
+
+    const createParRequest = {
       namespaceName: this.namespace,
       bucketName: this.bucketName,
-      objectName: fileName,
-      putObjectBody: fs.createReadStream(filePath),
+      createPreauthenticatedRequestDetails: createParDetails
     };
 
-    await this.client.putObject(putObjectRequest);
+    try {
+      const response = await this.client.createPreauthenticatedRequest(createParRequest);
+      const parUrl = `${this.client.endpoint}${response.preauthenticatedRequest.accessUri}`;
+      return parUrl;
 
-    return {
-      fileName,
-      bucket: this.bucketName,
-      uploaded: true,
-    };
+    } catch (err) {
+      console.error("Error creando PAR de escritura en OCI:", err);
+      throw err;
+    }
   }
 
   async listObjects(provider) {
@@ -34,10 +47,11 @@ class OracleRepository extends IStorageRepository {
       bucketName: this.bucketName,
       fields: "size,timeCreated",
     };
-
+    console.log(this.namespace);
+    console.log(this.bucketName);
     const response = await this.client.listObjects(listObjectsRequest);
 
-;    const objects = response.listObjects.objects.map(obj => ({
+    const objects = response.listObjects.objects.map(obj => ({
       fileName: obj.name,
       size: obj.size,
       lastModified: obj.timeCreated,
