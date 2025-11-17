@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { SORT_OPTIONS_CONFIG, DEFAULT_SORT_OPTION } from '../config/SortOptions';
-import { getAllFiles } from '../services/apiServices';
+import { getAllFiles, deleteFilesBatch } from '../services/apiServices';
 
 function transformApiData(apiData) {
     const allFiles = apiData.objects.flatMap(bucketData => {
@@ -10,14 +10,14 @@ function transformApiData(apiData) {
             // Partes de la ruta, eliminando strings vacíos
             const parts = fileName.split('/').filter(p => p.length > 0);
 
-            let name = parts[parts.length - 1] || fileName; 
+            let name = parts[parts.length - 1] || fileName;
             let parentId = null;
 
             if (parts.length > 1) {
                 const parentParts = parts.slice(0, parts.length - 1);
                 parentId = parentParts.join('/') + '/';
             }
-            
+
             return {
                 id: fileName,
                 name: name,
@@ -30,7 +30,7 @@ function transformApiData(apiData) {
         });
     });
 
-    return allFiles; 
+    return allFiles;
 }
 
 export function useFiles() {
@@ -69,7 +69,7 @@ export function useFiles() {
         const q = query.trim().toLowerCase();
         let items = files.filter(f => (f.parentId ?? null) === currentFolderId);
         if (!q) return items;
-        return items.filter(f => f.name.toLowerCase().includes(q) || f.type.toLowerCase().includes(q));
+        return items.filter(f => f.name.toLowerCase().includes(q) || f.name.toLowerCase().includes(q));
     }, [files, query, currentFolderId]); // <-- Añadida dependencia de currentFolderId
 
     const sortedFiltered = useMemo(() => {
@@ -107,10 +107,52 @@ export function useFiles() {
         setFiles(prev => [file, ...prev]);
     };
 
-    const deleteFiles = (ids) => {
-        const idSet = Array.isArray(ids) ? ids : [ids];
-        setFiles(prev => prev.filter(f => !idSet.includes(f.id)));
-    };
+    const deleteFiles = useCallback(async (ids) => {
+        const idSet = new Set(Array.isArray(ids) ? ids : [ids]);
+
+        const filesToProcess = files.filter(f => idSet.has(f.id));
+
+        const payload = filesToProcess.map(f => ({
+            fileName: f.id,
+            provider: f.cloud 
+        }));
+
+        if (payload.length === 0) {
+            console.warn("No se encontraron archivos para los IDs seleccionados.");
+            return; 
+        }
+
+        try {
+            const report = await deleteFilesBatch(payload);
+
+            const successfulDeletes = new Set();
+            const failedReport = [];
+
+            report.forEach(r => {
+                if (r.status === 'deleted') {
+                    successfulDeletes.add(r.fileName);
+                } else {
+                    failedReport.push(r);
+                }
+            });
+
+            setFiles(currentFiles =>
+                currentFiles.filter(f => !successfulDeletes.has(f.id))
+            );
+
+            if (failedReport.length > 0) {
+                console.error("Fallaron algunas eliminaciones:", failedReport);
+                setError(`No se pudieron eliminar ${failedReport.length} archivos.`);
+            } else {
+                setError(null); 
+            }
+
+        } catch (error) {
+            console.error("Error en la operación de borrado:", error);
+            setError(error.message || "Error fatal en el borrado.");
+            throw error;
+        }
+    }, [files, setError]);
 
     return {
         files,
