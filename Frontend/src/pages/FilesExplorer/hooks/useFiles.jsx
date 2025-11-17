@@ -1,33 +1,36 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { SORT_OPTIONS_CONFIG, DEFAULT_SORT_OPTION } from '../config/SortOptions';
-import { getFiles } from '../services/apiServices';
+import { getAllFiles } from '../services/apiServices';
 
 function transformApiData(apiData) {
-  return apiData.objects.map(item => {
-    const { fileName, size, lastModified, cloud } = item;
+    const allFiles = apiData.objects.flatMap(bucketData => {
+        return bucketData.objects.map(item => {
+            const { fileName, size, lastModified, cloud } = item;
 
-    // Partes de la ruta, eliminando strings vacíos (ej. del slash final)
-    const parts = fileName.split('/').filter(p => p.length > 0);
+            // Partes de la ruta, eliminando strings vacíos
+            const parts = fileName.split('/').filter(p => p.length > 0);
 
-    let name = parts[parts.length - 1] || Key; // El último segmento
-    let parentId = null;
+            let name = parts[parts.length - 1] || fileName; 
+            let parentId = null;
 
-    if (parts.length > 1) {
-      // Si hay más de un segmento (ej. ['carpeta', 'archivo.pdf']), tiene padre
-      const parentParts = parts.slice(0, parts.length - 1);
-      parentId = parentParts.join('/') + '/'; // Reconstruir la ruta padre
-    }
+            if (parts.length > 1) {
+                const parentParts = parts.slice(0, parts.length - 1);
+                parentId = parentParts.join('/') + '/';
+            }
+            
+            return {
+                id: fileName,
+                name: name,
+                parentId: parentId,
+                size: (size / 1024).toFixed(0), // Esto dará KB
+                date: new Date(lastModified).toLocaleDateString('es-PE'),
+                URL: null,
+                cloud: cloud
+            };
+        });
+    });
 
-    return {
-      id: fileName,
-      name: name,
-      parentId: parentId, // <-- null si parts.length <= 1
-      size: (size / 1024).toFixed(0),
-      date: new Date(lastModified).toLocaleDateString('es-PE'),
-      URL: null,
-      cloud: cloud
-    };
-  });
+    return allFiles; 
 }
 
 export function useFiles() {
@@ -36,7 +39,7 @@ export function useFiles() {
     const [error, setError] = useState(null);
 
     const [query, setQuery] = useState('');
-    const [sortOption, setSortOption] = useState(DEFAULT_SORT_OPTION); 
+    const [sortOption, setSortOption] = useState(DEFAULT_SORT_OPTION);
     const [currentFolderId, setCurrentFolderId] = useState(null);
     const [page, setPage] = useState(1);
     const perPage = 5;
@@ -45,7 +48,7 @@ export function useFiles() {
         setIsLoading(true);
         setError(null);
         try {
-            const apiData = await getFiles();
+            const apiData = await getAllFiles();
             console.log(apiData);
             const transformedData = transformApiData(apiData);
             console.log(transformedData);
@@ -57,7 +60,7 @@ export function useFiles() {
             setIsLoading(false);
         }
     }, []); // Ya no depende de currentFolderId, siempre trae todo
-    
+
     useEffect(() => {
         refetchFiles();
     }, [refetchFiles]);
@@ -76,7 +79,7 @@ export function useFiles() {
         if (typeof sortFunction === 'function') {
             items.sort(sortFunction);
         }
-        
+
         return items;
     }, [filtered, sortOption]);
 
@@ -109,7 +112,7 @@ export function useFiles() {
         setFiles(prev => prev.filter(f => !idSet.includes(f.id)));
     };
 
-return {
+    return {
         files,
         isLoading,
         error,
@@ -125,7 +128,7 @@ return {
         page,
         setPage,
         perPage,
-        pageItems, 
+        pageItems,
         totalPages,
         sortedFiltered,
         breadcrumbNodes,
