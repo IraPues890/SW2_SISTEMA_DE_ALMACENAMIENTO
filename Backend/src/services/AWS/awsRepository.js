@@ -74,7 +74,7 @@ class AmazonRepository extends IStorageRepository {
         }
     }
 
-    async listObjects() {
+    async listObjects(provider) {
 
         const params = {
             Bucket: this.bucketName
@@ -85,6 +85,7 @@ class AmazonRepository extends IStorageRepository {
                 fileName: obj.Key,
                 size: obj.Size,
                 lastModified: obj.LastModified,
+                cloud: provider
             })) || [];
         return {
             bucket: this.bucketName,
