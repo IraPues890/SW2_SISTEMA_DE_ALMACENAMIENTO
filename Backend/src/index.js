@@ -29,22 +29,11 @@ app.use(express.json());
 // Mount API
 app.use('/api', routes);
 
+// Probando conexión a base de datos
+testConnection();
+
 // Start server immediately to not block non-DB endpoints (e.g., S3 presign)
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${port}`);
 });
-
-/* Check DB connection in background and log result
-(async () => {
-  try {
-    await testConnection();
-    console.log('Conexión a la base de datos OK.');
-  } catch (err) {
-    console.warn('No se pudo conectar a la base de datos al iniciar. Continuando sin BD.');
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(err && err.message ? err.message : err);
-    }
-  }
-})();
-*/
