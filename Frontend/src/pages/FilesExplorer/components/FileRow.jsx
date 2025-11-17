@@ -48,11 +48,7 @@ export const FileRow = ({ file, isSelected, isChecked, onToggleSelection, onPrev
       </td>
       <td className="py-4 px-4 text-slate-600 font-medium">{file.size}</td>
       <td className="py-4 px-4 text-slate-600">{file.date}</td>
-      <td className="py-4 px-4">
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 uppercase">
-          {file.type}
-        </span>
-      </td>
+      <td className="py-4 px-4 text-slate-600">{file.cloud}</td>
       <td className="py-4 px-4">
         <div className="flex space-x-2">
           <button

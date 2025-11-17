@@ -4,7 +4,7 @@ import { getFiles } from '../services/apiServices';
 
 function transformApiData(apiData) {
   return apiData.objects.map(item => {
-    const { fileName, size, lastModified } = item;
+    const { fileName, size, lastModified, cloud } = item;
 
     // Partes de la ruta, eliminando strings vacíos (ej. del slash final)
     const parts = fileName.split('/').filter(p => p.length > 0);
@@ -25,6 +25,7 @@ function transformApiData(apiData) {
       size: (size / 1024).toFixed(0),
       date: new Date(lastModified).toLocaleDateString('es-PE'),
       URL: null,
+      cloud: cloud
     };
   });
 }
@@ -47,6 +48,7 @@ export function useFiles() {
             const apiData = await getFiles();
             console.log(apiData);
             const transformedData = transformApiData(apiData);
+            console.log(transformedData);
             setFiles(transformedData);
         } catch (err) {
             setError(err.message || 'Error al cargar los archivos');
