@@ -22,7 +22,7 @@ export default function FileTable({
               <th className="py-4 px-4 text-left font-semibold text-slate-700">Nombre</th>
               <th className="py-4 px-4 text-left font-semibold text-slate-700">Tamaño (KB)</th>
               <th className="py-4 px-4 text-left font-semibold text-slate-700">Fecha</th>
-              <th className="py-4 px-4 text-left font-semibold text-slate-700">Tipo</th>
+              <th className="py-4 px-4 text-left font-semibold text-slate-700">Proveedor</th>
               <th className="py-4 px-4 text-left font-semibold text-slate-700">Acciones</th>
             </tr>
           </thead>
