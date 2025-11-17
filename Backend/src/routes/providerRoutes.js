@@ -114,32 +114,25 @@ router.post("/:provider/download-bulk", async (req, res) => {
 // Ya se pasan los objetos en forma de array (así sean únicos) y se borran uno a uno
 
 router.post("/delete-batch", async (req, res) => {
-  // Recibe un array: { files: [{ fileName, provider }, ...] }
   const { files } = req.body;
 
   if (!files || !Array.isArray(files)) {
     return res.status(400).json({ message: "'files' debe ser un array." });
   }
 
-  // 1. Creamos un array de promesas de borrado
   const deletePromises = files.map(file => {
     try {
-      // Usamos tu factory para obtener el repo correcto
       const repo = StorageFactory(file.provider); 
-      // Usamos el mismo método que tu ruta DELETE
       return repo.deleteObject(file.fileName); 
     } catch (err) {
-      // Si el provider no existe (ej: 'gcp' y no está implementado)
       return Promise.reject(new Error(`Proveedor '${file.provider}' no soportado.`));
     }
   });
 
-  // 2. Ejecutamos todas las promesas en paralelo
   const results = await Promise.allSettled(deletePromises);
 
-  // 3. Creamos un reporte para el frontend
   const report = results.map((result, index) => {
-    const file = files[index]; // El archivo original
+    const file = files[index]; 
     
     if (result.status === 'fulfilled') {
       return { 
@@ -152,12 +145,11 @@ router.post("/delete-batch", async (req, res) => {
         fileName: file.fileName, 
         provider: file.provider, 
         status: 'error', 
-        message: result.reason.message // El mensaje de error
+        message: result.reason.message 
       };
     }
   });
 
-  // 4. Respondemos con 207 Multi-Status (estándar para reportes)
   res.status(207).json({ results: report });
 });
 
