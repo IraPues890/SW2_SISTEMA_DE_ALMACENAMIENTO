@@ -9,25 +9,14 @@ router.post("/:provider/upload", async (req, res) => {
   try {
     const { provider } = req.params;
     const { fileName, fileType } = req.body;
-    if (provider === "aws") {
-      const repo = StorageFactory("aws");
-      const url = await repo.getSignedUrl(fileName, fileType);
-
-      return res.json({
-        success: true,
-        url
-      });
-    }
 
     const repo = StorageFactory(provider);
-    const result = await repo.upload(fileName);
+    const url = await repo.getSignedUrl(fileName, fileType);
 
-    res.json({
+    return res.json({
       success: true,
-      message: `Archivo ${fileName} subido correctamente`,
-      data: result,
+      url
     });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({
