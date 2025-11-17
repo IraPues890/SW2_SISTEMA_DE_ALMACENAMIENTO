@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api/storage/' // HARCODEADO PORQUE MATARON EL BACKEND MALDITOS
+const API_BASE = 'http://localhost:3000/api/storage' // HARCODEADO PORQUE MATARON EL BACKEND MALDITOS
 
 const API_URL_AWS = 'http://localhost:3000/api/storage/aws/list'
 const API_URL_OCI = 'http://localhost:3000/api/storage/oracle/list'
@@ -7,18 +7,6 @@ const PROVIDERS = [
   API_URL_AWS,
   API_URL_OCI
 ];
-
-async function handleResponse(response) {
-    if (!response.ok) {
-        throw new Error(`Error de red: ${response.status} ${response.statusText}`);
-    }
-    const result = await response.json();
-    if (result.success === true) {
-        return result.data;
-    } else {
-        throw new Error(result.message || 'Error en la respuesta del API');
-    }
-}
 
 async function triggerBrowserDownload(response, id) {
     try {
@@ -91,18 +79,23 @@ export async function downloadFiles(id) {
     }
 }
 
-export async function deleteFiles(id) {
-    try {
-        const API_URL = `http://localhost:3000/api/storage/aws/delete/${id}`
-        const response = await fetch(API_URL, {
-            method: 'DELETE',
-            headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ fileName: id })
-        });
-        return handleResponse(response);
-    } catch (err) {
-        throw err; // Relanza el error para que useFiles lo atrape
-    }
+export async function deleteFilesBatch(filesToDelete) {
+  
+  const API_URL = `${API_BASE}/delete-batch`;
+
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      files: filesToDelete 
+    })
+  });
+
+  if (!response.ok) {
+    const errData = await response.json();
+    throw new Error(errData.message || "Error en la solicitud de borrado por lotes.");
+  }
+
+  const data = await response.json();
+  return data.results; 
 }
