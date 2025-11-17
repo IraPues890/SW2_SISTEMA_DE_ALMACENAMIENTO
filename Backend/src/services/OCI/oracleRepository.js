@@ -47,8 +47,7 @@ class OracleRepository extends IStorageRepository {
       bucketName: this.bucketName,
       fields: "size,timeCreated",
     };
-    console.log(this.namespace);
-    console.log(this.bucketName);
+    
     const response = await this.client.listObjects(listObjectsRequest);
 
     const objects = response.listObjects.objects.map(obj => ({
@@ -95,10 +94,9 @@ class OracleRepository extends IStorageRepository {
   }
 
   async deleteObject(fileName) {
-    const { value: namespaceName } = await this.client.getNamespace({});
 
     const deleteObjectRequest = {
-      namespaceName,
+      namespaceName: this.namespace,
       bucketName: this.bucketName,
       objectName: fileName,
     };
