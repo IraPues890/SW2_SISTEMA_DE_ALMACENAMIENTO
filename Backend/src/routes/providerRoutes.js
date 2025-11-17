@@ -42,7 +42,7 @@ router.post("/:provider/upload", async (req, res) => {
 router.get("/:provider/list", async (req, res) => {
   try {
     const repo = StorageFactory(req.params.provider);
-    const objects = await repo.listObjects();
+    const objects = await repo.listObjects(req.params.provider);
 
     res.json({
       success: true,
