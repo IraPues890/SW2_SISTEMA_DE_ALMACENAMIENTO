@@ -1,4 +1,4 @@
-const OCI = require('oci-sdk');
+const OCI = require("oci-objectstorage");
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
@@ -9,13 +9,18 @@ class OracleClient {
         tenancy: process.env.OCI_TENANCY_ID,
         user: process.env.OCI_USER_ID,
         fingerprint: process.env.OCI_FINGERPRINT,
-        privateKey: process.env.OCI_PRIVATE_KEY_PATH.replace(/\\n/g, '\n'),
+        privateKey: process.env.OCI_PRIVATE_KEY_PATH,
         region: process.env.OCI_REGION
       };
-
-      this.client = new OCI.objectstorage.ObjectStorageClient(config);
-
       this.bucketName = process.env.OCI_BUCKET_NAME;
+      this.namespace = process.env.OCI_BUCKET_NAMESPACE;
+
+      if (!this.bucketName || !this.namespace ) {
+        throw new Error("Variables de entorno OCI_BUCKET_NAME o OCI_BUCKET_NAMESPACE no encontradas");
+      }
+      this.client = new OCI.ObjectStorageClient(config);
+      this.client.endpoint = `https://objectstorage.${config.region}.oraclecloud.com`;
+      
       console.log('CLIENTE ORACLE INICIALIZADO CON ÉXITO!!');
 
     } catch (error) {
@@ -32,6 +37,10 @@ class OracleClient {
 
   getBucketName() {
     return this.bucketName;
+  }
+
+  getNamespace() {
+    return this.namespace;
   }
 
   isAvailable() {
