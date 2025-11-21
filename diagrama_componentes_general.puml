@@ -1,0 +1,118 @@
+@startuml diagrama_componentes_general
+
+title DIAGRAMA DE COMPONENTES GENERAL\nSistema UlStorage - Sprint 1
+title DIAGRAMA DE COMPONENTES GENERAL\nSistema UlStorage - Sprint 1
+
+skinparam componentStyle rectangle
+skinparam component {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    ArrowColor #A23B72
+}
+skinparam interface {
+    BackgroundColor #FFF3CD
+    BorderColor #856404
+}
+skinparam database {
+    BackgroundColor #D1ECF1
+    BorderColor #0C5460
+}
+
+' ===============================
+package "Frontend" {
+    component [UI Principal] as ui_main
+    component [Gestor Autenticación] as auth_ui
+    component [Gestor Archivos] as files_ui
+    component [Gestor Carpetas] as folders_ui
+    component [Buscador/Filtrador] as search_ui
+    component [Vista Previa] as preview_ui
+}
+
+' ===============================
+package "Backend" {
+    component [API REST] as api_rest
+    component [Controlador Autenticación] as auth_ctrl
+    component [Controlador Archivos] as files_ctrl
+    component [Controlador Carpetas] as folders_ctrl
+    component [Servicio Archivo] as files_svc
+    component [Servicio Carpeta] as folders_svc
+    component [Servicio Búsqueda] as search_svc
+    component [Validador/Seguridad] as validator
+}
+
+' ===============================
+package "Storage Multi-Cloud" {
+    component [Fábrica Proveedores] as storage_factory
+    component [Repo AWS S3] as aws_repo
+    component [Repo Azure Blob] as azure_repo
+    component [Repo GCP Storage] as gcp_repo
+    component [Repo OCI] as oci_repo
+    component [Repo Local] as local_repo
+}
+
+' ===============================
+package "Data Layer" {
+    component [Repositorio Usuario] as user_repo
+    component [Repositorio Archivo] as file_repo
+    component [Repositorio Carpeta] as folder_repo
+    database "PostgreSQL" as db
+}
+
+' ===============================
+auth_ui --> api_rest : login/logout
+ui_main --> auth_ui
+ui_main --> files_ui
+ui_main --> folders_ui
+ui_main --> search_ui
+ui_main --> preview_ui
+
+auth_ui --> api_rest : login/logout
+files_ui --> api_rest : CRUD archivos
+folders_ui --> api_rest : CRUD carpetas
+search_ui --> api_rest : búsqueda
+preview_ui --> api_rest : previsualización
+
+api_rest --> auth_ctrl
+api_rest --> files_ctrl
+api_rest --> folders_ctrl
+api_rest --> search_svc
+
+auth_ctrl --> validator
+files_ctrl --> files_svc
+folders_ctrl --> folders_svc
+
+files_svc --> storage_factory
+folders_svc --> storage_factory
+search_svc --> file_repo
+
+storage_factory --> aws_repo
+storage_factory --> azure_repo
+storage_factory --> gcp_repo
+storage_factory --> oci_repo
+storage_factory --> local_repo
+
+files_svc --> file_repo
+folders_svc --> folder_repo
+auth_ctrl --> user_repo
+
+user_repo --> db
+file_repo --> db
+folder_repo --> db
+
+legend bottom left
+|= Componente |= Responsabilidad Principal |
+| UI Principal | Navegación y orquestación de vistas |
+| API REST | Exponer endpoints HTTP |
+| Controladores | Lógica de negocio y validación |
+| Servicios | Procesos de negocio y reglas |
+| Fábrica Proveedores | Selección de almacenamiento cloud/local |
+| Repositorios | Acceso a datos persistentes |
+| PostgreSQL | Base de datos relacional central |
+endlegend
+
+' ===============================
+' LEYENDA
+' ===============================
+
+
+@enduml

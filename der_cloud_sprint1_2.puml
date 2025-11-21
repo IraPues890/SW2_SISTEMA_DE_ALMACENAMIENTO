@@ -1,11 +1,9 @@
-@startuml der_cloud
-title Plataforma de Archivos con Almacenamiento en la Nube - Sprint 1 (Versión Adaptada)
+@startuml der_cloud_sprint1_2
+title Plataforma UlStorage - Diagrama de Clases (Sprint 1 + Sprint 2)
 
 !define RECTANGLE class
 
-' ======================
-' LAYOUT CONFIGURATION
-' ======================
+' Layout & estilos
 skinparam linetype ortho
 skinparam packageStyle rectangle
 skinparam class {
@@ -15,7 +13,7 @@ skinparam class {
 }
 
 ' ======================
-' TOP ROW: USUARIOS Y AUTENTICACION
+' USUARIOS Y AUTENTICACIÓN
 ' ======================
 package "Usuarios" {
   class Usuario {
@@ -56,10 +54,16 @@ package "Autenticación" {
     +verificarToken(token: string): boolean
     +refrescarSesion(usuario: Usuario): string
   }
+
+  class SecureConnectionManager {
+    +obtenerCredenciales(proveedor: string): Object
+    +rotarCredenciales(proveedor: string): void
+    +validarConexion(proveedor: string): boolean
+  }
 }
 
 ' ======================
-' MIDDLE ROW: ARCHIVOS Y CARPETAS
+' ARCHIVOS, VERSIONES, CARPETAS
 ' ======================
 package "Archivos" {
   class Archivo {
@@ -77,7 +81,6 @@ package "Archivos" {
     +getEtiquetas(): List<Etiqueta>
     +previsualizar(): Object
     +descargar(): binary
-    +imprimir(): void
   }
 
   class Version {
@@ -86,33 +89,6 @@ package "Archivos" {
     -contenido: binary
     -fecha: Date
     -autor: Usuario
-  }
-}
-
-package "Gestión" {
-  class GestorArchivos <<Facade>> {
-    +subirArchivo(archivo: Archivo, usuario: Usuario, proveedor: ProveedorAlmacenamiento): void
-    +eliminarArchivo(archivo: Archivo): void
-    +renombrarArchivo(archivo: Archivo, nuevoNombre: string): void
-    +restaurarVersion(archivo: Archivo, version: Version): void
-    +obtenerArchivo(id: int): Archivo
-    +listarArchivos(carpeta: Carpeta): List<Archivo>
-    +previsualizarArchivo(archivo: Archivo): Object
-    +descargarArchivo(archivo: Archivo): binary
-    +buscarArchivos(query: string, carpeta: Carpeta): List<Archivo>
-    +imprimirArchivo(archivo: Archivo): void
-  }
-
-  class GestorCarpetas <<Facade>> {
-    +crearCarpeta(nombre: string, usuario: Usuario): Carpeta
-    +eliminarCarpeta(carpeta: Carpeta): void
-    +renombrarCarpeta(carpeta: Carpeta, nuevoNombre: string): void
-    +moverArchivo(archivo: Archivo, carpetaDestino: Carpeta): void
-    +listarCarpetas(usuario: Usuario): List<Carpeta>
-  }
-
-  class VersionFactory <<Factory>> {
-    +crearVersion(archivo: Archivo, usuario: Usuario): Version
   }
 }
 
@@ -129,8 +105,34 @@ package "Carpetas" {
   }
 }
 
+package "Gestión" {
+  class GestorArchivos <<Facade>> {
+    +subirArchivo(archivo: Archivo, usuario: Usuario, proveedor: ProveedorAlmacenamiento): void
+    +eliminarArchivo(archivo: Archivo): void
+    +renombrarArchivo(archivo: Archivo, nuevoNombre: string): void
+    +restaurarVersion(archivo: Archivo, version: Version): void
+    +obtenerArchivo(id: int): Archivo
+    +listarArchivos(carpeta: Carpeta): List<Archivo>
+    +previsualizarArchivo(archivo: Archivo): Object
+    +descargarArchivo(archivo: Archivo): binary
+    +buscarArchivos(query: string, carpeta: Carpeta): List<Archivo>
+  }
+
+  class GestorCarpetas <<Facade>> {
+    +crearCarpeta(nombre: string, usuario: Usuario): Carpeta
+    +eliminarCarpeta(carpeta: Carpeta): void
+    +renombrarCarpeta(carpeta: Carpeta, nuevoNombre: string): void
+    +moverArchivo(archivo: Archivo, carpetaDestino: Carpeta): void
+    +listarCarpetas(usuario: Usuario): List<Carpeta>
+  }
+
+  class VersionFactory <<Factory>> {
+    +crearVersion(archivo: Archivo, usuario: Usuario): Version
+  }
+}
+
 ' ======================
-' LEFT COLUMN: ORGANIZACIÓN
+' ORGANIZACIÓN Y ORDENAMIENTO
 ' ======================
 package "Organización" {
   class Etiqueta {
@@ -164,7 +166,7 @@ package "Organización" {
 }
 
 ' ======================
-' RIGHT COLUMN: SERVICIOS
+' VERSIONAMIENTO
 ' ======================
 package "Versionamiento" {
   interface PoliticaVersionado <<Strategy>> {
@@ -177,6 +179,9 @@ package "Versionamiento" {
   }
 }
 
+' ======================
+' PERMISOS / SHARING
+' ======================
 package "Permisos" {
   class CompartirService {
     +compartirArchivo(archivo: Archivo, rol: Rol): void
@@ -189,17 +194,12 @@ package "Permisos" {
 }
 
 ' ======================
-' BOTTOM ROW: CLOUD Y PERSISTENCIA
+' STORAGE MULTI-CLOUD
 ' ======================
 package "Almacenamiento en la Nube" {
   abstract class ProveedorAlmacenamiento <<Strategy>> {
     -nombre: string
     -descripcion: string
-    +ProveedorAlmacenamiento(nombre: string, descripcion: string)
-    +getNombre(): string
-    +getDescripcion(): string
-    +equals(otro: ProveedorAlmacenamiento): boolean
-    +toString(): string
     +{abstract} subirArchivo(archivo: Archivo): void
     +{abstract} descargarArchivo(id: int): binary
     +{abstract} eliminarArchivo(id: int): void
@@ -210,30 +210,21 @@ package "Almacenamiento en la Nube" {
   }
 
   class OCIStorage {
-    -config: OCIConfig
-    +OCIStorage(): void
     +subirArchivo(archivo: Archivo): void
-    +descargarArchivo(id: int): binary
-    +eliminarArchivo(id: int): void
   }
 
   class AWSStorage {
-    -config: AWSConfig
-    +AWSStorage(): void
     +subirArchivo(archivo: Archivo): void
-    +descargarArchivo(id: int): binary
-    +eliminarArchivo(id: int): void
   }
 
   class GCPStorage {
-    -config: GCPConfig
-    +GCPStorage(): void
     +subirArchivo(archivo: Archivo): void
-    +descargarArchivo(id: int): binary
-    +eliminarArchivo(id: int): void
   }
 }
 
+' ======================
+' PERSISTENCIA / REPOSITORIOS
+' ======================
 package "Persistencia" {
   interface IRepositorioArchivos {
     +guardar(archivo: Archivo): void
@@ -262,78 +253,101 @@ package "Persistencia" {
     +obtener(id: int): Usuario
     +obtenerPorEmail(email: string): Usuario
   }
+
+  ' Repositorios adicionales para Sprint 2
+  class AuditRepository {
+    +guardarEvento(evento: string): void
+    +listarEventos(filtros): List<Object>
+  }
+
+  class BillingRepository {
+    +guardarFactura(factura: Object): void
+    +obtenerFactura(id: int): Object
+  }
+
+  class AlertRepository {
+    +guardarAlerta(alerta: Object): void
+    +listarAlertas(usuarioId): List<Object>
+  }
+
+  class QuotaRepository {
+    +obtenerCuota(usuarioId): int
+    +actualizarUso(usuarioId, bytes): void
+  }
 }
 
 ' ======================
-' RELACIONES PRINCIPALES (ordenadas por proximidad)
+' SERVICIOS ADICIONALES (Sprint 1 y Sprint 2)
 ' ======================
-
-' Relaciones de Usuario y Rol
-Usuario ||--o{ Carpeta : "posee"
-Usuario ||--o{ Etiqueta : "crea"
-Usuario ||--|| Rol : "tiene"
-Rol ||--o{ Permiso : "incluye"
-
-' Relaciones de Carpeta y Archivo
-Carpeta ||--o{ Archivo : "contiene"
-Carpeta ||--o{ Carpeta : "subcarpetas"
-
-' Relaciones de Archivo
-Archivo }o--|| ProveedorAlmacenamiento : "almacenado_en"
-Archivo ||--|{ Version : "versiones"
-Archivo }o--o{ Etiqueta : "etiquetado"
-Version }o--|| Usuario : "autor"
-
-' Relaciones de Servicios (minimizadas visualmente)
-Administrador ||--|| PoliticaVersionado
-PoliticaVersionado <|.. PoliticaLimiteFijo : "implementa"
-AuthService ..> IRepositorioUsuarios : "usa"
-
-' Relaciones Gestores
-GestorArchivos ..> VersionFactory : "usa"
-GestorArchivos ..> PoliticaVersionado : "aplica"
-GestorArchivos ..> IRepositorioArchivos : "persiste"
-GestorArchivos ..> ProveedorFactory : "crea_proveedor"
-
-GestorCarpetas ..> Carpeta : "gestiona"
-
-' Relaciones Organización
-OrdenadorArchivos o-- EstrategiaOrdenamiento : "estrategia"
-OrdenadorArchivos ..> Archivo : "ordena"
-EstrategiaOrdenamiento <|.. OrdenarPorFecha : "implementa"
-EstrategiaOrdenamiento <|.. OrdenarPorNombre : "implementa"
-EstrategiaOrdenamiento <|.. OrdenarPorTipo : "implementa"
-
-' Relaciones Permisos
-CompartirService ..> Archivo : "comparte"
-CompartirService ..> Carpeta : "comparte"
-CompartirService ..> Rol : "asigna"
-CompartirService ..> Usuario : "gestiona_acceso"
-
-' Relaciones Cloud
-CloudRepositorio o-- ProveedorAlmacenamiento : "proveedor"
-ProveedorFactory ..> ProveedorAlmacenamiento : "crea"
-ProveedorAlmacenamiento <|-- OCIStorage : "extiende"
-ProveedorAlmacenamiento <|-- AWSStorage : "extiende" 
-ProveedorAlmacenamiento <|-- GCPStorage : "extiende"
-
-' Servicios adicionales
 package "Servicios" {
   class BuscadorService {
     +buscar(query: string, carpeta: Carpeta): List<Archivo>
   }
 
-  class PrintService {
-    +imprimir(archivo: Archivo): void
+  class AuditService {
+    +registrarEvento(tipo: string, detalle: string): void
+    +listarEventos(filtros): List<Object>
+  }
+
+  class BillingService {
+    +generarFactura(usuario: Usuario): Object
+    +listarFacturas(usuarioId): List<Object>
+  }
+
+  class AlertService {
+    +emitirAlerta(tipo: string, usuario: Usuario, detalle: string): void
+    +listarAlertas(usuarioId): List<Object>
+  }
+
+  class QuotaService {
+    +validarAntesSubida(usuario: Usuario, size: int): boolean
+    +obtenerUso(usuarioId): int
   }
 }
 
-' Relaciones con servicios
-GestorArchivos ..> BuscadorService : "usa"
-GestorArchivos ..> PrintService : "usa"
-PrintService ..> Archivo : "imprime"
+' ======================
+' RELACIONES PRINCIPALES
+' ======================
+Usuario ||--o{ Carpeta : "posee"
+Usuario ||--o{ Etiqueta : "crea"
+Usuario ||--|| Rol : "tiene"
+Rol ||--o{ Permiso : "incluye"
+Carpeta ||--o{ Archivo : "contiene"
+Carpeta ||--o{ Carpeta : "subcarpetas"
+Archivo }o--|| ProveedorAlmacenamiento : "almacenado_en"
+Archivo ||--|{ Version : "versiones"
+Archivo }o--o{ Etiqueta : "etiquetado"
+Version }o--|| Usuario : "autor"
 
-' Posicionamiento visual (layout hints)
+AuthService ..> IRepositorioUsuarios : "usa"
+GestorArchivos ..> VersionFactory : "usa"
+GestorArchivos ..> PoliticaVersionado : "aplica"
+GestorArchivos ..> IRepositorioArchivos : "persiste"
+GestorArchivos ..> ProveedorFactory : "crea_proveedor"
+GestorCarpetas ..> Carpeta : "gestiona"
+OrdenadorArchivos o-- EstrategiaOrdenamiento : "estrategia"
+OrdenadorArchivos ..> Archivo : "ordena"
+EstrategiaOrdenamiento <|.. OrdenarPorFecha : "implementa"
+EstrategiaOrdenamiento <|.. OrdenarPorNombre : "implementa"
+EstrategiaOrdenamiento <|.. OrdenarPorTipo : "implementa"
+CompartirService ..> Archivo : "comparte"
+CompartirService ..> Carpeta : "comparte"
+CompartirService ..> Rol : "asigna"
+CompartirService ..> Usuario : "gestiona_acceso"
+CloudRepositorio o-- ProveedorAlmacenamiento : "proveedor"
+ProveedorFactory ..> ProveedorAlmacenamiento : "crea"
+ProveedorAlmacenamiento <|-- OCIStorage : "extiende"
+ProveedorAlmacenamiento <|-- AWSStorage : "extiende"
+ProveedorAlmacenamiento <|-- GCPStorage : "extiende"
+
+' Servicios adicionales con repositorios
+AuditService ..> AuditRepository : "usa"
+BillingService ..> BillingRepository : "usa"
+AlertService ..> AlertRepository : "usa"
+QuotaService ..> QuotaRepository : "usa"
+GestorArchivos ..> BuscadorService : "usa"
+
+' Posicionamiento visual (hints)
 Usuario -[hidden]-> GestorArchivos
 Carpeta -[hidden]-> GestorCarpetas
 Archivo -[hidden]-> Version

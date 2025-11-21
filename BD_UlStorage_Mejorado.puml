@@ -1,0 +1,235 @@
+@startuml BD_UlStorage_Mejorado
+
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam class {
+    BackgroundColor #F0F8FF
+    BorderColor #4682B4
+    ArrowColor #4682B4
+}
+
+class users as "USERS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + nombre: VARCHAR(100) [NOT NULL]
+    + email: VARCHAR(255) [UK, NOT NULL]
+    + password_hash: VARCHAR(255) [NOT NULL]
+    + rol: VARCHAR(20) [DEFAULT 'user']
+    + activo: BOOLEAN [DEFAULT true]
+    + ultimo_login: TIMESTAMP
+    + fecha_expiracion_password: TIMESTAMP
+    + intentos_fallidos: INT [DEFAULT 0]
+    + created_at: TIMESTAMP [DEFAULT NOW()]
+    + updated_at: TIMESTAMP [DEFAULT NOW()]
+}
+
+class user_sessions as "USER_SESSIONS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + usuario_id: int [FK]
+    + token: VARCHAR(255) [UK]
+    + expires_at: TIMESTAMP [NOT NULL]
+    + ip_address: VARCHAR(45)
+    + user_agent: TEXT
+    + activo: BOOLEAN [DEFAULT true]
+    + created_at: TIMESTAMP [DEFAULT NOW()]
+}
+
+class carpetas as "CARPETAS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + usuario_id: int [FK, NOT NULL]
+    + carpeta_padre_id: int [FK]
+    + nombre: VARCHAR(255) [NOT NULL]
+    + ruta_completa: VARCHAR(1000) [UK]
+    + nivel: INT [DEFAULT 0]
+    + es_papelera: BOOLEAN [DEFAULT false]
+    + created_at: TIMESTAMP [DEFAULT NOW()]
+    + updated_at: TIMESTAMP [DEFAULT NOW()]
+}
+
+class archivos as "ARCHIVOS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + usuario_id: int [FK, NOT NULL]
+    + carpeta_id: int [FK]
+    + nombre: VARCHAR(255) [NOT NULL]
+    + nombre_sistema: VARCHAR(255) [UK, NOT NULL]
+    + extension: VARCHAR(10)
+    + tamaño: BIGINT [NOT NULL]
+    + tipo_mime: VARCHAR(255)
+    + proveedor: VARCHAR(20) [NOT NULL]
+    + bucket_name: VARCHAR(100)
+    + bucket_path: VARCHAR(1000) [NOT NULL]
+    + hash_archivo: VARCHAR(64) [NOT NULL]
+    + texto_indexado: TEXT
+    + search_vector: tsvector
+    + es_publico: BOOLEAN [DEFAULT false]
+    + en_papelera: BOOLEAN [DEFAULT false]
+    + fecha_eliminacion: TIMESTAMP
+    + created_at: TIMESTAMP [DEFAULT NOW()]
+    + updated_at: TIMESTAMP [DEFAULT NOW()]
+}
+
+class versiones as "VERSIONES" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + archivo_id: int [FK, NOT NULL]
+    + usuario_id: int [FK, NOT NULL]
+    + numero_version: VARCHAR(10) [NOT NULL]
+    + tamaño: BIGINT [NOT NULL]
+    + bucket_path: VARCHAR(1000) [NOT NULL]
+    + hash_archivo: VARCHAR(64) [NOT NULL]
+    + comentario: VARCHAR(500)
+    + es_version_actual: BOOLEAN [DEFAULT false]
+    + created_at: TIMESTAMP [DEFAULT NOW()]
+}
+
+class etiquetas as "ETIQUETAS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + usuario_id: int [FK, NOT NULL]
+    + nombre: VARCHAR(100) [NOT NULL]
+    + color: VARCHAR(7) [DEFAULT '#0066CC']
+    + descripcion: VARCHAR(255)
+    + created_at: TIMESTAMP [DEFAULT NOW()]
+    + UNIQUE(usuario_id, nombre)
+}
+
+class archivo_etiquetas as "REL_ARCHIVO_ETIQUETA" << (T,#AAFFAA) >> {
+    + archivo_id: int [PK, FK]
+    + etiqueta_id: int [PK, FK]
+    + created_at: TIMESTAMP [DEFAULT NOW()]
+}
+
+class permisos_archivos as "PERMISOS_ARCHIVOS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + propietario_id: int [FK, NOT NULL]
+    + usuario_id: int [FK, NOT NULL]
+    + archivo_id: int [FK, NOT NULL]
+    + tipo_permiso: VARCHAR(20) [NOT NULL] -- read|write|delete|admin
+    + fecha_expiracion: TIMESTAMP
+    + activo: BOOLEAN [DEFAULT true]
+    + created_at: TIMESTAMP [DEFAULT NOW()]
+    + updated_at: TIMESTAMP [DEFAULT NOW()]
+    + UNIQUE(usuario_id, archivo_id, tipo_permiso)
+}
+
+class permisos_carpetas as "PERMISOS_CARPETAS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + propietario_id: int [FK, NOT NULL]
+    + usuario_id: int [FK, NOT NULL]
+    + carpeta_id: int [FK, NOT NULL]
+    + tipo_permiso: VARCHAR(20) [NOT NULL] -- read|write|delete|admin
+    + aplicar_subcarpetas: BOOLEAN [DEFAULT false]
+    + fecha_expiracion: TIMESTAMP
+    + activo: BOOLEAN [DEFAULT true]
+    + created_at: TIMESTAMP [DEFAULT NOW()]
+    + updated_at: TIMESTAMP [DEFAULT NOW()]
+    + UNIQUE(usuario_id, carpeta_id, tipo_permiso)
+}
+
+class activity_logs as "ACTIVITY_LOGS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + usuario_id: int [FK]
+    + accion: VARCHAR(100) [NOT NULL]
+    + descripcion: VARCHAR(500)
+    + entidad_tipo: VARCHAR(50) -- archivo|carpeta|usuario|sistema
+    + entidad_id: int
+    + prioridad: VARCHAR(20) [DEFAULT 'info'] -- debug|info|warning|error|critical
+    + ip_address: INET
+    + user_agent: TEXT
+    + metadata: JSONB
+    + created_at: TIMESTAMP [DEFAULT NOW()]
+}
+
+class print_jobs as "PRINT_JOBS" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + archivo_id: int [FK, NOT NULL]
+    + usuario_id: int [FK, NOT NULL]
+    + estado: VARCHAR(20) [DEFAULT 'queued'] -- queued|processing|completed|failed|cancelled
+    + output_path: VARCHAR(1000)
+    + job_type: VARCHAR(50) [DEFAULT 'pdf']
+    + configuracion: JSONB
+    + error_message: TEXT
+    + progreso: INT [DEFAULT 0] -- 0-100
+    + created_at: TIMESTAMP [DEFAULT NOW()]
+    + started_at: TIMESTAMP
+    + completed_at: TIMESTAMP
+}
+
+class file_shares as "FILE_SHARES" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + archivo_id: int [FK, NOT NULL]
+    + usuario_id: int [FK, NOT NULL] -- quien comparte
+    + token: VARCHAR(255) [UK, NOT NULL]
+    + tipo_acceso: VARCHAR(20) [DEFAULT 'read'] -- read|write|download
+    + expira_en: TIMESTAMP
+    + max_descargas: INT
+    + descargas_actuales: INT [DEFAULT 0]
+    + requiere_password: BOOLEAN [DEFAULT false]
+    + password_hash: VARCHAR(255)
+    + activo: BOOLEAN [DEFAULT true]
+    + created_at: TIMESTAMP [DEFAULT NOW()]
+    + accessed_at: TIMESTAMP
+}
+
+-- Relaciones Users
+users ||--o{ user_sessions
+users ||--o{ carpetas
+users ||--o{ archivos 
+users ||--o{ etiquetas
+users ||--o{ versiones
+users ||--o{ permisos_archivos
+users ||--o{ permisos_carpetas
+users ||--o{ activity_logs
+users ||--o{ print_jobs
+users ||--o{ file_shares
+
+-- Relaciones Carpetas
+carpetas ||--o{ carpetas : "carpeta_padre"
+carpetas ||--o{ archivos
+carpetas ||--o{ permisos_carpetas
+
+-- Relaciones Archivos
+archivos ||--o{ versiones
+archivos ||--o{ archivo_etiquetas
+archivos ||--o{ permisos_archivos
+archivos ||--o{ print_jobs
+archivos ||--o{ file_shares
+
+-- Relaciones Etiquetas
+etiquetas ||--o{ archivo_etiquetas
+
+title **BD ULSTORAGE MEJORADA - SISTEMA DE ALMACENAMIENTO HÍBRIDO**
+note top : BD PostgreSQL almacena METADATOS + ÍNDICES OPTIMIZADOS
+note top : Cloud Storage (OCI/AWS/GCP/Azure) almacena ARCHIVOS FÍSICOS
+
+note bottom
+    **MEJORAS IMPLEMENTADAS:**
+    
+    **Seguridad:**
+    - Separación clara de permisos archivos/carpetas
+    - Gestión de sesiones con tokens y expiración
+    - Control de intentos fallidos de login
+    - Compartición segura con tokens únicos
+    
+    **Performance:**
+    - Índices compuestos sugeridos
+    - Campo search_vector para búsqueda full-text
+    - Campos de metadatos en JSONB para flexibilidad
+    
+    **Auditoría:**
+    - Logs con niveles de prioridad
+    - Metadata en JSON para contexto adicional
+    - Tracking completo de acciones
+    
+    **Funcionalidad:**
+    - Papelera de reciclaje (soft delete)
+    - Versionado robusto con control de versión actual
+    - Sistema de trabajos de impresión con progreso
+    - Enlaces de compartición con control granular
+    
+    **ÍNDICES RECOMENDADOS:**
+    - CREATE INDEX idx_archivos_search ON archivos USING GIN(search_vector);
+    - CREATE INDEX idx_archivos_usuario_carpeta ON archivos(usuario_id, carpeta_id);
+    - CREATE INDEX idx_activity_logs_usuario_fecha ON activity_logs(usuario_id, created_at);
+    - CREATE INDEX idx_permisos_usuario_entidad ON permisos_archivos(usuario_id, archivo_id);
+    - CREATE INDEX idx_file_shares_token ON file_shares(token) WHERE activo = true;
+end note
+
+@enduml
