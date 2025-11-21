@@ -1,0 +1,39 @@
+@startuml SCRUM-27_Sistema_de_alertas_y_monitoreo
+title SCRUM-27: Sistema de Alertas y Monitoreo
+
+actor Usuario
+actor Administrador
+participant "Módulo de Control\n(Límites y Seguridad)" as Control
+participant "AlertService" as AlertService
+participant "EmailService" as EmailService
+participant "PushNotifier\n(WebSockets)" as PushNotifier
+participant "Dashboard de Alertas" as Dashboard
+
+Usuario -> Control: 1. Ejecutar acción (subida / acceso / login)
+activate Usuario
+activate Control
+
+Control -> AlertService: 2. Enviar evento de alerta
+deactivate Control
+activate AlertService
+
+AlertService -> EmailService: 3. Enviar correo de alerta
+activate EmailService
+EmailService --> AlertService: 4. Confirmación
+deactivate EmailService
+
+AlertService -> PushNotifier: 5. Enviar notificación push
+activate PushNotifier
+PushNotifier --> AlertService: 6. Confirmación
+deactivate PushNotifier
+
+AlertService -> Dashboard: 7. Registrar alerta en dashboard
+activate Dashboard
+Dashboard --> AlertService: 8. Confirmación
+deactivate Dashboard
+
+AlertService -> Administrador: 9. Notificación de alerta (si corresponde)
+
+deactivate AlertService
+deactivate Usuario
+@enduml

@@ -1,5 +1,4 @@
-const fs = require("fs");
-const path = require("path");
+const archiver = require('archiver');
 const awsClient = require("./awsClient");
 const IStorageRepository = require("../IStorageRepository");
 
@@ -10,23 +9,22 @@ class AmazonRepository extends IStorageRepository {
         this.bucketName = awsClient.getBucketName();
     }
 
-    async uploadFile(fileName, fileBuffer) {
+    async upload(fileName) {
         try {
             const params = {
                 Bucket: this.bucketName,
                 Key: fileName,
-                Body: fileBuffer,
-                ServerSideEncryption: 'AES256'
             };
 
             const result = await this.s3.upload(params).promise();
+            console.log(result.Location);
             return result.Location;
         } catch (error) {
             throw new Error(`Error uploading to AWS S3: ${error.message}`);
         }
     }
 
-    async downloadFile(fileName) {
+    async downloadObject(fileName) {
         try {
             const params = {
                 Bucket: this.bucketName,
@@ -40,13 +38,67 @@ class AmazonRepository extends IStorageRepository {
         }
     }
 
-    async deleteFile(fileName) {
+    async downloadBulk(fileNames) {
+        try {
+            const archive = archiver('zip', {
+                zlib: { level: 9 }
+            });
+            const archiveName = `files.zip`;
+            const processFiles = async () => {
+                for (const fileName of fileNames) {
+                    try {
+                        const s3Object = await this.s3.getObject({
+                            Bucket: this.bucketName,
+                            Key: fileName
+                        }).promise();
+
+                        archive.append(s3Object.Body, { name: fileName });
+
+                    } catch (s3Error) {
+                        console.error(`Error al obtener ${fileName}: ${s3Error.message}`);
+                        archive.append(`Error al obtener ${fileName}`, { name: `${fileName}-ERROR.txt` });
+                    }
+                }
+                archive.finalize();
+            };
+
+            processFiles().catch(err => {
+                archive.emit('error', err);
+            });
+
+            return { archiveStream: archive, archiveName: archiveName };
+
+        } catch (error) {
+            // Este catch solo atrapará errores ANTES de crear el stream
+            throw new Error(`Error preparando el zip: ${error.message}`);
+        }
+    }
+
+    async listObjects(provider) {
+
+        const params = {
+            Bucket: this.bucketName
+        };
+        const result = await this.s3.listObjectsV2(params).promise();
+        const objects =
+            result.Contents?.map((obj) => ({
+                fileName: obj.Key,
+                size: obj.Size,
+                lastModified: obj.LastModified,
+                cloud: provider
+            })) || [];
+        return {
+            bucket: this.bucketName,
+            objects,
+        };
+    }
+
+    async deleteObject(fileName) {
         try {
             const params = {
                 Bucket: this.bucketName,
                 Key: fileName
             };
-
             await this.s3.deleteObject(params).promise();
             return true;
         } catch (error) {
@@ -54,102 +106,23 @@ class AmazonRepository extends IStorageRepository {
         }
     }
 
-    async listFiles(prefix = '') {
+    async getSignedUrl(fileName, fileType) {
         try {
+            console.log(fileName);
             const params = {
                 Bucket: this.bucketName,
-                Prefix: prefix
+                Key: fileName,
+                Expires: 3600,
+                ContentType: fileType,
             };
+            
+            const url = await this.s3.getSignedUrl("putObject", params);
+            return url;
 
-            const result = await this.s3.listObjectsV2(params).promise();
-            return result.Contents || [];
-        } catch (error) {
-            throw new Error(`Error listing files from AWS S3: ${error.message}`);
+        } catch (err) {
+            console.error("Error generando presigned URL:", err);
+            throw err;
         }
-    }
-
-    // Mantener compatibilidad con métodos anteriores
-    async upload(filePath, fileName) {
-        const fileBuffer = fs.readFileSync(filePath);
-        return await this.uploadFile(fileName, fileBuffer);
-    }
-
-    async listObjects() {
-        const command = new ListObjectsV2Command({
-            Bucket: this.bucketName,
-        });
-
-        const response = await this.client.send(command);
-
-        const objects =
-            response.Contents?.map((obj) => ({
-                fileName: obj.Key,
-                size: obj.Size,
-                lastModified: obj.LastModified,
-            })) || [];
-
-        return {
-            bucket: this.bucketName,
-            objects,
-        };
-    }
-
-    async downloadObject(fileName, destinationPath) {
-        const command = new GetObjectCommand({
-            Bucket: this.bucketName,
-            Key: fileName,
-        });
-
-        const dir = path.dirname(destinationPath);
-        await fs.promises.mkdir(dir, { recursive: true });
-
-        const response = await this.client.send(command);
-        const writeStream = fs.createWriteStream(destinationPath);
-
-        await new Promise((resolve, reject) => {
-            response.Body.pipe(writeStream)
-                .on("finish", resolve)
-                .on("error", reject);
-        });
-
-        return {
-            fileName,
-            bucket: this.bucketName,
-            destination: destinationPath,
-            downloaded: true,
-        };
-    }
-
-    async deleteObject(fileName) {
-
-        const command = new DeleteObjectCommand({
-            Bucket: this.bucketName,
-            Key: fileName,
-        });
-
-        await this.client.send(command);
-
-        return {
-            fileName,
-            bucket: this.bucketName,
-            deleted: true,
-        };
-    }
-    
-    async createFolder(folderName) {
-        const params = {
-          Bucket: this.bucketName,
-          Key: folderName.endsWith("/") ? folderName : `${folderName}/`,
-          Body: "",
-        };
-
-        await this.client.send(new PutObjectCommand(params));
-
-        return {
-          folderName: params.Key,
-          bucket: this.bucketName,
-          created: true,
-        };
     }
 }
 

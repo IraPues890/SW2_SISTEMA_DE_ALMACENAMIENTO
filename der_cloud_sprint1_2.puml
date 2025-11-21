@@ -303,6 +303,28 @@ package "Servicios" {
     +validarAntesSubida(usuario: Usuario, size: int): boolean
     +obtenerUso(usuarioId): int
   }
+
+  class ActivityLogService {
+    +registrarAccion(usuario: Usuario, accion: string, meta: Object): void
+    +exportarLogs(formato: string): binary
+  }
+
+  class AlertService {
+    +enviarAlerta(nivel: string, mensaje: string, destinatarios: List<Usuario>): void
+    +configurarCanal(canal: string, config: Object): void
+  }
+
+  class StorageQuotaService {
+    +verificarCuota(usuario: Usuario, tamaño: number): boolean
+    +consumirCuota(usuario: Usuario, tamaño: number): void
+    +liberarCuota(usuario: Usuario, tamaño: number): void
+  }
+
+  class SecureConnectionManager {
+    +obtenerCredenciales(proveedor: string): Object
+    +rotarCredenciales(proveedor: string): void
+    +validarConexion(proveedor: string): boolean
+  }
 }
 
 ' ======================
