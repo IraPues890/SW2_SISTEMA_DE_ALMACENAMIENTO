@@ -1,13 +1,13 @@
-// Simple Command object that encapsulates deletion logic.
-// For now it executes a provided delete function (in-memory or API) — demonstrates Command pattern and DIP.
 export default class FileDeletionCommand {
   constructor(deleteFn) {
     if (typeof deleteFn !== 'function') throw new Error('deleteFn must be a function');
-    this.deleteFn = deleteFn;
+    this.deleteFn = deleteFn; // ¡Esta es la función de 'useFiles'!
   }
 
   async execute(ids) {
-    // Could add logging, undo stack, or API calls here.
+    // 2. ¡Llama a la función que recibiste en el constructor!
+    // Esta 'this.deleteFn' es la que ya sabe cómo llamar a la API
+    // y cómo actualizar el estado.
     return await this.deleteFn(ids);
   }
 }

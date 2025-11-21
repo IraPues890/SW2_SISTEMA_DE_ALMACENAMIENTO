@@ -1,30 +1,27 @@
 const express = require("express");
 const multer = require("multer");
-const path = require("path");
 const StorageFactory = require("../services/storageFactory");
 
 const router = express.Router();
-const upload = multer({ dest: "uploads/" });
 
 // POST /storage/:provider/upload
-router.post("/:provider/upload", upload.single("file"), async (req, res) => {
+router.post("/:provider/upload", async (req, res) => {
   try {
-    const repo = StorageFactory(req.params.provider);
-    const folderPath = req.body.path ? `${req.body.path}/` : "";
-    const fileName = `${folderPath}${req.file.originalname}`;
+    const { provider } = req.params;
+    const { fileName, fileType } = req.body;
 
-    const result = await repo.upload(req.file.path, fileName);
+    const repo = StorageFactory(provider);
+    const url = await repo.getSignedUrl(fileName, fileType);
 
-    res.json({
+    return res.json({
       success: true,
-      message: `Archivo ${req.file.originalname} subido correctamente`,
-      data: result,
+      url
     });
   } catch (err) {
     console.error(err);
     res.status(500).json({
       success: false,
-      message: "Error al subir archivo",
+      message: "Error en servicio de subida de archivos",
       error: err.message,
     });
   }
@@ -34,13 +31,16 @@ router.post("/:provider/upload", upload.single("file"), async (req, res) => {
 router.get("/:provider/list", async (req, res) => {
   try {
     const repo = StorageFactory(req.params.provider);
-    const objects = await repo.listObjects();
+    const objects = await repo.listObjects(req.params.provider);
 
     res.json({
       success: true,
       message: "Lista de objetos obtenida correctamente",
       data: objects
     });
+
+
+
   } catch (err) {
     console.error(err);
     res.status(500).json({
@@ -57,42 +57,100 @@ router.get("/:provider/download", async (req, res) => {
     const { provider } = req.params;
     const { fileName } = req.query;
 
+    console.log(fileName);
     const repo = StorageFactory(provider);
-    const destinationPath = path.join("downloads", fileName);
-    const result = await repo.downloadObject(fileName, destinationPath);
+    const result = await repo.downloadObject(fileName);
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.send(result);
 
-    res.download(result.destination, path.basename(fileName), err => {
-      if (err) console.error("Error al enviar archivo:", err);
-    });
   } catch (err) {
-    res.status(500).json({ 
-    success: false,
-    message: "Error al descargar archivo", error: err.message });
+    res.status(500).json({
+      success: false,
+      message: "Error al descargar archivo", error: err.message
+    });
   }
 });
 
-
-// DELETE /storage/:provider/delete/:fileName
-router.delete("/:provider/delete/:fileName", async (req, res) => {
+router.post("/:provider/download-bulk", async (req, res) => {
   try {
-    const { provider, fileName } = req.params;
+    const { provider } = req.params;
+    const { fileNames } = req.body;
+
+    if (!fileNames || !Array.isArray(fileNames) || fileNames.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Se requiere un array 'fileNames' en el body."
+      });
+    }
+
     const repo = StorageFactory(provider);
 
-    const result = await repo.deleteObject(fileName);
+    const { archiveStream, archiveName } = await repo.downloadBulk(fileNames);
 
-    res.json({
-      success: true,
-      message: `Archivo ${fileName} eliminado correctamente`,
-      data: result
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', `attachment; filename="${archiveName}"`);
+
+    archiveStream.on('error', function (err) {
+      console.error('Error del stream de Archiver:', err.message);
+      res.status(500).json({
+        success: false,
+        message: "Error al crear el archivo zip", error: err.message
+      });
     });
+
+    archiveStream.pipe(res);
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      success: false,
-      message: "Error al eliminar archivo",
-      error: err.message
-    });
+    if (!res.headersSent) {
+      res.status(500).json({
+        success: false,
+        message: "Error al descargar archivos", error: err.message
+      });
+    }
   }
+});
+
+// DELETE /storage/delete-batch
+// Ya se pasan los objetos en forma de array (así sean únicos) y se borran uno a uno
+
+router.post("/delete-batch", async (req, res) => {
+  const { files } = req.body;
+
+  if (!files || !Array.isArray(files)) {
+    return res.status(400).json({ message: "'files' debe ser un array." });
+  }
+
+  const deletePromises = files.map(file => {
+    try {
+      const repo = StorageFactory(file.provider); 
+      return repo.deleteObject(file.fileName); 
+    } catch (err) {
+      return Promise.reject(new Error(`Proveedor '${file.provider}' no soportado.`));
+    }
+  });
+
+  const results = await Promise.allSettled(deletePromises);
+
+  const report = results.map((result, index) => {
+    const file = files[index]; 
+    
+    if (result.status === 'fulfilled') {
+      return { 
+        fileName: file.fileName, 
+        provider: file.provider, 
+        status: 'deleted' 
+      };
+    } else {
+      return { 
+        fileName: file.fileName, 
+        provider: file.provider, 
+        status: 'error', 
+        message: result.reason.message 
+      };
+    }
+  });
+
+  res.status(207).json({ results: report });
 });
 
 // POST /storage/:provider/folder

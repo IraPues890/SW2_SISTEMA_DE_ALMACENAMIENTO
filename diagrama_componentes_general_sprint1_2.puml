@@ -1,0 +1,157 @@
+@startuml diagrama_componentes_general_sprint1_2
+
+title DIAGRAMA DE COMPONENTES GENERAL\nSistema UlStorage - Sprint 1 y 2
+
+skinparam componentStyle rectangle
+skinparam component {
+    BackgroundColor #E8F4FD
+    BorderColor #2E86AB
+    ArrowColor #A23B72
+}
+skinparam interface {
+    BackgroundColor #FFF3CD
+    BorderColor #856404
+}
+skinparam database {
+    BackgroundColor #D1ECF1
+    BorderColor #0C5460
+}
+
+' ===============================
+package "Frontend" {
+    component [UI Principal] as ui_main
+    component [Gestor Autenticación] as auth_ui
+    component [Gestor Archivos] as files_ui
+    component [Gestor Carpetas] as folders_ui
+    component [Buscador/Filtrador] as search_ui
+    component [Vista Previa] as preview_ui
+    component [Gestor Compartir] as share_ui
+    component [Gestor Roles] as roles_ui
+    component [Gestor Facturas] as billing_ui
+    component [Gestor Alertas] as alerts_ui
+    component [Gestor Auditoría] as audit_ui
+}
+
+' ===============================
+package "Backend" {
+    component [API REST] as api_rest
+    component [Controlador Autenticación] as auth_ctrl
+    component [Controlador Archivos] as files_ctrl
+    component [Controlador Carpetas] as folders_ctrl
+    component [Servicio Archivo] as files_svc
+    component [Servicio Carpeta] as folders_svc
+    component [Servicio Búsqueda] as search_svc
+    component [Servicio Compartir] as share_svc
+    component [Servicio Roles] as roles_svc
+    component [Servicio Facturación] as billing_svc
+    component [Servicio Alertas] as alerts_svc
+    component [Servicio Auditoría] as audit_svc
+    component [Servicio Cuotas] as quota_svc
+    component [Validador/Seguridad] as validator
+}
+
+' ===============================
+package "Storage Multi-Cloud" {
+    component [Fábrica Proveedores] as storage_factory
+    component [Repo AWS S3] as aws_repo
+    component [Repo Azure Blob] as azure_repo
+    component [Repo GCP Storage] as gcp_repo
+    component [Repo OCI] as oci_repo
+    component [Repo Local] as local_repo
+}
+
+' ===============================
+package "Data Layer" {
+    component [Repositorio Usuario] as user_repo
+    component [Repositorio Archivo] as file_repo
+    component [Repositorio Carpeta] as folder_repo
+    component [Repositorio Roles] as roles_repo
+    component [Repositorio Auditoría] as audit_repo
+    component [Repositorio Facturación] as billing_repo
+    component [Repositorio Alertas] as alerts_repo
+    component [Repositorio Cuotas] as quota_repo
+    database "PostgreSQL" as db
+}
+
+' ===============================
+' RELACIONES PRINCIPALES
+' ===============================
+ui_main --> auth_ui
+ui_main --> files_ui
+ui_main --> folders_ui
+ui_main --> search_ui
+ui_main --> preview_ui
+ui_main --> share_ui
+ui_main --> roles_ui
+ui_main --> billing_ui
+ui_main --> alerts_ui
+ui_main --> audit_ui
+
+auth_ui --> api_rest : login/logout
+files_ui --> api_rest : CRUD archivos
+folders_ui --> api_rest : CRUD carpetas
+search_ui --> api_rest : búsqueda
+preview_ui --> api_rest : previsualización
+share_ui --> api_rest : compartir archivos/carpetas
+roles_ui --> api_rest : gestión roles/usuarios
+billing_ui --> api_rest : facturación
+alerts_ui --> api_rest : alertas
+audit_ui --> api_rest : logs/auditoría
+
+api_rest --> auth_ctrl
+api_rest --> files_ctrl
+api_rest --> folders_ctrl
+api_rest --> search_svc
+api_rest --> share_svc
+api_rest --> roles_svc
+api_rest --> billing_svc
+api_rest --> alerts_svc
+api_rest --> audit_svc
+api_rest --> quota_svc
+
+auth_ctrl --> validator
+files_ctrl --> files_svc
+folders_ctrl --> folders_svc
+roles_svc --> roles_repo
+share_svc --> file_repo
+share_svc --> user_repo
+billing_svc --> billing_repo
+alerts_svc --> alerts_repo
+quota_svc --> quota_repo
+audit_svc --> audit_repo
+
+files_svc --> storage_factory
+folders_svc --> storage_factory
+search_svc --> file_repo
+files_svc --> file_repo
+folders_svc --> folder_repo
+
+storage_factory --> aws_repo
+storage_factory --> azure_repo
+storage_factory --> gcp_repo
+storage_factory --> oci_repo
+storage_factory --> local_repo
+
+user_repo --> db
+file_repo --> db
+folder_repo --> db
+roles_repo --> db
+billing_repo --> db
+audit_repo --> db
+alerts_repo --> db
+quota_repo --> db
+
+legend bottom left
+|= Componente |= Relación con HU Sprint 1 y 2 |
+| UI Principal | Navegación y orquestación de vistas |
+| Gestor Compartir | HU-13 (S1), HU-1 (S2) |
+| Gestor Roles | HU-2, HU-3 (S2) |
+| Gestor Facturas | HU-7, HU-8 (S2) |
+| Gestor Alertas | HU-6 (S2) |
+| Gestor Auditoría | HU-4 (S2) |
+| API REST/Controladores/Servicios | Lógica de negocio y endpoints |
+| StorageFactory/Repositorios | Persistencia y multi-cloud |
+| PostgreSQL | Base de datos central |
+endlegend
+
+@enduml
