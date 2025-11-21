@@ -35,7 +35,7 @@ app.listen(port, () => {
   console.log(`Servidor corriendo en http://localhost:${port}`);
 });
 
-// Check DB connection in background and log result
+/* Check DB connection in background and log result
 (async () => {
   try {
     await testConnection();
@@ -47,3 +47,4 @@ app.listen(port, () => {
     }
   }
 })();
+*/

@@ -1,34 +1,62 @@
-export async function getPresignedUrl(file, authToken) {
-  const key = `${Date.now()}-${file.name}`;
-  const params = new URLSearchParams({ key, contentType: file.type });
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:3000";
-  const presignUrl = `${API_BASE}/api/files/s3-presign?${params}`;
+// A esto lo podrías llamar: /services/storageService.js
+const API_BASE = "http://localhost:3000";
 
-  const res = await fetch(presignUrl, {
-    headers: { Authorization: `Bearer ${authToken}` },
-  });
+/**
+ * Sube un archivo a un proveedor de nube (AWS, OCI, etc.)
+ * utilizando una URL pre-firmada/PAR obtenida del backend.
+ * * @param {File} file - El objeto File del input.
+ * @param {string} provider - El proveedor de nube (ej: 'aws', 'oci', 'gcp').
+ * @returns {Promise<string>} La URL limpia del objeto subido.
+ */
+export async function uploadFile(file, provider) {
+  
+  // --- PASO 1: Pedir la URL pre-firmada (PAR) al backend ---
+  const API_URL = `${API_BASE}/api/storage/${provider}/upload`;
 
-  if (!res.ok) throw new Error(await res.text());
-  const data = await res.json();
-  if (!data.success) throw new Error(data.message || "Presign failed");
+  let presignedUrl;
 
-  return data.url;
-}
-
-export function uploadToS3(url, file, onProgress) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.upload.addEventListener("progress", (e) => {
-      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fileName: file.name,
+        fileType: file.type
+      })
     });
-    xhr.onload = () => {
-      xhr.status >= 200 && xhr.status < 300
-        ? resolve()
-        : reject(new Error(`Upload failed ${xhr.status}`));
-    };
-    xhr.onerror = () => reject(new Error("Network error"));
-    xhr.open("PUT", url);
-    xhr.setRequestHeader("Content-Type", file.type);
-    xhr.send(file);
-  });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(`Error obteniendo la URL: ${err.message || response.statusText}`);
+    }
+
+    const data = await response.json();
+    presignedUrl = data.url;
+
+  } catch (error) {
+    console.error("Error en el Paso 1 (Obtener URL):", error);
+    throw error;
+  }
+
+  // --- PASO 2: Subir el archivo directamente a la nube (OCI/AWS) ---
+  try {
+    const upload = await fetch(presignedUrl, {
+      method: "PUT",
+      body: file, // El archivo real
+      headers: {
+        'Content-Type': file.type // Esencial. OCI lo requiere sí o sí.
+      }
+    });
+
+    if (!upload.ok) {
+      throw new Error(`Error subiendo el archivo a la nube: ${upload.statusText}`);
+    }
+
+    // Devolvemos la URL final del objeto (buena práctica)
+    return presignedUrl.split("?")[0];
+
+  } catch (error) {
+    console.error("Error en el Paso 2 (Subir archivo):", error);
+    throw error;
+  }
 }

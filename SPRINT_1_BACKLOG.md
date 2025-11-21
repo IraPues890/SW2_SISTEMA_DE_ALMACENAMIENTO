@@ -13,209 +13,48 @@ Realizar el MVP funcional para el usuario, implementando las funcionalidades bá
 
 ---
 
-## **Historias de Usuario del Sprint 1**
 
-### **AUTENTICACIÓN**
+## Historias de Usuario del Sprint 1 (Definitivas Jira)
 
-#### **SCRUM-5**: Iniciar Sesión
-**Como** usuario **deseo** iniciar sesión en la plataforma con credenciales **para** acceder a mi espacio de almacenamiento
+### HU-1: Iniciar sesión en la plataforma
+**Como usuario deseo iniciar sesión en la plataforma con credenciales para acceder a mi espacio de almacenamiento**
 
-- **Tipo**: AUTENTICACIÓN
-- **Estado**: POR HACER  
-- **Story Points**: 2
-- **Responsable**: Asignado
+### HU-2: Cerrar sesión manualmente
+**Como usuario deseo cerrar sesión manualmente para proteger mi información cuando dejo de usar la plataforma**
 
-**Criterios de Aceptación:**
-- El usuario puede iniciar sesión con email y contraseña de forma segura
-- Validación de credenciales contra base de datos
-- Redirección al dashboard después de login exitoso
-- Manejo de errores para credenciales incorrectas
+### HU-3: Ver panel principal con archivos y carpetas conectados a la nube
+**Como usuario deseo ver un panel principal con listado de archivos y carpetas conectados a la nube para navegar de forma intuitiva**
 
----
+### HU-4: Acciones básicas en el panel principal
+**Como usuario deseo realizar las acciones básicas en el panel principal para gestionar el almacenamiento (Frontend)**
 
-#### **SCRUM-6**: Cerrar Sesión  
-**Como** usuario **deseo** cerrar sesión manualmente **para** proteger mi información cuando dejo de usar la plataforma
+### HU-5: Eliminar archivos desde la interfaz
+**Como usuario deseo eliminar archivos desde la interfaz para liberar espacio innecesario**
 
-- **Tipo**: AUTENTICACIÓN
-- **Estado**: POR HACER
-- **Story Points**: 2  
-- **Responsable**: Asignado
+### HU-6: Descargar archivos desde la nube
+**Como usuario deseo descargar archivos desde la nube para usarlos localmente**
 
-**Criterios de Aceptación:**
-- El usuario puede cerrar sesión manualmente y su sesión queda invalidada
-- Destrucción segura del token JWT
-- Redirección a página de login
-- Prevención de acceso a rutas protegidas
+### HU-7: Previsualizar archivos comunes en el navegador
+**Como usuario deseo previsualizar archivos comunes en el navegador sin necesidad de descargarlos**
 
----
+### HU-8: Buscar mis archivos
+**Como usuario deseo buscar mis archivos para ahorrar tiempo**
 
-### **INTERFAZ Y NAVEGACIÓN**
+### HU-9: Subir archivos desde mi computadora a la nube
+**Como usuario deseo subir archivos desde mi computadora a la nube para almacenarlos**
 
-#### **SCRUM-10**: Panel Principal de Navegación
-**Como** usuario **deseo** ver un panel principal con listado de archivos y carpetas conectados a la nube **para** navegar de forma intuitiva
+### HU-10: Crear carpetas en la nube
+**Como usuario deseo crear carpetas en la nube desde la plataforma para organizar mis archivos**
 
-- **Tipo**: INTERFAZ DE USUARIO
-- **Estado**: POR HACER
-- **Story Points**: 6.5
-- **Responsable**: Asignado  
+### HU-11: Ordenar archivos
+**Como usuario deseo ordenar archivos para facilitar la vista del usuario**
 
-**Criterios de Aceptación:**
-- Dashboard principal con vista general del sistema
-- Listado de archivos y carpetas del usuario
-- Navegación intuitiva entre secciones
-- Información de espacio utilizado y métricas
+### HU-12: Gestión segura de la conexión con la nube
+**Como administrador deseo que el sistema gestione la conexión con la nube de manera segura, para evitar exponer credenciales en el frontend**
 
----
+### HU-13: Compartir archivos únicamente con roles o usuarios autorizados
+**Como usuario deseo compartir archivos únicamente con roles o usuarios autorizados para evitar filtraciones**
 
-#### **SCRUM-11**: Acciones Básicas del Panel Principal
-**Como** usuario **deseo** realizar las acciones básicas en el panel principal **para** gestionar el almacenamiento (Frontend)
-
-- **Tipo**: INTERFAZ DE USUARIO  
-- **Estado**: POR HACER
-- **Story Points**: 3
-- **Responsable**: Asignado
-
-**Criterios de Aceptación:**
-- Botones de acciones principales visibles
-- Navegación a subir archivos, crear carpetas, buscar
-- Interfaz responsive y amigable
-- Tooltips y ayuda contextual
-
----
-
-### **GESTIÓN DE ARCHIVOS**
-
-#### **SCRUM-12**: Subir Archivos
-**Como** usuario **deseo** subir archivos desde mi computadora a la nube **para** almacenarlos
-
-- **Tipo**: GESTIÓN DE ARCHIVOS
-- **Estado**: POR HACER ⚠️ **Vence: 17 sept**
-- **Story Points**: 8
-- **Responsable**: Asignado
-
-**Criterios de Aceptación:**
-- El usuario puede subir archivos desde su equipo y se guardan en carpeta seleccionada
-- Soporte para múltiples tipos de archivo
-- Barra de progreso durante subida
-- Validación de tamaño y tipo de archivo
-
----
-
-#### **SCRUM-13**: Descargar Archivos  
-**Como** usuario **deseo** descargar archivos desde la nube **para** usarlos localmente
-
-- **Tipo**: GESTIÓN DE ARCHIVOS
-- **Estado**: POR HACER ⚠️ **Vence: 17 sept**  
-- **Story Points**: 1⭐
-- **Responsable**: Asignado
-
-**Criterios de Aceptación:**
-- El usuario puede descargar cualquier archivo al que tenga acceso desde la plataforma
-- Descarga directa sin pérdida de calidad
-- Manejo de archivos grandes
-- Log de descargas para auditoría
-
----
-
-#### **SCRUM-14**: Previsualizar Archivos
-**Como** usuario **deseo** previsualizar archivos comunes en el navegador **para** ver contenido sin necesidad de descargarlos
-
-- **Tipo**: GESTIÓN DE ARCHIVOS
-- **Estado**: POR HACER ⚠️ **Vence: 17 sept**
-- **Story Points**: 1⭐  
-- **Responsable**: Asignado
-
-**Criterios de Aceptación:**
-- El usuario puede abrir vista previa de archivos compatibles (imágenes, PDF, texto, etc.)
-- Visor integrado en la plataforma
-- Soporte para formatos comunes (PDF, imágenes, texto)
-- Navegación entre páginas para documentos
-
----
-
-#### **SCRUM-15**: Eliminar Archivos
-**Como** usuario **deseo** eliminar archivos desde la interfaz **para** liberar espacio innecesario
-
-- **Tipo**: GESTIÓN DE ARCHIVOS  
-- **Estado**: POR HACER ⚠️ **Vence: 17 sept**
-- **Story Points**: 1⭐
-- **Responsable**: Asignado
-
-**Criterios de Aceptación:**
-- El usuario puede seleccionar un archivo, eliminarlo y el sistema actualiza la vista
-- Confirmación antes de eliminar
-- Eliminación del almacenamiento en nube
-- Actualización de métricas de espacio
-
----
-
-### **ORGANIZACIÓN**
-
-#### **SCRUM-17**: Crear Carpetas
-**Como** usuario **deseo** crear carpetas en la nube desde la plataforma **para** organizar mis archivos
-
-- **Tipo**: ORGANIZACIÓN
-- **Estado**: POR HACER ⚠️ **Vence: 17 sept**  
-- **Story Points**: 1⭐
-- **Responsable**: Asignado
-
-**Criterios de Aceptación:**
-- El usuario puede crear nuevas carpetas con un nombre válido que no esté repetido en la ubicación actual
-- Creación jerárquica de carpetas
-- Validación de nombres de carpeta
-- Integración con proveedores de nube
-
----
-
-#### **SCRUM-18**: Ordenar Archivos
-**Como** usuario **deseo** ordenar archivos **para** facilitar la vista del usuario
-
-- **Tipo**: ORGANIZACIÓN
-- **Estado**: POR HACER
-- **Story Points**: 8
-- **Responsable**: Asignado  
-
-**Criterios de Aceptación:**
-- El usuario puede aplicar filtros de ordenamiento en una carpeta y ver resultados organizados
-- Ordenar por nombre, fecha, tamaño, tipo
-- Filtros persistentes durante la sesión
-- Vista de tabla y vista de íconos
-
----
-
-### **BÚSQUEDA Y GESTIÓN**
-
-#### **SCRUM-28**: Búsqueda de Archivos
-**Como** usuario **deseo** buscar mis archivos **para** ahorrar tiempo
-
-- **Tipo**: GESTIÓN DE ARCHIVOS
-- **Estado**: POR HACER
-- **Story Points**: 3  
-- **Responsable**: Asignado
-
-**Criterios de Aceptación:**
-- Búsqueda por nombre de archivo
-- Búsqueda por tipo de archivo
-- Resultados en tiempo real
-- Filtros de búsqueda avanzada
-
----
-
-#### **SCRUM-29**: Imprimir Archivos
-**Como** usuario **deseo** imprimir los archivos que tengo **para** tenerlo físicamente
-
-- **Tipo**: INTERFAZ DE USUARIO
-- **Estado**: POR HACER  
-- **Story Points**: 3
-- **Responsable**: Asignado
-
-**Criterios de Aceptación:**
-- Opción de imprimir desde vista previa
-- Configuración de impresión básica
-- Soporte para documentos PDF e imágenes
-- Mantener formato original
-
----
 
 ## **Métricas del Sprint**
 

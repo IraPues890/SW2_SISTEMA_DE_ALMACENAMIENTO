@@ -1,0 +1,377 @@
+@startuml der_cloud_sprint1_2
+title Plataforma UlStorage - Diagrama de Clases (Sprint 1 + Sprint 2)
+
+!define RECTANGLE class
+
+' Layout & estilos
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam class {
+  BackgroundColor PaleGreen
+  ArrowColor SeaGreen
+  BorderColor SpringGreen
+}
+
+' ======================
+' USUARIOS Y AUTENTICACIÓN
+' ======================
+package "Usuarios" {
+  class Usuario {
+    -id: int
+    -nombre: string
+    -email: string
+    -passwordHash: string
+    +getId(): int
+    +getEmail(): string
+    +validarPassword(password: string): boolean
+  }
+
+  class Administrador extends Usuario {
+    +definirPoliticaVersionado(limite: int): void
+    +verRegistrosAcceso(): List<String>
+    +recibirAlertasSeguridad(): void
+  }
+
+  class Rol {
+    -id: int
+    -nombre: string
+    -permisos: List<Permiso>
+    +getPermisos(): List<Permiso>
+  }
+
+  class Permiso {
+    -id: int
+    -nombre: string
+    -descripcion: string
+  }
+}
+
+package "Autenticación" {
+  class AuthService {
+    +login(email: string, password: string): Usuario
+    +logout(usuario: Usuario): void
+    +generarToken(usuario: Usuario): string
+    +verificarToken(token: string): boolean
+    +refrescarSesion(usuario: Usuario): string
+  }
+
+  class SecureConnectionManager {
+    +obtenerCredenciales(proveedor: string): Object
+    +rotarCredenciales(proveedor: string): void
+    +validarConexion(proveedor: string): boolean
+  }
+}
+
+' ======================
+' ARCHIVOS, VERSIONES, CARPETAS
+' ======================
+package "Archivos" {
+  class Archivo {
+    -id: int
+    -nombre: string
+    -tamaño: float
+    -tipo: string
+    -fechaCreacion: Date
+    -fechaModificacion: Date
+    -versiones: List<Version>
+    -proveedor: ProveedorAlmacenamiento
+    +renombrar(nuevoNombre: string): void
+    +eliminar(): void
+    +getVersiones(): List<Version>
+    +getEtiquetas(): List<Etiqueta>
+    +previsualizar(): Object
+    +descargar(): binary
+  }
+
+  class Version {
+    -id: int
+    -numero: int
+    -contenido: binary
+    -fecha: Date
+    -autor: Usuario
+  }
+}
+
+package "Carpetas" {
+  class Carpeta {
+    -id: int
+    -nombre: string
+    -archivos: List<Archivo>
+    -subcarpetas: List<Carpeta>
+    +crearSubcarpeta(nombre: string): Carpeta
+    +renombrar(nuevoNombre: string): void
+    +eliminar(): void
+    +listarContenido(): List<Object>
+  }
+}
+
+package "Gestión" {
+  class GestorArchivos <<Facade>> {
+    +subirArchivo(archivo: Archivo, usuario: Usuario, proveedor: ProveedorAlmacenamiento): void
+    +eliminarArchivo(archivo: Archivo): void
+    +renombrarArchivo(archivo: Archivo, nuevoNombre: string): void
+    +restaurarVersion(archivo: Archivo, version: Version): void
+    +obtenerArchivo(id: int): Archivo
+    +listarArchivos(carpeta: Carpeta): List<Archivo>
+    +previsualizarArchivo(archivo: Archivo): Object
+    +descargarArchivo(archivo: Archivo): binary
+    +buscarArchivos(query: string, carpeta: Carpeta): List<Archivo>
+  }
+
+  class GestorCarpetas <<Facade>> {
+    +crearCarpeta(nombre: string, usuario: Usuario): Carpeta
+    +eliminarCarpeta(carpeta: Carpeta): void
+    +renombrarCarpeta(carpeta: Carpeta, nuevoNombre: string): void
+    +moverArchivo(archivo: Archivo, carpetaDestino: Carpeta): void
+    +listarCarpetas(usuario: Usuario): List<Carpeta>
+  }
+
+  class VersionFactory <<Factory>> {
+    +crearVersion(archivo: Archivo, usuario: Usuario): Version
+  }
+}
+
+' ======================
+' ORGANIZACIÓN Y ORDENAMIENTO
+' ======================
+package "Organización" {
+  class Etiqueta {
+    -id: int
+    -nombre: string
+    +asignarArchivo(archivo: Archivo): void
+    +removerArchivo(archivo: Archivo): void
+  }
+
+  interface EstrategiaOrdenamiento <<Strategy>> {
+    +ordenar(archivos: List<Archivo>): List<Archivo>
+  }
+
+  class OrdenarPorFecha {
+    +ordenar(archivos: List<Archivo>): List<Archivo>
+  }
+
+  class OrdenarPorNombre {
+    +ordenar(archivos: List<Archivo>): List<Archivo>
+  }
+
+  class OrdenarPorTipo {
+    +ordenar(archivos: List<Archivo>): List<Archivo>
+  }
+
+  class OrdenadorArchivos {
+    -estrategia: EstrategiaOrdenamiento
+    +setEstrategia(estrategia: EstrategiaOrdenamiento): void
+    +ordenarArchivos(archivos: List<Archivo>): List<Archivo>
+  }
+}
+
+' ======================
+' VERSIONAMIENTO
+' ======================
+package "Versionamiento" {
+  interface PoliticaVersionado <<Strategy>> {
+    +aplicar(versiones: List<Version>): List<Version>
+  }
+
+  class PoliticaLimiteFijo implements PoliticaVersionado {
+    -limite: int
+    +aplicar(versiones: List<Version>): List<Version>
+  }
+}
+
+' ======================
+' PERMISOS / SHARING
+' ======================
+package "Permisos" {
+  class CompartirService {
+    +compartirArchivo(archivo: Archivo, rol: Rol): void
+    +revocarAcceso(archivo: Archivo, rol: Rol): void
+    +listarUsuariosConAcceso(archivo: Archivo): List<Usuario>
+    +compartirCarpeta(carpeta: Carpeta, usuario: Usuario): void
+    +revocarAccesoCarpeta(carpeta: Carpeta, usuario: Usuario): void
+    +listarUsuariosConAccesoCarpeta(carpeta: Carpeta): List<Usuario>
+  }
+}
+
+' ======================
+' STORAGE MULTI-CLOUD
+' ======================
+package "Almacenamiento en la Nube" {
+  abstract class ProveedorAlmacenamiento <<Strategy>> {
+    -nombre: string
+    -descripcion: string
+    +{abstract} subirArchivo(archivo: Archivo): void
+    +{abstract} descargarArchivo(id: int): binary
+    +{abstract} eliminarArchivo(id: int): void
+  }
+
+  class ProveedorFactory <<Factory>> {
+    +crearProveedor(nombre: string): ProveedorAlmacenamiento
+  }
+
+  class OCIStorage {
+    +subirArchivo(archivo: Archivo): void
+  }
+
+  class AWSStorage {
+    +subirArchivo(archivo: Archivo): void
+  }
+
+  class GCPStorage {
+    +subirArchivo(archivo: Archivo): void
+  }
+}
+
+' ======================
+' PERSISTENCIA / REPOSITORIOS
+' ======================
+package "Persistencia" {
+  interface IRepositorioArchivos {
+    +guardar(archivo: Archivo): void
+    +obtener(id: int): Archivo
+    +eliminar(id: int): void
+    +listarPorCarpeta(carpeta: Carpeta): List<Archivo>
+  }
+
+  interface IRepositorioUsuarios {
+    +guardar(usuario: Usuario): void
+    +obtener(id: int): Usuario
+    +obtenerPorEmail(email: string): Usuario
+  }
+
+  class CloudRepositorio implements IRepositorioArchivos {
+    -proveedor: ProveedorAlmacenamiento
+    +setProveedor(proveedor: ProveedorAlmacenamiento): void
+    +guardar(archivo: Archivo): void
+    +obtener(id: int): Archivo
+    +eliminar(id: int): void
+    +listarPorCarpeta(carpeta: Carpeta): List<Archivo>
+  }
+
+  class LocalStorageRepositorioUsuarios implements IRepositorioUsuarios {
+    +guardar(usuario: Usuario): void
+    +obtener(id: int): Usuario
+    +obtenerPorEmail(email: string): Usuario
+  }
+
+  ' Repositorios adicionales para Sprint 2
+  class AuditRepository {
+    +guardarEvento(evento: string): void
+    +listarEventos(filtros): List<Object>
+  }
+
+  class BillingRepository {
+    +guardarFactura(factura: Object): void
+    +obtenerFactura(id: int): Object
+  }
+
+  class AlertRepository {
+    +guardarAlerta(alerta: Object): void
+    +listarAlertas(usuarioId): List<Object>
+  }
+
+  class QuotaRepository {
+    +obtenerCuota(usuarioId): int
+    +actualizarUso(usuarioId, bytes): void
+  }
+}
+
+' ======================
+' SERVICIOS ADICIONALES (Sprint 1 y Sprint 2)
+' ======================
+package "Servicios" {
+  class BuscadorService {
+    +buscar(query: string, carpeta: Carpeta): List<Archivo>
+  }
+
+  class AuditService {
+    +registrarEvento(tipo: string, detalle: string): void
+    +listarEventos(filtros): List<Object>
+  }
+
+  class BillingService {
+    +generarFactura(usuario: Usuario): Object
+    +listarFacturas(usuarioId): List<Object>
+  }
+
+  class AlertService {
+    +emitirAlerta(tipo: string, usuario: Usuario, detalle: string): void
+    +listarAlertas(usuarioId): List<Object>
+  }
+
+  class QuotaService {
+    +validarAntesSubida(usuario: Usuario, size: int): boolean
+    +obtenerUso(usuarioId): int
+  }
+
+  class ActivityLogService {
+    +registrarAccion(usuario: Usuario, accion: string, meta: Object): void
+    +exportarLogs(formato: string): binary
+  }
+
+  class AlertService {
+    +enviarAlerta(nivel: string, mensaje: string, destinatarios: List<Usuario>): void
+    +configurarCanal(canal: string, config: Object): void
+  }
+
+  class StorageQuotaService {
+    +verificarCuota(usuario: Usuario, tamaño: number): boolean
+    +consumirCuota(usuario: Usuario, tamaño: number): void
+    +liberarCuota(usuario: Usuario, tamaño: number): void
+  }
+
+  class SecureConnectionManager {
+    +obtenerCredenciales(proveedor: string): Object
+    +rotarCredenciales(proveedor: string): void
+    +validarConexion(proveedor: string): boolean
+  }
+}
+
+' ======================
+' RELACIONES PRINCIPALES
+' ======================
+Usuario ||--o{ Carpeta : "posee"
+Usuario ||--o{ Etiqueta : "crea"
+Usuario ||--|| Rol : "tiene"
+Rol ||--o{ Permiso : "incluye"
+Carpeta ||--o{ Archivo : "contiene"
+Carpeta ||--o{ Carpeta : "subcarpetas"
+Archivo }o--|| ProveedorAlmacenamiento : "almacenado_en"
+Archivo ||--|{ Version : "versiones"
+Archivo }o--o{ Etiqueta : "etiquetado"
+Version }o--|| Usuario : "autor"
+
+AuthService ..> IRepositorioUsuarios : "usa"
+GestorArchivos ..> VersionFactory : "usa"
+GestorArchivos ..> PoliticaVersionado : "aplica"
+GestorArchivos ..> IRepositorioArchivos : "persiste"
+GestorArchivos ..> ProveedorFactory : "crea_proveedor"
+GestorCarpetas ..> Carpeta : "gestiona"
+OrdenadorArchivos o-- EstrategiaOrdenamiento : "estrategia"
+OrdenadorArchivos ..> Archivo : "ordena"
+EstrategiaOrdenamiento <|.. OrdenarPorFecha : "implementa"
+EstrategiaOrdenamiento <|.. OrdenarPorNombre : "implementa"
+EstrategiaOrdenamiento <|.. OrdenarPorTipo : "implementa"
+CompartirService ..> Archivo : "comparte"
+CompartirService ..> Carpeta : "comparte"
+CompartirService ..> Rol : "asigna"
+CompartirService ..> Usuario : "gestiona_acceso"
+CloudRepositorio o-- ProveedorAlmacenamiento : "proveedor"
+ProveedorFactory ..> ProveedorAlmacenamiento : "crea"
+ProveedorAlmacenamiento <|-- OCIStorage : "extiende"
+ProveedorAlmacenamiento <|-- AWSStorage : "extiende"
+ProveedorAlmacenamiento <|-- GCPStorage : "extiende"
+
+' Servicios adicionales con repositorios
+AuditService ..> AuditRepository : "usa"
+BillingService ..> BillingRepository : "usa"
+AlertService ..> AlertRepository : "usa"
+QuotaService ..> QuotaRepository : "usa"
+GestorArchivos ..> BuscadorService : "usa"
+
+' Posicionamiento visual (hints)
+Usuario -[hidden]-> GestorArchivos
+Carpeta -[hidden]-> GestorCarpetas
+Archivo -[hidden]-> Version
+
+@enduml
