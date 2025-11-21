@@ -5,19 +5,12 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 class AmazonClient {
     constructor() {
         try {
-            // ⚠️ Sobrescribe si detecta "test"
-            if (process.env.AWS_ACCESS_KEY_ID === 'test') {
-                console.warn('⚠️ Detectado entorno LocalStack: forzando uso de credenciales reales del .env');
-                process.env.AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID_REAL;
-                process.env.AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY_REAL;
+            if (process.env.AWS_ACCESS_KEY_ID === undefined 
+                || process.env.AWS_ACCESS_KEY_ID === undefined  
+                || process.env.AWS_SECRET_ACCESS_KEY === undefined) {
+                throw new Error ("CREDENCIALES NO VALIDADAS DE AWS")
             }
-            
-            console.log("🔍 AWS_ACCESS_KEY_ID:", process.env.AWS_ACCESS_KEY_ID);
-            console.log("🔍 AWS_SECRET_ACCESS_KEY:", process.env.AWS_SECRET_ACCESS_KEY);
-            console.log("🔍 AWS_REGION:", process.env.AWS_REGION);
-            console.log("🔍 AWS_BUCKET_NAME:", process.env.AWS_BUCKET_NAME);
 
-            // Configurar AWS con credenciales del .env
             AWS.config.update({
                 accessKeyId: process.env.AWS_ACCESS_KEY_ID,
                 secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -27,9 +20,9 @@ class AmazonClient {
             // Crear cliente S3
             this.s3 = new AWS.S3();
             this.bucketName = process.env.AWS_BUCKET_NAME;
-            console.log('✅ AWS S3 client initialized successfully');
+            console.log('CLIENTE DE AWS INCIALIZADO CON ÉXITO!!');
         } catch (error) {
-            console.warn('⚠️  AWS S3 initialization failed:', error.message);
+            console.warn('CLIENTE DE AWS FALLÓ: ', error.message);
             this.s3 = null;
             this.bucketName = null;
         }

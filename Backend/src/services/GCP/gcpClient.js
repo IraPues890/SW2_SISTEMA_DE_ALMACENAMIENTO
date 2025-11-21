@@ -1,34 +1,26 @@
 const { Storage } = require("@google-cloud/storage");
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 
 class GoogleClient {
     constructor() {
         try {
-            const projectId = process.env.GCP_PROJECT_ID;
-            const keyFilename = process.env.GCP_KEY_FILE_PATH;
+            const keyFilename = process.env.GCP_KEY_FILE_PATH || null;
 
-            if (!projectId) {
-                console.warn('⚠️  GCP credentials not found in .env - Google Cloud Storage will be disabled');
+            if (!keyFilename) {
+                console.warn('!!! NO SE ENCONTRÓ EL JSON DE AUTENTICACIÓN PARA GCP !!!');
                 this.client = null;
                 this.bucketName = null;
                 return;
             }
-
-            // Configuración del cliente
-            const config = {
-                projectId: projectId
-            };
-
-            // Si hay un archivo de clave de servicio, usarlo
-            if (keyFilename) {
-                config.keyFilename = keyFilename;
+            this.client = new Storage(keyFilename);
+            if (!process.env.GCP_BUCKET_NAME) {
+                console.warn('!!! NO SE ENCONTRÓ NINGÚN NOMBRE DE BUCKET PARA GCP EN .ENV !!!')
             }
-
-            this.client = new Storage(config);
             this.bucketName = process.env.GCP_BUCKET_NAME;
-            console.log('✅ Google Cloud Storage client initialized successfully');
+            console.log('CLIENTE DE GCP INICIALIZADO CON ÉXITO');
         } catch (error) {
-            console.warn('⚠️  Google Cloud Storage initialization failed:', error.message);
+            console.warn('!!! CLIENTE GCP FALLÓ !!!', error.message);
             this.client = null;
             this.bucketName = null;
         }

@@ -11,13 +11,14 @@ import FileTable from './components/FileTable';
 import FilePreview from './components/FilePreview';
 import HeaderBar from './components/HeaderBar';
 import ExplorerLayout from './components/ExplorerLayout';
-import createFileOperations from './services/FileOperations';
 
 // Hooks
 import { useFileSelection } from './hooks/useFileSelection';
 import { useCreateFolder } from './hooks/useCreateFolder';
 import { useDeleteConfirmation } from './hooks/useDeleteConfirmation';
 
+// Services
+import { downloadFiles } from './services/apiServices';
 
 export default function Filesexplorer() {
   const navigate = useNavigate();
@@ -59,7 +60,6 @@ export default function Filesexplorer() {
     }
   });
 
-  const fileOps = useMemo(() => createFileOperations({ deleteFn: deleteFiles, getFiles: () => files }), [deleteFiles, files]);
 
   // Funciones compuestas que unen navegación, selección y paginación
   const resetSelectionAndPage = () => {
@@ -82,20 +82,17 @@ export default function Filesexplorer() {
     setSelectedFile(f);
   };
 
-  const handleDownloadSelected = (fileIds) => {
-    let idsToDownload = [];
-    if (Array.isArray(fileIds) && fileIds.length) idsToDownload = fileIds;
-    else if (fileIds) idsToDownload = [fileIds];
-    else if (selectedFileIds && selectedFileIds.length) idsToDownload = selectedFileIds;
-    else idsToDownload = sortedFiltered.filter(f => f.type !== 'folder').map(f => f.id);
-
-    if (!idsToDownload || idsToDownload.length === 0) {
+  const handleDownloadSelected = () => {
+    let fileIds = selectedFileIds;
+    if (fileIds.length > 1) {
+        console.log("se han seleccionado varios archivos, hay que manejarlo de algún modo")
+    } else if (fileIds.length === 0) {
       alert('No hay archivos disponibles para descargar.');
       return;
     }
 
-    console.debug('[Filesexplorer] downloading ids:', idsToDownload);
-    fileOps.download(idsToDownload);
+    console.debug('[Filesexplorer] downloading ids:', fileIds);
+    downloadFiles(fileIds);
   };
 
   const previewUrl = useMemo(() => {
