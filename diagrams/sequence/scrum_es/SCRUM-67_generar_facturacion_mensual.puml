@@ -1,0 +1,23 @@
+@startuml SCRUM_67_GenerarFacturacionMensual
+title "SCRUM-67 - Generar facturación mensual"
+skinparam monochrome true
+
+actor Scheduler as "Scheduler (cron)"
+participant "BillingWorker" as BillingWorker
+participant "BillingService" as BillingService
+participant "DB (Postgres)" as DB
+participant "PaymentGateway" as PaymentGateway
+participant "User Notification" as Notifier
+
+Scheduler -> BillingWorker: disparar job mensual
+BillingWorker -> DB: obtener consumos y metadatos por usuario (periodo)
+DB --> BillingWorker: {uso, plan, tarifas}
+BillingWorker -> BillingService: calcular cargos y generar invoice(userId, amount)
+BillingService -> DB: INSERT invoices (userId, period, amount, status=pending)
+DB --> BillingService: {invoiceId}
+BillingService -> PaymentGateway: intentar cobro (invoiceId, amount)
+PaymentGateway --> BillingService: {status, txId}
+BillingService -> DB: UPDATE invoices SET status, txId
+BillingService -> Notifier: notificar usuario (email factura)
+
+@enduml
