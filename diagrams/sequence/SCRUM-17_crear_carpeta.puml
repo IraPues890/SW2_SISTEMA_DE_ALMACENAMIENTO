@@ -1,3 +1,26 @@
+@startuml SCRUM_17_CrearCarpeta
+title "SCRUM-17 - Crear carpeta (provider cloud)"
+actor Usuario as "Usuario / Navegador"
+participant "Aplicación Frontend" as Frontend
+participant "API Backend\n(Express)" as Backend
+participant "FileController" as Controller
+participant "FileService" as Service
+participant "StorageFactory" as Factory
+participant "Repositorio Amazon" as Repo
+participant "AWS S3 / Cloud" as S3
+
+Usuario -> Frontend: Pulsar 'Nueva carpeta' y enviar nombre
+Frontend -> Backend: POST /api/folders (name)
+Backend -> Controller: createFolder(name, userId)
+Controller -> Service: createFolder(name)
+Service -> Repo: repo.createFolder(folderName)
+Repo -> S3: PutObject({Bucket, Key: folderName + '/', Body: ''})
+S3 --> Repo: {} // éxito
+Repo --> Service: { created: true, folderName }
+Service -> BD: Opcionalmente crear registro en 'carpetas'
+Service --> Controller: { success: true, folderName }
+Controller --> Frontend: 201 Created
+@enduml
 @startuml SCRUM-17_CrearCarpeta
 title SCRUM-17: Crear carpeta
 

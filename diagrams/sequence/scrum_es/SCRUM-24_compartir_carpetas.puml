@@ -1,0 +1,26 @@
+@startuml SCRUM_24_CompartirCarpetas
+title "SCRUM-24 - Compartir carpetas con usuarios específicos (solo visualización)"
+skinparam monochrome true
+actor Usuario as "Usuario propietario"
+participant "Frontend App" as Frontend
+participant "API Backend (Express)" as Backend
+participant "FileController" as Controller
+participant "FileService" as Service
+participant "DB (Postgres)" as DB
+participant "NotificationService" as Notif
+
+Usuario -> Frontend: Abrir gestión de carpeta -> 'Compartir'
+Frontend -> Backend: POST /api/folders/:id/share {targetUserId, permiso:'view'}
+Backend -> Controller: shareFolder(folderId, ownerId, targetUserId, permiso)
+Controller -> Service: validateOwnerAndPersistShare(folderId, ownerId, targetUserId, permiso)
+Service -> DB: INSERT INTO permisos (propietario_id, usuario_id, carpeta_id, tipo_permiso)
+DB --> Service: {permiso creado}
+Service -> Notif: enviar notificación al usuario objetivo (email/in-app)
+Notif --> Service: {notificación enviada}
+Service --> Controller: {success: true}
+Controller --> Backend: 200 OK
+Backend --> Frontend: 200 OK (msg: 'Carpeta compartida: visualización')
+Frontend -> Usuario: Mostrar confirmación y actualizar UI (icono de compartido)
+
+note over DB,Service: Reglas: compartir con rol 'viewer' crea permiso de solo lectura; opción para revocar o expiración
+@enduml

@@ -1,3 +1,57 @@
+@startuml SCRUM_12_SubirArchivo
+title "SCRUM-12 - Subir archivo (dos variantes: presign desde frontend o vía backend multipart)"
+skinparam monochrome true
+actor Usuario as "Usuario / Navegador"
+
+== Opción A: Subir usando URL presignada (frontend -> S3) ==
+participant "Aplicación Frontend\n(React + Vite)" as Frontend
+participant "API Backend\n(Express)" as Backend
+participant "PresignController" as Presign
+participant "AWS SDK (S3)" as AWS
+participant "Bucket S3" as S3
+
+Usuario -> Frontend: Selecciona archivo y pulsa 'Subir' (provider=aws)
+Frontend -> Backend: GET /api/files/s3-presign?key=...&contentType=...
+note right: El backend autentica la petición (authenticateToken)
+Backend -> Presign: getS3Presign(req.query)
+Presign -> AWS: s3.getSignedUrlPromise('putObject', {Bucket, Key, ContentType, Expires})
+AWS --> Presign: url_presignada
+Presign --> Backend: { success: true, url }
+Backend --> Frontend: 200 OK + URL presignada
+
+Frontend -> S3: PUT a la URL presignada (bytes del archivo, Content-Type)
+S3 --> Frontend: 200 / 204
+note right: El navegador recibe respuesta exitosa del PUT
+
+Frontend -> Backend: POST /api/files/register (opcional)\\n(cuerpo: key, originalName, size, provider=aws)
+Backend -> FileService: registrar metadatos en BD (Archivo + Version)
+Backend --> Frontend: 201 Created
+
+note over Frontend,S3: Ventaja: los bytes no pasan por el servidor de aplicación; ahorra ancho de banda
+
+== Opción B: Subir a través del backend (multipart -> multer -> cloud) ==
+participant "Multer (diskStorage)" as Multer
+participant "FileController" as Controller
+participant "FileService" as Service
+participant "StorageFactory / Repo" as Repo
+participant "AWS S3 / Cloud" as S3
+
+Usuario -> Frontend: Selecciona archivo y POST /api/files/upload (multipart/form-data)
+Frontend -> Backend: POST /api/files/upload (campo 'file')
+Backend -> Multer: multer.diskStorage guarda archivo en UPLOAD_DIR (filename único)
+Multer --> Backend: archivo guardado en disco (file.path)
+Backend -> Controller: fileController.uploadFile(req.file)
+Controller -> Service: uploadFile(fileData, userId, carpetaId, provider='aws')
+Service -> Repo: (vía) storageFactory(provider) -> repo.upload(filePath, filename)
+note right: Service lee el buffer del archivo local y lo pasa al repositorio
+Repo -> S3: s3.upload({Bucket, Key, Body})
+S3 --> Repo: { Location }
+Repo --> Service: cloudUrl
+Service --> Controller: { success, cloudUrl }
+Controller --> Frontend: 200 OK (metadatos + cloudUrl)
+
+note over Service,Repo: El backend puede eliminar el archivo temporal local tras el upload exitoso
+@enduml
 @startuml SCRUM-12_SubirArchivo
 title SCRUM-12: Subir archivo
 

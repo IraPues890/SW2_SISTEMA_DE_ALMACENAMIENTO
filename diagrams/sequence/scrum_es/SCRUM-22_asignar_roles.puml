@@ -1,0 +1,26 @@
+@startuml SCRUM_22_AsignarRoles
+title "SCRUM-22 - Asignar roles a usuarios (administrador)"
+skinparam monochrome true
+actor Administrador as "Administrador"
+participant "Frontend Admin" as Frontend
+participant "API Backend (Express)" as Backend
+participant "RolesController" as Controller
+participant "RolesService" as Service
+participant "DB (Postgres)" as DB
+participant "NotificationService" as Notif
+
+Administrador -> Frontend: Abrir usuario -> 'Asignar rol'
+Frontend -> Backend: POST /api/admin/users/:id/roles {roleId}
+Backend -> Controller: assignRoleToUser(userId, roleId)
+Controller -> Service: validateAdminAndAssign(userId, roleId)
+Service -> DB: INSERT INTO user_roles (user_id, role_id)
+DB --> Service: {assignment created}
+Service -> Notif: enviar notificación al usuario (role assigned)
+Notif --> Service: {notificación enviada}
+Service --> Controller: {success: true}
+Controller --> Backend: 200 OK
+Backend --> Frontend: 200 OK (mensaje)
+Frontend -> Administrador: Mostrar rol en perfil de usuario
+
+note over DB,Service: Roles controlan permisos de acceso a carpetas/archivos y opciones de administración
+@enduml

@@ -1,3 +1,27 @@
+@startuml SCRUM_13_DescargarArchivo
+title "SCRUM-13 - Descargar archivo (backend -> repo cloud)"
+actor Usuario as "Usuario / Navegador"
+participant "Aplicación Frontend" as Frontend
+participant "API Backend\n(Express)" as Backend
+participant "FileController" as Controller
+participant "FileService" as Service
+participant "StorageFactory" as Factory
+participant "Repositorio Amazon" as Repo
+participant "AWS S3 / Cloud" as S3
+
+Usuario -> Frontend: Pulsar 'Descargar' (id de archivo)
+Frontend -> Backend: GET /api/files/:id/download
+Backend -> Controller: downloadFile(params.id)
+Controller -> Service: downloadFile(archivoId, userId)
+note right: Service consulta Archivo y Version en la BD
+Service -> Repo: repo.downloadFile(cloudKey)  // si proveedor !== 'local'
+Repo -> S3: s3.getObject({Bucket, Key})
+S3 --> Repo: bytes del archivo (Body)
+Repo --> Service: Buffer
+Service --> Controller: { buffer, filename, mimetype }
+Controller --> Frontend: stream como attachment (application/octet-stream)
+Frontend --> Usuario: El navegador muestra 'Guardar como' / descarga el archivo
+@enduml
 @startuml SCRUM-13_DescargarArchivo
 title SCRUM-13: Descargar archivo
 
