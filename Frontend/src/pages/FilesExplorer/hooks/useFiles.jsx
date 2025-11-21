@@ -1,41 +1,36 @@
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { SORT_OPTIONS_CONFIG, DEFAULT_SORT_OPTION } from '../config/SortOptions';
-import { getFiles } from '../services/apiServices';
+import { getAllFiles, deleteFilesBatch } from '../services/apiServices';
 
 function transformApiData(apiData) {
-  const getFileType = (key, size) => {
-    if (key.endsWith('/') && size === 0) return 'folder';
-    const extension = key.split('.').pop();
-    if (extension === key || !extension) return 'file'; // Sin extensión
-    return extension.toLowerCase();
-  };
+    const allFiles = apiData.objects.flatMap(bucketData => {
+        return bucketData.objects.map(item => {
+            const { fileName, size, lastModified, cloud } = item;
 
-  return apiData.map(item => {
-    const { Key, Size, LastModified } = item;
-    const type = getFileType(Key, Size);
+            // Partes de la ruta, eliminando strings vacíos
+            const parts = fileName.split('/').filter(p => p.length > 0);
 
-    // Partes de la ruta, eliminando strings vacíos (ej. del slash final)
-    const parts = Key.split('/').filter(p => p.length > 0);
+            let name = parts[parts.length - 1] || fileName;
+            let parentId = null;
 
-    let name = parts[parts.length - 1] || Key; // El último segmento
-    let parentId = null;
+            if (parts.length > 1) {
+                const parentParts = parts.slice(0, parts.length - 1);
+                parentId = parentParts.join('/') + '/';
+            }
 
-    if (parts.length > 1) {
-      // Si hay más de un segmento (ej. ['carpeta', 'archivo.pdf']), tiene padre
-      const parentParts = parts.slice(0, parts.length - 1);
-      parentId = parentParts.join('/') + '/'; // Reconstruir la ruta padre
-    }
+            return {
+                id: fileName,
+                name: name,
+                parentId: parentId,
+                size: (size / 1024).toFixed(0), // Esto dará KB
+                date: new Date(lastModified).toLocaleDateString('es-PE'),
+                URL: null,
+                cloud: cloud
+            };
+        });
+    });
 
-    return {
-      id: Key,
-      name: name,
-      parentId: parentId, // <-- null si parts.length <= 1
-      size: (Size / 1024).toFixed(0),
-      date: new Date(LastModified).toLocaleDateString('es-PE'),
-      type: type,
-      URL: null,
-    };
-  });
+    return allFiles;
 }
 
 export function useFiles() {
@@ -44,7 +39,7 @@ export function useFiles() {
     const [error, setError] = useState(null);
 
     const [query, setQuery] = useState('');
-    const [sortOption, setSortOption] = useState(DEFAULT_SORT_OPTION); 
+    const [sortOption, setSortOption] = useState(DEFAULT_SORT_OPTION);
     const [currentFolderId, setCurrentFolderId] = useState(null);
     const [page, setPage] = useState(1);
     const perPage = 5;
@@ -53,19 +48,19 @@ export function useFiles() {
         setIsLoading(true);
         setError(null);
         try {
-            const apiData = await getFiles(); 
+            const apiData = await getAllFiles();
+            console.log(apiData);
             const transformedData = transformApiData(apiData);
+            console.log(transformedData);
             setFiles(transformedData);
         } catch (err) {
-            console.error('[useFiles] 4. CATCH: Error capturado!', err.message);
             setError(err.message || 'Error al cargar los archivos');
             setFiles([]);
         } finally {
-            console.log('[useFiles] 5. FINALLY: Limpiando carga.');
             setIsLoading(false);
         }
     }, []); // Ya no depende de currentFolderId, siempre trae todo
-    
+
     useEffect(() => {
         refetchFiles();
     }, [refetchFiles]);
@@ -74,7 +69,7 @@ export function useFiles() {
         const q = query.trim().toLowerCase();
         let items = files.filter(f => (f.parentId ?? null) === currentFolderId);
         if (!q) return items;
-        return items.filter(f => f.name.toLowerCase().includes(q) || f.type.toLowerCase().includes(q));
+        return items.filter(f => f.name.toLowerCase().includes(q) || f.name.toLowerCase().includes(q));
     }, [files, query, currentFolderId]); // <-- Añadida dependencia de currentFolderId
 
     const sortedFiltered = useMemo(() => {
@@ -84,7 +79,7 @@ export function useFiles() {
         if (typeof sortFunction === 'function') {
             items.sort(sortFunction);
         }
-        
+
         return items;
     }, [filtered, sortOption]);
 
@@ -112,12 +107,54 @@ export function useFiles() {
         setFiles(prev => [file, ...prev]);
     };
 
-    const deleteFiles = (ids) => {
-        const idSet = Array.isArray(ids) ? ids : [ids];
-        setFiles(prev => prev.filter(f => !idSet.includes(f.id)));
-    };
+    const deleteFiles = useCallback(async (ids) => {
+        const idSet = new Set(Array.isArray(ids) ? ids : [ids]);
 
-return {
+        const filesToProcess = files.filter(f => idSet.has(f.id));
+
+        const payload = filesToProcess.map(f => ({
+            fileName: f.id,
+            provider: f.cloud 
+        }));
+
+        if (payload.length === 0) {
+            console.warn("No se encontraron archivos para los IDs seleccionados.");
+            return; 
+        }
+
+        try {
+            const report = await deleteFilesBatch(payload);
+
+            const successfulDeletes = new Set();
+            const failedReport = [];
+
+            report.forEach(r => {
+                if (r.status === 'deleted') {
+                    successfulDeletes.add(r.fileName);
+                } else {
+                    failedReport.push(r);
+                }
+            });
+
+            setFiles(currentFiles =>
+                currentFiles.filter(f => !successfulDeletes.has(f.id))
+            );
+
+            if (failedReport.length > 0) {
+                console.error("Fallaron algunas eliminaciones:", failedReport);
+                setError(`No se pudieron eliminar ${failedReport.length} archivos.`);
+            } else {
+                setError(null); 
+            }
+
+        } catch (error) {
+            console.error("Error en la operación de borrado:", error);
+            setError(error.message || "Error fatal en el borrado.");
+            throw error;
+        }
+    }, [files, setError]);
+
+    return {
         files,
         isLoading,
         error,
@@ -133,7 +170,7 @@ return {
         page,
         setPage,
         perPage,
-        pageItems, 
+        pageItems,
         totalPages,
         sortedFiltered,
         breadcrumbNodes,
