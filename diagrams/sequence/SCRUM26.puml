@@ -1,0 +1,25 @@
+@startuml SCRUM_26_ConfigurarLimites
+title "SCRUM-26 - Configurar límites de almacenamiento por usuario (administrador)"
+skinparam monochrome true
+actor Administrador as "Administrador"
+participant "Frontend Admin" as Frontend
+participant "API Backend (Express)" as Backend
+participant "LimitsController" as Controller
+participant "LimitsService" as Service
+participant "DB (Postgres)" as DB
+participant "QuotaWorker" as Worker
+
+Administrador -> Frontend: Abrir configuración de límites -> establecer cuota por usuario
+Frontend -> Backend: POST /api/admin/quotas {userId, quotaBytes}
+Backend -> Controller: setQuota(userId, quotaBytes)
+Controller -> Service: validateAndSaveQuota(userId, quotaBytes)
+Service -> DB: INSERT/UPDATE user_quotas (user_id, quota_bytes)
+DB --> Service: {quota saved}
+Service -> Worker: notifyQuotaMonitor(userId)
+Worker --> Service: {monitor scheduled}
+Service --> Controller: {success: true}
+Controller --> Backend: 200 OK
+Backend --> Frontend: 200 OK (mensaje y nueva cuota)
+
+note over DB,Worker: QuotaWorker revisa uso y dispara alertas cuando se exceda
+@enduml
