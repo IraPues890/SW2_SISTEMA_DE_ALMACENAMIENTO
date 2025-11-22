@@ -1,16 +1,6 @@
-// A esto lo podrías llamar: /services/storageService.js
 const API_BASE = "http://localhost:3000";
 
-/**
- * Sube un archivo a un proveedor de nube (AWS, OCI, etc.)
- * utilizando una URL pre-firmada/PAR obtenida del backend.
- * * @param {File} file - El objeto File del input.
- * @param {string} provider - El proveedor de nube (ej: 'aws', 'oci', 'gcp').
- * @returns {Promise<string>} La URL limpia del objeto subido.
- */
 export async function uploadFile(file, provider) {
-  
-  // --- PASO 1: Pedir la URL pre-firmada (PAR) al backend ---
   const API_URL = `${API_BASE}/api/storage/${provider}/upload`;
 
   let presignedUrl;
@@ -32,27 +22,36 @@ export async function uploadFile(file, provider) {
 
     const data = await response.json();
     presignedUrl = data.url;
-
+    console.log(presignedUrl)
   } catch (error) {
     console.error("Error en el Paso 1 (Obtener URL):", error);
     throw error;
   }
 
-  // --- PASO 2: Subir el archivo directamente a la nube (OCI/AWS) ---
+  const headers = {
+    'Content-Type': file.type || 'application/octet-stream', 
+  };
+
+  if (provider === 'azure') {
+    headers['x-ms-blob-type'] = 'BlockBlob';
+    headers['x-ms-date'] = new Date().toUTCString();
+    const sasVersion = new URL(presignedUrl).searchParams.get("sv");
+    if (sasVersion) {
+      headers['x-ms-version'] = sasVersion;
+    }
+  }
+
   try {
     const upload = await fetch(presignedUrl, {
       method: "PUT",
-      body: file, // El archivo real
-      headers: {
-        'Content-Type': file.type // Esencial. OCI lo requiere sí o sí.
-      }
+      body: file, 
+      headers: headers
     });
 
     if (!upload.ok) {
-      throw new Error(`Error subiendo el archivo a la nube: ${upload.statusText}`);
+      throw new Error(`Azure falló: ${upload.status} - ${errorText}`);
     }
 
-    // Devolvemos la URL final del objeto (buena práctica)
     return presignedUrl.split("?")[0];
 
   } catch (error) {

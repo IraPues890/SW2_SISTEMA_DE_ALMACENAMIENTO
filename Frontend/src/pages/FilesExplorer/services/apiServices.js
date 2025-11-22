@@ -3,10 +3,13 @@ const API_BASE_BACKEND = 'http://localhost:3000/api'
 
 const API_URL_AWS = 'http://localhost:3000/api/storage/aws/list'
 const API_URL_OCI = 'http://localhost:3000/api/storage/oracle/list'
-
+const API_URL_AZ = 'http://localhost:3000/api/storage/azure/list'
+const API_URL_GCP = 'http://localhost:3000/api/storage/gcp/list'
 const PROVIDERS = [
   API_URL_AWS,
-  API_URL_OCI
+  API_URL_OCI,
+  API_URL_AZ,
+  API_URL_GCP
 ];
 
 async function triggerBrowserDownload(response, id) {

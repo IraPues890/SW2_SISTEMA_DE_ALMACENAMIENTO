@@ -148,21 +148,6 @@ class logs as "ACTIVITY_LOGS" << (T,#FFAAAA) >> {
     + created_at: TIMESTAMP [DEFAULT NOW()]
 }
 
-class jobs as "PRINT_JOBS" << (T,#FFAAAA) >> {
-    + id: int [PK]
-    + archivo_id: int [FK, NOT NULL]
-    + usuario_id: int [FK, NOT NULL]
-    + estado: VARCHAR(20) [DEFAULT 'queued'] -- queued|processing|completed|failed|cancelled
-    + output_path: VARCHAR(1000)
-    + job_type: VARCHAR(50) [DEFAULT 'pdf']
-    + configuracion: JSONB
-    + error_message: TEXT
-    + progreso: INT [DEFAULT 0] -- 0-100
-    + created_at: TIMESTAMP [DEFAULT NOW()]
-    + started_at: TIMESTAMP
-    + completed_at: TIMESTAMP
-}
-
 class shares as "FILE_SHARES" << (T,#FFAAAA) >> {
     + id: int [PK]
     + archivo_id: int [FK, NOT NULL]
@@ -187,7 +172,6 @@ users ||--o{ versiones
 users ||--o{ permisosarch
 users ||--o{ permisoscarp
 users ||--o{ logs
-users ||--o{ jobs
 users ||--o{ shares
 
 roles ||--o{ users
@@ -198,7 +182,6 @@ carpetas ||--o{ archivos
 archivos ||--o{ versiones
 archivos ||--o{ archetiq
 archivos ||--o{ permisosarch
-archivos ||--o{ jobs
 archivos ||--o{ shares
 
 etiquetas ||--o{ archetiq
@@ -229,7 +212,6 @@ note bottom
     **Funcionalidad:**
     - Papelera de reciclaje (soft delete)
     - Versionado robusto con control de versión actual
-    - Sistema de trabajos de impresión con progreso
     - Enlaces de compartición con control granular
     
     **ÍNDICES RECOMENDADOS:**

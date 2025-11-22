@@ -2,12 +2,22 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Carpetas', {
+    await queryInterface.createTable('PermisosArchivos', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
+      },
+      propietario_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Usuarios',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
       usuario_id: {
         type: Sequelize.INTEGER,
@@ -19,30 +29,26 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      carpeta_padre_id: {
+      archivo_id: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
-          model: 'Carpetas',
+          model: 'Archivos',
           key: 'id'
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      nombre: {
-        type: Sequelize.STRING(255),
+      tipo_permiso: {
+        type: Sequelize.STRING(20),
         allowNull: false
       },
-      ruta_completa: {
-        type: Sequelize.STRING(1000),
-        unique: true
+      fecha_expiracion: {
+        type: Sequelize.DATE
       },
-      nivel: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
-      es_papelera: {
+      activo: {
         type: Sequelize.BOOLEAN,
-        defaultValue: false
+        defaultValue: true
       },
       createdAt: {
         allowNull: false,
@@ -55,8 +61,14 @@ module.exports = {
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       }
     });
+
+    // Agregar índice único
+    await queryInterface.addIndex('PermisosArchivos', 
+      ['usuario_id', 'archivo_id', 'tipo_permiso'], 
+      { unique: true }
+    );
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Carpetas');
+    await queryInterface.dropTable('PermisosArchivos');
   }
 };

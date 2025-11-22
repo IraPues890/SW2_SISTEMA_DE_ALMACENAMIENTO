@@ -2,12 +2,22 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Carpetas', {
+    await queryInterface.createTable('PermisosCarpetas', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
+      },
+      propietario_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Usuarios',
+          key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
       },
       usuario_id: {
         type: Sequelize.INTEGER,
@@ -19,8 +29,9 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      carpeta_padre_id: {
+      carpeta_id: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
           model: 'Carpetas',
           key: 'id'
@@ -28,21 +39,21 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      nombre: {
-        type: Sequelize.STRING(255),
+      tipo_permiso: {
+        type: Sequelize.STRING(20),
         allowNull: false
       },
-      ruta_completa: {
-        type: Sequelize.STRING(1000),
-        unique: true
-      },
-      nivel: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
-      },
-      es_papelera: {
+      permisos_hijo: {
         type: Sequelize.BOOLEAN,
-        defaultValue: false
+        defaultValue: false,
+        comment: 'Si aplica a archivos/carpetas hijos'
+      },
+      fecha_expiracion: {
+        type: Sequelize.DATE
+      },
+      activo: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true
       },
       createdAt: {
         allowNull: false,
@@ -55,8 +66,14 @@ module.exports = {
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       }
     });
+
+    // Agregar índice único
+    await queryInterface.addIndex('PermisosCarpetas', 
+      ['usuario_id', 'carpeta_id', 'tipo_permiso'], 
+      { unique: true }
+    );
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Carpetas');
+    await queryInterface.dropTable('PermisosCarpetas');
   }
 };
