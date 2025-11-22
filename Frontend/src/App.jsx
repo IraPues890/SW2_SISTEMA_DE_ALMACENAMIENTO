@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom'
+import { StorageProvider } from './context/StorageContext';
 
 import Login from './pages/Login/Login';
 import DashAdmin from './pages/Dashboard/DashAdmin';
@@ -12,20 +13,22 @@ import ProtectedRoute from './routes/ProtectedRoute'
 function App() {
   return (
     <div>
-      <Routes>
-        <Route path='/' element={<Login />} />
+      <StorageProvider>
+        <Routes>
+          <Route path='/' element={<Login />} />
 
-  <Route path='/admin' element={<ProtectedRoute roles={["Administrador"]}><DashAdmin /></ProtectedRoute>} />
-  <Route path='/admin/pago-servicios' element={<ProtectedRoute roles={["Administrador"]}><PaymentOptions /></ProtectedRoute>} />
-  <Route path='/admin/audit-logs' element={<ProtectedRoute roles={["Administrador"]}><AuditLogs /></ProtectedRoute>} />
-        
-        <Route path='/preview' element={<ProtectedRoute><Previewfiles /></ProtectedRoute>} />
-        <Route path='/upload' element={<ProtectedRoute><Uploadfiles /></ProtectedRoute>} />
-        <Route path='/explorer' element={<ProtectedRoute><Filesexplorer /></ProtectedRoute>} />
+          <Route path='/admin' element={<ProtectedRoute roles={["Administrador"]}><DashAdmin /></ProtectedRoute>} />
+          <Route path='/admin/pago-servicios' element={<ProtectedRoute roles={["Administrador"]}><PaymentOptions /></ProtectedRoute>} />
+          <Route path='/admin/audit-logs' element={<ProtectedRoute roles={["Administrador"]}><AuditLogs /></ProtectedRoute>} />
 
-        {/* fallback */}
-        <Route path='*' element={<Login />} />
-      </Routes>
+          <Route path='/preview' element={<ProtectedRoute><Previewfiles /></ProtectedRoute>} />
+          <Route path='/upload' element={<ProtectedRoute><Uploadfiles /></ProtectedRoute>} />
+          <Route path='/explorer' element={<ProtectedRoute><Filesexplorer /></ProtectedRoute>} />
+
+          {/* fallback */}
+          <Route path='*' element={<Login />} />
+        </Routes>
+      </StorageProvider>
     </div>
   )
 }

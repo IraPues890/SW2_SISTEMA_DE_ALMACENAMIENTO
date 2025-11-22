@@ -1,20 +1,35 @@
 import React from 'react';
 import { Metrics } from './Metrics';
 import { ViewSwitch } from './ViewComponents';
+import { useStorage } from '../../../context/StorageContext'; 
 
-// AHORA: Solo recibe las props que SÍ utiliza.
-export default function HeaderBar({
-  filesCount,
-  breadcrumbString,
-  activeView,
-  setActiveView,
-}) {
+export default function HeaderBar({ breadcrumbString, activeView, setActiveView, isAdmin }) { 
+  
+  const { usedKB, limitKB, updateLimit } = useStorage();
+
+  const format = (kb) => {
+    if (kb > 1024 * 1024) return `${(kb / (1024*1024)).toFixed(2)} GB`;
+    return `${(kb / 1024).toFixed(1)} MB`;
+  };
+
+  const handleEditLimit = () => {
+    
+    const input = prompt("Nuevo límite máximo en MB:", (limitKB/1024).toFixed(0));
+    if (input && !isNaN(input)) {
+      updateLimit(parseFloat(input));
+    }
+  };
+
   return (
     <>
-      {/* Metrics usa filesCount y breadcrumbString */}
-      <Metrics totalFiles={filesCount} usedSpace={'1.2 GB'} breadcrumb={breadcrumbString} />
+      <Metrics 
+        usedSpace={`${format(usedKB)} / ${format(limitKB)}`} 
+        breadcrumb={breadcrumbString}
+        canEdit={true} 
+        onEditStorage={handleEditLimit}
+        usagePercentage={(usedKB / limitKB) * 100}
+      />
       
-      {/* ViewSwitch usa activeView y setActiveView */}
       <ViewSwitch activeView={activeView} onChange={setActiveView} />
     </>
   );

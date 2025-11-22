@@ -120,6 +120,7 @@ export default function Filesexplorer() {
 
         <div className="max-w-7xl mx-auto px-6 py-8">
           <HeaderBar
+          files={files}
           filesCount={files.length}
           breadcrumbString={breadcrumbString}
           activeView={activeView}
