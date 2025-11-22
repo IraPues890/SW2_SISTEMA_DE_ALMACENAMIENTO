@@ -1,0 +1,47 @@
+@startuml SCRUM_17_CrearCarpeta
+title "SCRUM-17 - Crear carpeta (provider cloud)"
+actor Usuario as "Usuario / Navegador"
+participant "Aplicación Frontend" as Frontend
+participant "API Backend\n(Express)" as Backend
+participant "FileController" as Controller
+participant "FileService" as Service
+participant "StorageFactory" as Factory
+participant "Repositorio Amazon" as Repo
+participant "AWS S3 / Cloud" as S3
+
+Usuario -> Frontend: Pulsar 'Nueva carpeta' y enviar nombre
+Frontend -> Backend: POST /api/folders (name)
+Backend -> Controller: createFolder(name, userId)
+Controller -> Service: createFolder(name)
+Service -> Repo: repo.createFolder(folderName)
+Repo -> S3: PutObject({Bucket, Key: folderName + '/', Body: ''})
+S3 --> Repo: {} // éxito
+Repo --> Service: { created: true, folderName }
+Service -> BD: Opcionalmente crear registro en 'carpetas'
+Service --> Controller: { success: true, folderName }
+Controller --> Frontend: 201 Created
+@enduml
+@startuml SCRUM-17_CrearCarpeta
+title SCRUM-17: Crear carpeta
+
+actor Usuario
+participant "Plataforma web" as Frontend
+participant "Backend / API" as Backend
+participant "Storage Provider" as Storage
+
+Usuario -> Frontend: 1. Click "Nueva carpeta" + nombre
+activate Usuario
+Usuario -> Frontend: 1. Click "Nueva carpeta" + nombre
+activate Frontend
+Frontend -> Backend: 2. POST /storage/:provider/folder {folderName, path}
+activate Backend
+Backend -> Storage: 3. Crear carpeta (prefix/placeholder)
+activate Storage
+Storage --> Backend: 4. OK
+deactivate Storage
+Backend --> Frontend: 5. 201 {folder metadata}
+deactivate Backend
+Frontend -> Usuario: 6. Mostrar carpeta en árbol
+deactivate Frontend
+deactivate Usuario
+@enduml

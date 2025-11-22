@@ -1,3 +1,36 @@
+@startuml SCRUM_14_Previsualizar
+title "SCRUM-14 - Previsualizar archivo (miniatura / preview)"
+skinparam monochrome true
+actor Usuario as "Usuario / Navegador"
+participant "Frontend App" as Frontend
+participant "API Backend\n(Express)" as Backend
+participant "FileController" as Controller
+participant "FileService" as Service
+participant "StorageRepository" as Repo
+participant "CDN / S3" as Storage
+participant "Thumbnail Service / Worker" as Thumb
+participant "DB (Postgres)" as DB
+
+Usuario -> Frontend: Click 'Previsualizar' en archivo
+Frontend -> Backend: GET /api/files/:id/preview
+Backend -> Controller: previewFile(id)
+Controller -> Service: getFileInfo(id, userId)
+Service -> DB: SELECT archivo, version
+DB --> Service: metadata (cloudUrl, mimetype)
+Service -> Repo: if preview exists -> get thumbnail URL or buffer
+alt Thumbnail exists
+    Repo -> Storage: GET thumbnail (Key)
+    Storage --> Repo: image bytes / URL
+else Thumbnail missing
+    Service -> Thumb: enqueue thumbnail generation job (file key)
+    Thumb -> Repo: download original -> generate thumbnail -> upload thumbnail to Storage
+    Repo --> Thumb: thumbnail URL
+    Thumb --> Service: thumbnail URL
+end
+Service --> Controller: { previewUrl }
+Controller --> Frontend: 200 OK (redirect/URL to preview image or inline image bytes)
+Frontend -> Usuario: Muestra previsualización en modal (img/pdf viewer)
+@enduml
 @startuml SCRUM-14_Previsualizar
 title SCRUM-14: Previsualizar archivo (y encolar impresión)
 

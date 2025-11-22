@@ -1,0 +1,49 @@
+@startuml SCRUM_10_PanelListado
+title "SCRUM-10 - Panel listado de archivos (renderización y acciones)"
+skinparam monochrome true
+actor Usuario as "Usuario / Navegador"
+participant "Frontend App\n(React)" as Frontend
+participant "API Backend\n(Express)" as Backend
+participant "FileService / useFiles" as Service
+participant "DB (Postgres)" as DB
+
+Usuario -> Frontend: Abre panel 'Mis archivos'
+Frontend -> Backend: GET /api/files?page=1&limit=20
+Backend -> Service: listFiles(userId, page, limit)
+Service -> DB: SELECT archivos WHERE usuario_id = ? ORDER BY fecha_subida DESC LIMIT 20
+DB --> Service: [filas de archivos]
+Service --> Backend: { archivos, total, page }
+Backend --> Frontend: 200 OK (json con lista)
+Frontend -> Frontend: Render lista en tabla/tiles (paginación)
+note right: Cada fila muestra acciones (descargar, eliminar, previsualizar, más)
+Usuario -> Frontend: Click en columna de ordenar / filtrar / buscar
+Frontend -> Backend: (puede re-consultar) GET /api/files?sort=...&q=...
+@enduml
+@startuml SCRUM-10_PanelListado
+title SCRUM-10: Ver panel principal (listado) con delegación a GestorArchivos
+
+actor Usuario
+participant "Plataforma web" as Frontend
+participant "Backend / API" as Backend
+participant "GestorArchivos (Facade)" as Gestor
+participant "BuscadorService / Storage" as Buscador
+
+Usuario -> Frontend: 1. Abrir panel principal
+activate Usuario
+activate Frontend
+Frontend -> Backend: 2. GET /storage/:provider/list?path=/current
+activate Backend
+Backend -> Gestor: 3. listarArchivos(carpeta)
+activate Gestor
+Gestor -> Buscador: 4. listar/consultar metadatos (prefetch/search_vector)
+activate Buscador
+Buscador --> Gestor: 5. Lista de objetos (metadatos, urls)
+deactivate Buscador
+Gestor --> Backend: 6. Lista de objetos
+deactivate Gestor
+Backend --> Frontend: 7. 200 OK {data}
+deactivate Backend
+Frontend -> Usuario: 8. Renderizar lista y árbol de carpetas
+deactivate Frontend
+deactivate Usuario
+@enduml
