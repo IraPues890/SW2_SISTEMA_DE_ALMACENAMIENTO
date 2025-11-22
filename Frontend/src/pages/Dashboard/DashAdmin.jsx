@@ -97,6 +97,12 @@ function DashAdmin() {
                   Crear roles
                 </button>
                 <button
+                  onClick={() => navigate('/admin/audit-logs')}
+                  className="ml-4 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded shadow hover:from-orange-600 hover:to-red-700 transition-all duration-200 font-semibold"
+                >
+                  📊 Logs de Auditoría
+                </button>
+                <button
                   onClick={() => navigate('/admin/pago-servicios')}
                   className="ml-4 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-700 text-white rounded shadow hover:from-green-600 hover:to-emerald-800 transition-all duration-200 font-semibold"
                 >

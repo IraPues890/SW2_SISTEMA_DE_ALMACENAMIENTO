@@ -14,7 +14,9 @@ const AuditLogs = () => {
     usuario_id: '',
     fecha_inicio: '',
     fecha_fin: '',
-    search: ''
+    search: '',
+    prioridad: '',
+    entidad_tipo: ''
   });
 
   // Cargar logs
@@ -27,7 +29,7 @@ const AuditLogs = () => {
         ...filters
       });
       
-      const response = await fetch(`/api/audit/logs?${queryParams}`, {
+      const response = await fetch(`http://localhost:3000/api/audit/logs?${queryParams}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -49,7 +51,7 @@ const AuditLogs = () => {
   // Cargar estadísticas
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/audit/stats', {
+      const response = await fetch('http://localhost:3000/api/audit/stats', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -69,7 +71,7 @@ const AuditLogs = () => {
     try {
       const queryParams = new URLSearchParams(filters);
       
-      const response = await fetch(`/api/audit/export?${queryParams}`, {
+      const response = await fetch(`http://localhost:3000/api/audit/export?${queryParams}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
@@ -150,52 +152,122 @@ const AuditLogs = () => {
       )}
 
       {/* Filtros */}
-      <div className="bg-white p-4 rounded-lg shadow mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+      <div className="bg-white p-6 rounded-lg shadow mb-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">🔍 Filtros de Búsqueda</h3>
+        
+        {/* Fila 1: Búsqueda y Acción */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <input
             type="text"
             name="search"
-            placeholder="Buscar en logs..."
+            placeholder="Buscar en descripción..."
             value={filters.search}
             onChange={handleFilterChange}
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <input
-            type="text"
+          <select
             name="accion"
-            placeholder="Filtrar por acción"
             value={filters.accion}
             onChange={handleFilterChange}
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="date"
-            name="fecha_inicio"
-            value={filters.fecha_inicio}
+          >
+            <option value="">Todas las acciones</option>
+            <option value="LOGIN">🔑 LOGIN - Inicios de sesión</option>
+            <option value="LOGIN_FAILED">❌ LOGIN_FAILED - Fallos de login</option>
+            <option value="LOGOUT">🚪 LOGOUT - Cierre de sesión</option>
+            <option value="UPLOAD">📁 UPLOAD - Subida de archivos</option>
+            <option value="DOWNLOAD">📥 DOWNLOAD - Descarga de archivos</option>
+            <option value="DELETE">🗑️ DELETE - Eliminación</option>
+            <option value="SHARE">🔗 SHARE - Compartir archivos</option>
+            <option value="CREATE_FOLDER">📂 CREATE_FOLDER - Crear carpetas</option>
+            <option value="ACCESS_DENIED">🚫 ACCESS_DENIED - Acceso denegado</option>
+          </select>
+          <select
+            name="prioridad"
+            value={filters.prioridad || ''}
             onChange={handleFilterChange}
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="date"
-            name="fecha_fin"
-            value={filters.fecha_fin}
-            onChange={handleFilterChange}
-            className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <div className="flex space-x-2">
-            <button
-              onClick={handleSearch}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Buscar
-            </button>
-            <button
-              onClick={exportLogs}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
-            >
-              Exportar CSV
-            </button>
+          >
+            <option value="">Todas las prioridades</option>
+            <option value="info">ℹ️ INFO - Información</option>
+            <option value="warning">⚠️ WARNING - Advertencia</option>
+            <option value="critical">🚨 CRITICAL - Crítico</option>
+          </select>
+        </div>
+        
+        {/* Fila 2: Fechas y Entidad */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha desde:</label>
+            <input
+              type="date"
+              name="fecha_inicio"
+              value={filters.fecha_inicio}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha hasta:</label>
+            <input
+              type="date"
+              name="fecha_fin"
+              value={filters.fecha_fin}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de entidad:</label>
+            <select
+              name="entidad_tipo"
+              value={filters.entidad_tipo || ''}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Todas las entidades</option>
+              <option value="archivo">📄 Archivo</option>
+              <option value="carpeta">📁 Carpeta</option>
+              <option value="usuario">👤 Usuario</option>
+              <option value="sistema">⚙️ Sistema</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Usuario:</label>
+            <input
+              type="number"
+              name="usuario_id"
+              placeholder="ID del usuario"
+              value={filters.usuario_id}
+              onChange={handleFilterChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+        
+        {/* Botones de acción */}
+        <div className="flex space-x-3">
+          <button
+            onClick={handleSearch}
+            className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-semibold shadow-md"
+          >
+            🔍 Buscar
+          </button>
+          <button
+            onClick={() => {
+              setFilters({ accion: '', usuario_id: '', fecha_inicio: '', fecha_fin: '', search: '', prioridad: '', entidad_tipo: '' });
+              fetchLogs(1);
+            }}
+            className="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors font-semibold shadow-md"
+          >
+            🔄 Limpiar
+          </button>
+          <button
+            onClick={exportLogs}
+            className="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors font-semibold shadow-md"
+          >
+            📊 Exportar CSV
+          </button>
         </div>
       </div>
 

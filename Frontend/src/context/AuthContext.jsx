@@ -4,30 +4,64 @@ export const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
+  const [token, setToken] = useState(null)
 
-  function login({ username, role, userId }) {
-    // Login simple sin tokens - solo guardamos datos básicos del usuario
-    const payload = { username, role, userId }
-    setUser(payload)
-    // Persistencia simple en localStorage
-    try { localStorage.setItem('ulstorage_user', JSON.stringify(payload)) } catch (e) {}
+  function login({ email, password }) {
+    // Realizar login al backend con JWT
+    return fetch('http://localhost:3000/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const userData = {
+          ...data.data.usuario,
+          role: data.data.usuario.rol?.nombre || 'Usuario' // Mapear rol.nombre a role
+        }
+        
+        setUser(userData)
+        setToken(data.data.token)
+        
+        // Guardar en localStorage
+        localStorage.setItem('token', data.data.token)
+        localStorage.setItem('user', JSON.stringify(userData))
+        
+        return { success: true, user: userData }
+      } else {
+        throw new Error(data.message || 'Error en login')
+      }
+    })
   }
 
   function logout() {
     setUser(null)
-    try { localStorage.removeItem('ulstorage_user') } catch (e) {}
+    setToken(null)
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
   }
 
-  // Hydrate desde localStorage (sincrónico y simple)
+  // Cargar datos desde localStorage al iniciar
   React.useEffect(() => {
-    try {
-      const raw = localStorage.getItem('ulstorage_user')
-      if (raw && !user) setUser(JSON.parse(raw))
-    } catch (e) {}
+    const savedToken = localStorage.getItem('token')
+    const savedUser = localStorage.getItem('user')
+    
+    if (savedToken && savedUser) {
+      try {
+        setToken(savedToken)
+        setUser(JSON.parse(savedUser))
+      } catch (e) {
+        // Si hay error, limpiar datos corruptos
+        logout()
+      }
+    }
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

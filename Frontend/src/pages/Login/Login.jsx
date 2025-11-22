@@ -15,36 +15,17 @@ const Login = () => {
     e.preventDefault();
     
     try {
-      // Llamada real al backend para verificar credenciales
-      const response = await fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: username, // Usamos username como email
-          password: password
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        const { usuario } = data.data;
-        login({ 
-          username: usuario.nombre, 
-          role: usuario.rol === 'admin' ? 'Administrador' : 'Usuario',
-          userId: usuario.id
-        });
+      const result = await login({ email: username, password: password });
+      
+      if (result.success) {
+        const { user } = result;
         
         // Redirigir según rol
-        if (usuario.rol === 'admin') {
+        if (user.rol?.nombre === 'Administrador' || user.role === 'Administrador') {
           navigate('/admin');
         } else {
-          navigate('/user');
+          navigate('/explorer'); // o la ruta por defecto para usuarios normales
         }
-      } else {
-        alert('Credenciales inválidas: ' + data.message);
       }
     } catch (error) {
       console.error('Error en login:', error);
