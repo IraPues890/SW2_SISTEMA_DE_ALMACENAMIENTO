@@ -1,4 +1,5 @@
 const { Rol, Usuario, PermisosArchivos, PermisosCarpetas } = require('../db/models');
+const AuditService = require('../services/auditService');
 
 class RoleController {
   // GET /api/roles - Listar todos los roles
@@ -53,6 +54,19 @@ class RoleController {
         es_sistema: false,
         activo: true
       });
+
+      // Log de creación de rol
+      await AuditService.log({
+        usuario_id: req.user?.id || null,
+        accion: 'create_rol',
+        descripcion: `Se creó el rol: ${nombre}`,
+        entidad_tipo: 'rol',
+        entidad_id: nuevoRol.id,
+        prioridad: 'info',
+        ip_address: req.ip || req.connection.remoteAddress,
+        user_agent: req.get('User-Agent'),
+        metadata: { nombre, permisos }
+      });
       
       res.status(201).json({
         success: true,
@@ -103,6 +117,19 @@ class RoleController {
         descripcion,
         permisos
       });
+
+      // Log de actualización de rol
+      await AuditService.log({
+        usuario_id: req.user?.id || null,
+        accion: 'update_rol',
+        descripcion: `Se actualizó el rol: ${nombre}`,
+        entidad_tipo: 'rol',
+        entidad_id: rol.id,
+        prioridad: 'info',
+        ip_address: req.ip || req.connection.remoteAddress,
+        user_agent: req.get('User-Agent'),
+        metadata: { nombre, permisos }
+      });
       
       res.json({
         success: true,
@@ -135,6 +162,22 @@ class RoleController {
       }
       
       await usuario.update({ rol_id: rolId });
+
+      // Log de asignación de rol
+      await AuditService.log({
+        usuario_id: req.user?.id || null,
+        accion: 'assign_rol',
+        descripcion: `Se asignó el rol "${rol.nombre}" al usuario ${usuario.nombre}`,
+        entidad_tipo: 'usuario',
+        entidad_id: usuario.id,
+        prioridad: 'info',
+        ip_address: req.ip || req.connection.remoteAddress,
+        user_agent: req.get('User-Agent'),
+        metadata: { 
+          usuario_afectado: { id: usuario.id, nombre: usuario.nombre },
+          rol_asignado: { id: rol.id, nombre: rol.nombre }
+        }
+      });
       
       res.json({
         success: true,

@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { Usuario, Roles } = require('../db/models');
+const AuditService = require('../services/auditService');
 
 const authController = {
   // POST /api/auth/login
@@ -26,6 +27,18 @@ const authController = {
       });
 
       if (!usuario) {
+        // Log de intento de login con usuario inexistente
+        await AuditService.log({
+          usuario_id: null,
+          accion: 'login_fallido',
+          descripcion: `Intento de login con email inexistente: ${email}`,
+          entidad_tipo: 'sistema',
+          prioridad: 'warning',
+          ip_address: req.ip || req.connection.remoteAddress,
+          user_agent: req.get('User-Agent'),
+          metadata: { email, reason: 'user_not_found' }
+        });
+        
         return res.status(401).json({
           success: false,
           message: 'Credenciales inválidas'
@@ -42,6 +55,12 @@ const authController = {
       // Verificar contraseña
       const isValidPassword = await bcrypt.compare(password, usuario.password_hash);
       if (!isValidPassword) {
+        // Log de intento de login fallido
+        await AuditService.logLogin(usuario.id, false, req, {
+          email,
+          reason: 'invalid_password'
+        });
+        
         return res.status(401).json({
           success: false,
           message: 'Credenciales inválidas'
@@ -61,6 +80,12 @@ const authController = {
 
       // Respuesta exitosa (sin password)
       const { password_hash: _, ...usuarioSinPassword } = usuario.toJSON();
+
+      // Log de login exitoso
+      await AuditService.logLogin(usuario.id, true, req, {
+        email,
+        rol: usuario.rol?.nombre
+      });
 
       res.json({
         success: true,
@@ -85,6 +110,12 @@ const authController = {
     try {
       // En un sistema real, aquí invalidarías el token
       // Por ahora solo retornamos mensaje de éxito
+      
+      // Log de logout
+      if (req.user) {
+        await AuditService.logLogout(req.user.id, req);
+      }
+      
       res.json({
         success: true,
         message: 'Logout exitoso'
