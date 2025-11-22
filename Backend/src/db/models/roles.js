@@ -15,6 +15,14 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'rol_id',
         as: 'usuarios'
       });
+      
+      // Relación many-to-many con PermisosSistema
+      Roles.belongsToMany(models.PermisoSistema, {
+        through: models.RolPermisoSistema,
+        foreignKey: 'rol_id',
+        otherKey: 'permiso_sistema_id',
+        as: 'permisosSistema'
+      });
     }
   }
   Roles.init({
@@ -24,7 +32,7 @@ module.exports = (sequelize, DataTypes) => {
       unique: true
     },
     descripcion: {
-      type: DataTypes.TEXT
+      type: DataTypes.STRING(255)
     },
     permisos: {
       type: DataTypes.JSONB,
@@ -35,34 +43,15 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
-    color: {
-      type: DataTypes.STRING(7),
-      validate: {
-        is: /^#[0-9A-F]{6}$/i
-      }
-    },
-    prioridad: {
-      type: DataTypes.INTEGER,
-      defaultValue: 1
-    },
     activo: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
-    },
-    metadata: {
-      type: DataTypes.JSONB
     }
   }, {
     sequelize,
     modelName: 'Roles',
     tableName: 'Roles',
-    hooks: {
-      beforeDestroy: (role) => {
-        if (role.es_sistema) {
-          throw new Error('No se pueden eliminar roles del sistema');
-        }
-      }
-    }
+    timestamps: true
   });
   return Roles;
 };

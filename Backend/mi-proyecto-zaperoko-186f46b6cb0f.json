@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "mi-proyecto-zaperoko",
+  "private_key_id": "186f46b6cb0f9be8f6dd257c7f741419ebfc82bd",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQC5Wih8pKPG8Uh0\ngEKQSNN/JXrEEzUv5lylw5BgjUmkH5hIwvUE+4WXQefr05N7GXrNX5/mqVPJ3hPl\nTAr3EQ4TqCvK/FrnDURRWes1jaDYR+eeQ158AySfPBCnhOy1l1l6ag0LIM5aNgHy\nTxMoEUysMmZk/gXDTWLHZooo+/LXU7TLayDiilfQZEnZG5O/4a5sA3wq3Tdv8w2p\nXBKP8XDuH0SG4bQNrPDSF3NXoFctycn+Ieh+Bk8yxXrqYjRmpthWjWBT5pzxzye7\nBYifBj6/kt+zZQt7sStBuh12RRt1d4K/1kvuzObVSKzshCAmFJtO040uZuxz2nSj\nGtAcxX7NAgMBAAECggEAGFyI+z7xdr2yUfukpA2qXKkKrng+0p2iujfOw132mp97\ndr7HEQFVEOkc6DJODU0vRoyFuf2x8VOixk29GDWR5dQB84NBGGK2QsIAh/CmPh8P\nSo4cvkx0dQhiQP5X1VM/87a6IacNcC5uiZBKmobRjsVuD2KS09VZQQ+RY6sfwxy3\n+6SgE8JbCOV6x0H6n9/QbjYe7U7WtiZ1TUCjEPLkybEvIdZhmk4UvfHuLhMAYK0F\nmwUZ/YJCTWjPD5tgqXQj1e0tmFYgkALIlaNRzDy/X8u1PvbCWRqyH944/dBioHs6\nlbmhnMoQEjLLE5VBtjDjbsBkajhhIoNQFf2f+8gigQKBgQD0/EZuLwETpXwX234J\nLcIXQ3uvyzQNC8J1NLqIm7CVoX5OIJ1nGLG9uwuJooKUmbrSCAQWscL7HINqVP+e\nElimTiwjYduiuDuIqfIotJ9FD2m7RJNGrHW6/PM3B2JNGAcebtZ/mMClFw79QqDw\nSe/AepWSjgZO4pbeEovE6pcQTQKBgQDBr4SkbKBfSXdSPLfPTW9fOYONPF4wZw2B\nUd4x+SDsSB6durzkF5PD8bSsfeJBOXuI2EObrLU4iBUCoAbTjrBOot0Ukg5Hg9Bs\n7JFOrSfTGlrgm16SkIllAL7C09zyE9O6jrxl8idsysOE3uAneRluZjHGJxEYwn08\nA4+pQ6NogQKBgQDO9R96jXLXagE/FkmO73z7siKXC47ZRonsAbNjHEM85MSSs7LF\nGXNt2MmSaBrv9j6AmAz8LweMozXRaiTXIKCLPZbD/TNSb1i7xvWvtYanDLJBZVkV\nZzO911qPrkk434eEChZijGSSEryy7sqOs6c6b1RUDm79zSWuTPSOUa90MQKBgQCt\nkYbCen31JjcBwVvPMEuAAGB9bv3RTmhx3VXLXsA8Ph0BqFih5ucKj04jzeO2I7cq\n2PMtTMZR1NFPOu0jJRmmPpj0WDbnq55aHl3RLackrNeHtHQ5z8DwfIx2t7mmTlJN\nOqBmk2z1N3ejWL9zYDiEEJzGQDg4AgKMh3x0aSLFAQKBgEI1E6RRFoK3YlFvDEu+\nNLic10F8JksChk6HZIDCqxyKEJX7VEzEBApHHUr0QdJPwZKuLRkUy+pv3eHfQWm9\nq1fDOrGAZTpBfaGJycp2hhzfC+Jdqhi3+ckjDlTxSmbHsWBTSZQ9kQCPHaiBWenU\nXZvtDSWo2NwfdUWlg2Qq9UPp\n-----END PRIVATE KEY-----\n",
+  "client_email": "zaperoko@mi-proyecto-zaperoko.iam.gserviceaccount.com",
+  "client_id": "114673661586204516107",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/zaperoko%40mi-proyecto-zaperoko.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

@@ -1,13 +1,15 @@
 export class Active {
-    constructor(name, size, date) {
+    constructor(name, size, date, status = 'En línea') {
     /**
     * @param {string} name
     * @param {string} size
     * @param {string} date
+    * @param {string} status
     */
     this.name = name
     this.size = size
     this.date = date
+    this.status = status
   }
   get getName(){
     return this.name
@@ -21,5 +23,8 @@ export class Active {
   }
   get getDate(){
     return this.date
+  }
+  get getStatus(){
+    return this.status
   }
 }
