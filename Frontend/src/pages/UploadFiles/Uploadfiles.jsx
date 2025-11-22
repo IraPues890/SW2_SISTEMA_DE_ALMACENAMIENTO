@@ -7,6 +7,7 @@ import UploadActions from './components/UploadActions'
 import CloudSelector from './components/CloudSelector'
 import { useContext } from 'react'
 import { AuthContext } from '../../context/AuthContext'
+import { useStorage } from '../../context/StorageContext' 
 
 function Uploadfiles() {
   const {
@@ -16,8 +17,23 @@ function Uploadfiles() {
     selectedCloud, setSelectedCloud,
     progress, startUpload, cancel
   } = useUpload()
+  
   const { user } = useContext(AuthContext)
+  const { validateUpload, refreshStorage } = useStorage() 
+  
   const token = user?.token || ''
+
+  const handleUploadClick = async () => {
+    if (!selectedFile) return;
+
+    const canUpload = validateUpload(selectedFile.size);
+    
+    if (!canUpload) return; 
+
+    await startUpload(token);
+    
+    refreshStorage();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
@@ -33,8 +49,9 @@ function Uploadfiles() {
           onOverwriteChange={setOverwrite}
         />
         <UploadProgress progress={progress} />
+        
         <UploadActions
-          onUpload={() => startUpload(token)}
+          onUpload={handleUploadClick} 
           onCancel={cancel}
           disabled={!selectedFile || progress > 0}
         />
