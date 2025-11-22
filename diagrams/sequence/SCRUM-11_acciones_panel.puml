@@ -1,3 +1,29 @@
+@startuml SCRUM_11_AccionesPanel
+title "SCRUM-11 - Acciones en el panel (descargar, compartir, mover, más)"
+skinparam monochrome true
+actor Usuario as "Usuario / Navegador"
+participant "Frontend App" as Frontend
+participant "API Backend\n(Express)" as Backend
+participant "FileController" as Controller
+participant "FileService" as Service
+participant "StorageRepository" as Repo
+participant "DB (Postgres)" as DB
+
+Usuario -> Frontend: Selecciona uno o varios archivos
+Usuario -> Frontend: Pulsa botón 'Acciones' -> elige 'Descargar'
+Frontend -> Backend: POST /api/files/batch-download (ids[])
+Backend -> Controller: prepareBatchDownload(ids)
+Controller -> Service: gatherFiles(ids, userId)
+Service -> DB: SELECT archivos y versiones para ids
+DB --> Service: metadata
+Service -> Repo: (si nube) obtener pre-signed / descargar buffers
+Repo -> Storage: (S3/GCP/Azure) obtener objetos o presigns
+Repo --> Service: buffers / URLs
+Service --> Controller: package/stream (zip o redirect)
+Controller --> Frontend: 200 OK (zip stream o descarga iniciada)
+
+note over Frontend,Backend: Otras acciones: compartir (crear permiso), mover a carpeta, renombrar
+@enduml
 @startuml SCRUM-11_AccionesPanel
 title SCRUM-11: Acciones básicas en panel
 

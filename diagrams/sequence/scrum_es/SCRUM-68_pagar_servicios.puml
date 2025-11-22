@@ -1,0 +1,26 @@
+@startuml SCRUM_68_PagarServicios
+title "SCRUM-68 - Pagar servicios"
+skinparam monochrome true
+
+actor Usuario as Usuario
+participant "Frontend" as Frontend
+participant "PaymentsController" as Controller
+participant "PaymentService" as Service
+participant "PaymentProvider" as Provider
+participant "DB (Postgres)" as DB
+participant "Notifications" as Notifier
+
+Usuario -> Frontend: solicitar pago por servicio (serviceId, amount)
+Frontend -> Controller: POST /api/payments {serviceId, amount, paymentMethod}
+Controller -> Service: crearPago(userId, serviceId, amount)
+Service -> DB: INSERT payments (userId, serviceId, amount, status=pending)
+DB --> Service: {paymentId}
+Service -> Provider: procesarPago(paymentId, amount, paymentMethod)
+Provider --> Service: {status, txId}
+Service -> DB: UPDATE payments SET status, txId
+Service -> Notifier: enviar recibo al usuario (email/push)
+Service --> Controller: {result: success}
+Controller --> Frontend: 200 OK (pago completado)
+Frontend --> Usuario: mostrar confirmación de pago
+
+@enduml
