@@ -1,43 +1,33 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Metrics } from './Metrics';
 import { ViewSwitch } from './ViewComponents';
+import { useStorage } from '../../../context/StorageContext'; 
 
-export default function HeaderBar({
-  files = [], 
-  filesCount,
-  breadcrumbString,
-  activeView,
-  setActiveView,
-}) {
+export default function HeaderBar({ breadcrumbString, activeView, setActiveView, isAdmin }) { 
+  
+  const { usedKB, limitKB, updateLimit } = useStorage();
 
-  const usedSpace = useMemo(() => {
-    if (!files || files.length === 0) return '0 KB';
+  const format = (kb) => {
+    if (kb > 1024 * 1024) return `${(kb / (1024*1024)).toFixed(2)} GB`;
+    return `${(kb / 1024).toFixed(1)} MB`;
+  };
 
-    const totalKB = files.reduce((acc, file) => {
-      const sizeNum = parseFloat(file.size) || 0; 
-      return acc + sizeNum;
-    }, 0);
-
-    if (totalKB < 1024) {
-      return `${totalKB.toFixed(1)} KB`;
+  const handleEditLimit = () => {
+    
+    const input = prompt("Nuevo límite máximo en MB:", (limitKB/1024).toFixed(0));
+    if (input && !isNaN(input)) {
+      updateLimit(parseFloat(input));
     }
-
-    const totalMB = totalKB / 1024;
-    if (totalMB < 1024) {
-      return `${totalMB.toFixed(2)} MB`;
-    }
-
-    const totalGB = totalMB / 1024;
-    return `${totalGB.toFixed(2)} GB`;
-
-  }, [files]); 
+  };
 
   return (
     <>
       <Metrics 
-        totalFiles={filesCount} 
-        usedSpace={usedSpace} 
-        breadcrumb={breadcrumbString} 
+        usedSpace={`${format(usedKB)} / ${format(limitKB)}`} 
+        breadcrumb={breadcrumbString}
+        canEdit={true} 
+        onEditStorage={handleEditLimit}
+        usagePercentage={(usedKB / limitKB) * 100}
       />
       
       <ViewSwitch activeView={activeView} onChange={setActiveView} />
