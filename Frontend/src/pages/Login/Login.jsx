@@ -21,10 +21,11 @@ const Login = () => {
         const { user } = result;
         
         // Redirigir según rol
-        if (user.rol?.nombre === 'Administrador' || user.role === 'Administrador') {
+        const userRole = user.role || user.rol?.nombre
+        if (userRole === 'Administrador') {
           navigate('/admin');
         } else {
-          navigate('/explorer'); // o la ruta por defecto para usuarios normales
+          navigate('/user'); // Redirigir a dashboard de usuario
         }
       }
     } catch (error) {
@@ -162,13 +163,6 @@ const Login = () => {
               Acceder al Sistema
             </button>
           </form>
-
-          {/* Quick access buttons for demo/testing */}
-          <div className="mt-6 flex items-center justify-between gap-3">
-            <button onClick={handleQuickAdmin} className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-700 text-white rounded-lg">Entrar como Admin</button>
-            <button onClick={handleQuickUser} className="flex-1 px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-lg">Entrar como Usuario</button>
-            <button onClick={handleQuickPreview} className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg">Preview demo</button>
-          </div>
 
           <div className="mt-8 pt-6 border-t border-slate-200">
             <div className="flex items-center justify-center text-xs text-slate-500 space-x-4">

@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 import { useFiles } from './hooks/useFiles';
 import { UserHeader } from './components/UserHeader';
 import { FileActions } from './components/FileActions';
@@ -22,6 +23,7 @@ import { downloadFiles } from './services/apiServices';
 
 export default function Filesexplorer() {
   const navigate = useNavigate();
+  const { user: currentUser } = useContext(AuthContext);
 
   const {
     files, addFile, query, setQuery, sortOption, setSortOption,
@@ -116,7 +118,11 @@ export default function Filesexplorer() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-purple-900 to-slate-900">
-      <UserHeader name="Pedro Vazques" role="Analista de datos" type="Usuario" />
+      <UserHeader 
+        name={currentUser?.nombre || 'Usuario'} 
+        role={currentUser?.role || currentUser?.rol?.nombre || 'Usuario'} 
+        type="Sistema de Archivos" 
+      />
 
         <div className="max-w-7xl mx-auto px-6 py-8">
           <HeaderBar

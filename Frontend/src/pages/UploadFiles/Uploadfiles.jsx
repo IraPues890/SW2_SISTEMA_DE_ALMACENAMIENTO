@@ -37,7 +37,11 @@ function Uploadfiles() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
-      <UserHeader name="Pedro Vazques" role="Analista de datos" type="Usuario" />
+      <UserHeader 
+        name={user?.nombre || 'Usuario'} 
+        role={user?.role || user?.rol?.nombre || 'Usuario'} 
+        type="Sistema de Archivos" 
+      />
       
       <main className="max-w-4xl mx-auto px-6 py-8 space-y-8">
         <CloudSelector selectedCloud={selectedCloud} onChange={setSelectedCloud} />

@@ -5,6 +5,14 @@ import { AuthContext } from '../../context/AuthContext'
 
 // S: Cabecera de identidad
 function UserHeader({ name, role, type }) {
+  const { logout } = useContext(AuthContext)
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
+
   return (
     <header className="bg-white/10 backdrop-blur-md border-b border-white/20 shadow-lg">
       <div className="max-w-7xl mx-auto px-6 py-4">
@@ -18,9 +26,17 @@ function UserHeader({ name, role, type }) {
               <p className="text-blue-200 text-sm">{role} • {type}</p>
             </div>
           </div>
-          <div className="text-right">
-            <p className="text-white text-sm">Vista Previa</p>
-            <p className="text-blue-300 text-xs">Sistema UlStorage</p>
+          <div className="flex items-center space-x-6">
+            <div className="text-right">
+              <p className="text-white text-sm">Vista Previa</p>
+              <p className="text-blue-300 text-xs">Sistema UlStorage</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded shadow transition-all duration-200"
+            >
+              🚪 Cerrar Sesión
+            </button>
           </div>
         </div>
       </div>
@@ -191,7 +207,11 @@ function Previewfiles() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
-      <UserHeader name={user?.username || 'Invitado'} role={user?.role || ''} type="Usuario" />
+      <UserHeader 
+        name={user?.nombre || 'Usuario'} 
+        role={user?.role || user?.rol?.nombre || 'Usuario'} 
+        type="Sistema de Archivos" 
+      />
       
       <main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
         <FileHeader file={fileForRender} onClose={() => {

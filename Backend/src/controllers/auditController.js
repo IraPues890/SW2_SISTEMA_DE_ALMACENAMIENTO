@@ -17,7 +17,10 @@ class AuditController {
         search
       } = req.query;
 
-      const offset = (page - 1) * limit;
+      // Validar y limitar parámetros
+      const pageNum = Math.max(1, parseInt(page) || 1);
+      const limitNum = Math.min(100, Math.max(1, parseInt(limit) || 20)); // Límite máximo de 100
+      const offset = (pageNum - 1) * limitNum;
       const where = {};
 
       // Filtros
@@ -71,23 +74,23 @@ class AuditController {
           }
         ],
         order: [['createdAt', 'DESC']],
-        limit: parseInt(limit),
-        offset: parseInt(offset),
+        limit: limitNum,
+        offset: offset,
         distinct: true
       });
 
-      const totalPages = Math.ceil(total / limit);
+      const totalPages = Math.ceil(total / limitNum);
 
       res.json({
         success: true,
         data: {
           logs,
           pagination: {
-            currentPage: parseInt(page),
+            currentPage: pageNum,
             totalPages,
             totalRecords: total,
-            hasNext: page < totalPages,
-            hasPrev: page > 1
+            hasNext: pageNum < totalPages,
+            hasPrev: pageNum > 1
           }
         }
       });

@@ -1,6 +1,7 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom'
+import { AuthContext } from '../../context/AuthContext'
 
 //class
 import { User } from './classes/User';
@@ -14,13 +15,15 @@ import { createActionHandlers, handleAction } from './components/CreateActions';
 
 function DashAdmin() {
   const navigate = useNavigate()
+  const { user: currentUser, logout } = useContext(AuthContext)
 
-  const admin = new User("María López", "Jefa de TI", "Administrador")
-  const metrics = [
-    new Metrics( 'Total de usuarios:', '15' ),
-    new Metrics( 'Archivos almacenados:', '1,250' ),
-    new Metrics( 'Espacio global usado:', '120 GB' )
-  ]
+  // Estados para datos dinámicos
+  const [adminData, setAdminData] = useState(null)
+  const [metrics, setMetrics] = useState([
+    new Metrics( 'Total de usuarios:', '...' ),
+    new Metrics( 'Archivos almacenados:', '...' ),
+    new Metrics( 'Espacio global usado:', '...' )
+  ])
 
   const status = [
     new Status( 'Server 1', 'Online' ),
@@ -46,8 +49,9 @@ function DashAdmin() {
   const [selectedPermissions, setSelectedPermissions] = useState([])
   const [loadingPermissions, setLoadingPermissions] = useState(false)
 
-  // Cargar usuarios activos al montar el componente
+  // Cargar datos del admin y métricas al montar el componente
   useEffect(() => {
+    loadAdminData()
     loadActiveUsers()
   }, [])
 
@@ -57,6 +61,25 @@ function DashAdmin() {
       loadAvailablePermissions()
     }
   }, [showRoleModal])
+
+  const loadAdminData = () => {
+    // Crear datos del admin basados en el usuario actual
+    if (currentUser) {
+      setAdminData(new User(
+        currentUser.nombre || 'Administrador', 
+        'Jefa de TI', 
+        currentUser.role || currentUser.rol?.nombre || 'Administrador'
+      ))
+    }
+
+    // TODO: Cargar métricas reales desde el backend
+    // Por ahora mantenemos datos simulados pero organizados
+    setMetrics([
+      new Metrics( 'Total de usuarios:', '15' ),
+      new Metrics( 'Archivos almacenados:', '1,250' ),
+      new Metrics( 'Espacio global usado:', '120 GB' )
+    ])
+  }
 
   const loadActiveUsers = async () => {
     setLoadingUsers(true)
@@ -170,8 +193,8 @@ function DashAdmin() {
                 <span className="text-white font-bold text-xl">🏢</span>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">{admin.getName}</h1>
-                <p className="text-blue-200 text-sm">{admin.getPosicion} • {admin.getRole}</p>
+                <h1 className="text-2xl font-bold text-white">{adminData?.getName || 'Administrador'}</h1>
+                <p className="text-blue-200 text-sm">{adminData?.getPosicion || 'Jefa de TI'} • {adminData?.getRole || 'Administrador'}</p>
               </div>
             </div>
             <div className="flex items-center space-x-6">
@@ -182,21 +205,30 @@ function DashAdmin() {
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => setShowRoleModal(true)}
-                  className="ml-4 px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white rounded shadow hover:from-indigo-600 hover:to-violet-700 transition-all duration-200 font-semibold"
+                  className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white rounded shadow hover:from-indigo-600 hover:to-violet-700 transition-all duration-200 font-semibold"
                 >
                   Crear roles
                 </button>
                 <button
                   onClick={() => navigate('/admin/audit-logs')}
-                  className="ml-4 px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded shadow hover:from-orange-600 hover:to-red-700 transition-all duration-200 font-semibold"
+                  className="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded shadow hover:from-orange-600 hover:to-red-700 transition-all duration-200 font-semibold"
                 >
                   📊 Logs de Auditoría
                 </button>
                 <button
                   onClick={() => navigate('/admin/pago-servicios')}
-                  className="ml-4 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-700 text-white rounded shadow hover:from-green-600 hover:to-emerald-800 transition-all duration-200 font-semibold"
+                  className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-700 text-white rounded shadow hover:from-green-600 hover:to-emerald-800 transition-all duration-200 font-semibold"
                 >
                   Pago de servicios
+                </button>
+                <button
+                  onClick={() => {
+                    logout()
+                    navigate('/login')
+                  }}
+                  className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-700 text-white rounded shadow hover:from-red-600 hover:to-red-800 transition-all duration-200 font-semibold"
+                >
+                  🚪 Cerrar Sesión
                 </button>
               </div>
             </div>
