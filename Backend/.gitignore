@@ -12,3 +12,6 @@ src/db/*.sqlite
 # Environment
 .env
 mi-proyecto-zaperoko-022a34fa01e9.json
+
+#gcp clave
+GCP_KEY_FILE_PATH
