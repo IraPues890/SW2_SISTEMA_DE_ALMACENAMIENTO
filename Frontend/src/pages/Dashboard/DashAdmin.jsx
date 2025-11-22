@@ -42,6 +42,33 @@ function DashAdmin() {
   const actionHandlers = createActionHandlers(navigate, actions)
   const onAction = (actionName) => handleAction(actionName, actionHandlers)
 
+  // Role modal state and handlers
+  const [showRoleModal, setShowRoleModal] = useState(false)
+  const [roleName, setRoleName] = useState('')
+  const [permissions, setPermissions] = useState({
+    descargar: false,
+    subir: false,
+    crearCarpeta: false,
+    eliminar: false
+  })
+
+  const togglePermission = (key) => {
+    setPermissions((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  const onSaveRole = () => {
+    const selected = Object.entries(permissions).filter(([k, v]) => v).map(([k]) => k)
+    console.log('Nuevo rol creado:', { roleName, permisos: selected })
+    // Reset and close
+    setRoleName('')
+    setPermissions({ descargar: false, subir: false, crearCarpeta: false, eliminar: false })
+    setShowRoleModal(false)
+  }
+
+  const onCancelRole = () => {
+    setShowRoleModal(false)
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
       {/* Header */}
@@ -62,16 +89,73 @@ function DashAdmin() {
                 <p className="text-white text-sm">Panel de Administración</p>
                 <p className="text-blue-300 text-xs">Sistema UlStorage</p>
               </div>
-              <button
-                onClick={() => navigate('/admin/pago-servicios')}
-                className="ml-4 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-700 text-white rounded shadow hover:from-green-600 hover:to-emerald-800 transition-all duration-200 font-semibold"
-              >
-                Pago de servicios
-              </button>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => setShowRoleModal(true)}
+                  className="ml-4 px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white rounded shadow hover:from-indigo-600 hover:to-violet-700 transition-all duration-200 font-semibold"
+                >
+                  Crear roles
+                </button>
+                <button
+                  onClick={() => navigate('/admin/pago-servicios')}
+                  className="ml-4 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-700 text-white rounded shadow hover:from-green-600 hover:to-emerald-800 transition-all duration-200 font-semibold"
+                >
+                  Pago de servicios
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </header>
+
+      {/* Role creation modal */}
+      {showRoleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+            <div className="px-6 py-4 border-b">
+              <h3 className="text-lg font-semibold text-slate-800">Crear nuevo rol</h3>
+            </div>
+            <div className="px-6 py-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Nombre del rol</label>
+                <input
+                  type="text"
+                  value={roleName}
+                  onChange={(e) => setRoleName(e.target.value)}
+                  placeholder="Escribe el nombre del rol"
+                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <p className="text-sm font-medium text-slate-700 mb-2">Permisos (selección múltiple)</p>
+                <div className="grid grid-cols-1 gap-2">
+                  <label className="inline-flex items-center space-x-2">
+                    <input type="checkbox" checked={permissions.descargar} onChange={() => togglePermission('descargar')} />
+                    <span>Descargar archivos</span>
+                  </label>
+                  <label className="inline-flex items-center space-x-2">
+                    <input type="checkbox" checked={permissions.subir} onChange={() => togglePermission('subir')} />
+                    <span>Subir archivos</span>
+                  </label>
+                  <label className="inline-flex items-center space-x-2">
+                    <input type="checkbox" checked={permissions.crearCarpeta} onChange={() => togglePermission('crearCarpeta')} />
+                    <span>Crear carpeta</span>
+                  </label>
+                  <label className="inline-flex items-center space-x-2">
+                    <input type="checkbox" checked={permissions.eliminar} onChange={() => togglePermission('eliminar')} />
+                    <span>Eliminar archivos</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t flex justify-end space-x-3">
+              <button onClick={onCancelRole} className="px-4 py-2 rounded bg-gray-100 hover:bg-gray-200">Cancelar</button>
+              <button onClick={onSaveRole} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700">Guardar</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8 space-y-8">

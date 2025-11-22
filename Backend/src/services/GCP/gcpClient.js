@@ -5,22 +5,24 @@ require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
 class GoogleClient {
     constructor() {
         try {
-            const keyFilename = process.env.GCP_KEY_FILE_PATH || null;
+            const keyFilename = process.env.GCP_KEY_FILE_PATH;
+            const bucketName = process.env.GCP_BUCKET_NAME;
 
             if (!keyFilename) {
-                console.warn('!!! NO SE ENCONTRÓ EL JSON DE AUTENTICACIÓN PARA GCP !!!');
-                this.client = null;
-                this.bucketName = null;
-                return;
+                throw new Error("Falta la variable de entorno GCP_KEY_FILE_PATH para la autenticación");
             }
-            this.client = new Storage(keyFilename);
-            if (!process.env.GCP_BUCKET_NAME) {
-                console.warn('!!! NO SE ENCONTRÓ NINGÚN NOMBRE DE BUCKET PARA GCP EN .ENV !!!')
+            
+            if (!bucketName) {
+                throw new Error("Falta la variable de entorno GCP_BUCKET_NAME");
             }
-            this.bucketName = process.env.GCP_BUCKET_NAME;
-            console.log('CLIENTE DE GCP INICIALIZADO CON ÉXITO');
+
+            this.client = new Storage({ keyFilename });
+            this.bucketName = bucketName;
+            
+            console.log('CLIENTE GCP INICIALIZADO CON ÉXITO!!');
+
         } catch (error) {
-            console.warn('!!! CLIENTE GCP FALLÓ !!!', error.message);
+            console.warn('!!! CLIENTE GCP FALLÓ: ', error.message);
             this.client = null;
             this.bucketName = null;
         }

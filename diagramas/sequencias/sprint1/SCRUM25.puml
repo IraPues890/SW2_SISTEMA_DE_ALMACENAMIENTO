@@ -1,0 +1,23 @@
+@startuml SCRUM_25_VisualizarLogs
+title "SCRUM-25 - Visualizar logs de acciones para auditoría (administrador)"
+skinparam monochrome true
+actor Administrador as "Administrador"
+participant "Frontend Admin" as Frontend
+participant "API Backend (Express)" as Backend
+participant "LogsController" as Controller
+participant "LogsService" as Service
+participant "DB (Postgres)" as DB
+
+Administrador -> Frontend: Abrir panel de auditoría -> seleccionar rango/usuario/acción
+Frontend -> Backend: GET /api/admin/logs?user=&from=&to=&action=
+Backend -> Controller: getLogs(query)
+Controller -> Service: queryLogs(filters, pagination)
+Service -> DB: SELECT * FROM activity_logs WHERE ... ORDER BY created_at DESC LIMIT
+DB --> Service: [rows]
+Service --> Controller: { logs, total }
+Controller --> Backend: 200 OK
+Backend --> Frontend: 200 OK (json con logs)
+Frontend -> Administrador: Render table with export options (CSV/PDF)
+
+note over DB,Service: Logs deben incluir usuario, acción, descripción, ip, timestamp y metadata para auditoría
+@enduml
