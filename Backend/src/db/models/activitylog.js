@@ -24,11 +24,69 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   ActivityLog.init({
-    usuario_id: DataTypes.INTEGER,
-    accion: DataTypes.STRING,
-    descripcion: DataTypes.STRING,
-    archivo_id: DataTypes.INTEGER,
-    ip_address: DataTypes.STRING
+    usuario_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Usuarios',
+        key: 'id'
+      }
+    },
+    accion: {
+      type: DataTypes.STRING(100),
+      allowNull: false
+    },
+    entidad_tipo: {
+      type: DataTypes.STRING(50),
+      allowNull: false
+
+    },
+    entidad_id: {
+      type: DataTypes.INTEGER
+    },
+    descripcion: {
+      type: DataTypes.TEXT
+    },
+    detalles_accion: {
+      type: DataTypes.JSONB
+    },
+    archivo_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'Archivos',
+        key: 'id'
+      }
+    },
+    carpeta_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'Carpetas',
+        key: 'id'
+      }
+    },
+    ip_address: {
+      type: DataTypes.INET
+    },
+    user_agent: {
+      type: DataTypes.TEXT
+    },
+    session_id: {
+      type: DataTypes.STRING(255)
+    },
+    prioridad: {
+      type: DataTypes.INTEGER,
+      defaultValue: 1
+    },
+    resultado: {
+      type: DataTypes.ENUM('exito', 'fallo', 'advertencia'),
+      defaultValue: 'exito'
+    },
+    duracion_ms: {
+      type: DataTypes.INTEGER
+    },
+    metadata: {
+      type: DataTypes.JSONB
+    }
   }, {
     sequelize,
     modelName: 'ActivityLog',

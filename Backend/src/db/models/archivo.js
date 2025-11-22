@@ -36,10 +36,16 @@ module.exports = (sequelize, DataTypes) => {
         as: 'etiquetas'
       });
       
-      // Archivo puede tener permisos
-      Archivo.hasMany(models.Permiso, {
+      // Archivo puede tener permisos específicos
+      Archivo.hasMany(models.PermisosArchivos, {
         foreignKey: 'archivo_id',
         as: 'permisos'
+      });
+
+      // Archivo puede ser compartido
+      Archivo.hasMany(models.FileShares, {
+        foreignKey: 'archivo_id',
+        as: 'compartidos'
       });
       
       // Archivo tiene logs de actividad
@@ -50,15 +56,99 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Archivo.init({
-    usuario_id: DataTypes.INTEGER,
-    carpeta_id: DataTypes.INTEGER,
-    nombre: DataTypes.STRING,
-    nombre_sistema: DataTypes.STRING,
-    tamaño: DataTypes.INTEGER,
-    tipo: DataTypes.STRING,
-    proveedor: DataTypes.STRING,
-    bucket_path: DataTypes.STRING,
-    hash_archivo: DataTypes.STRING
+    usuario_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'Usuarios',
+        key: 'id'
+      }
+    },
+    carpeta_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'Carpetas',
+        key: 'id'
+      }
+    },
+    nombre: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    nombre_sistema: {
+      type: DataTypes.STRING(255),
+      allowNull: false
+    },
+    descripcion: {
+      type: DataTypes.TEXT
+    },
+    tamaño: {
+      type: DataTypes.BIGINT,
+      allowNull: false
+    },
+    tipo_mime: {
+      type: DataTypes.STRING(100)
+    },
+    extension: {
+      type: DataTypes.STRING(10)
+    },
+    proveedor: {
+      type: DataTypes.ENUM('OCI', 'AWS', 'GCP', 'AZURE'),
+      allowNull: false
+    },
+    bucket_name: {
+      type: DataTypes.STRING(100)
+    },
+    bucket_path: {
+      type: DataTypes.STRING(500)
+    },
+    hash_archivo: {
+      type: DataTypes.STRING(64)
+    },
+    checksum: {
+      type: DataTypes.STRING(64)
+    },
+    es_publico: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    compartido: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    search_vector: {
+      type: DataTypes.TSVECTOR
+    },
+    metadatos: {
+      type: DataTypes.JSONB
+    },
+    thumbnail_url: {
+      type: DataTypes.STRING(500)
+    },
+    duracion_multimedia: {
+      type: DataTypes.INTEGER
+    },
+    resolucion: {
+      type: DataTypes.STRING(20)
+    },
+    activo: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true
+    },
+    eliminado: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
+    fecha_eliminacion: {
+      type: DataTypes.DATE
+    },
+    fecha_ultimo_acceso: {
+      type: DataTypes.DATE
+    },
+    contador_descargas: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
+    }
   }, {
     sequelize,
     modelName: 'Archivo',

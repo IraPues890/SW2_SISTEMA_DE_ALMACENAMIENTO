@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('Usuarios', {
+    await queryInterface.createTable('Roles', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -10,40 +10,24 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       nombre: {
-        type: Sequelize.STRING(100),
-        allowNull: false
-      },
-      email: {
-        type: Sequelize.STRING(255),
+        type: Sequelize.STRING(50),
         allowNull: false,
         unique: true
       },
-      password_hash: {
-        type: Sequelize.STRING(255),
+      descripcion: {
+        type: Sequelize.STRING(255)
+      },
+      permisos: {
+        type: Sequelize.JSONB,
         allowNull: false
       },
-      rol_id: {
-        type: Sequelize.INTEGER,
-        references: {
-          model: 'Roles',
-          key: 'id'
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'SET NULL'
+      es_sistema: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
       },
       activo: {
         type: Sequelize.BOOLEAN,
         defaultValue: true
-      },
-      ultimo_login: {
-        type: Sequelize.DATE
-      },
-      fecha_expiracion_password: {
-        type: Sequelize.DATE
-      },
-      intentos_fallidos: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
       },
       createdAt: {
         allowNull: false,
@@ -58,6 +42,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('Usuarios');
+    await queryInterface.dropTable('Roles');
   }
 };

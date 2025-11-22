@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('ActivityLogs', {
+    await queryInterface.createTable('UserSessions', {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -16,33 +16,26 @@ module.exports = {
           key: 'id'
         },
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL'
+        onDelete: 'CASCADE'
       },
-      accion: {
-        type: Sequelize.STRING(100),
+      token: {
+        type: Sequelize.STRING(255),
+        allowNull: false,
+        unique: true
+      },
+      expires_at: {
+        type: Sequelize.DATE,
         allowNull: false
       },
-      descripcion: {
-        type: Sequelize.STRING(500)
-      },
-      entidad_tipo: {
-        type: Sequelize.STRING(50)
-      },
-      entidad_id: {
-        type: Sequelize.INTEGER
-      },
-      prioridad: {
-        type: Sequelize.STRING(20),
-        defaultValue: 'info'
-      },
       ip_address: {
-        type: 'INET'
+        type: Sequelize.STRING(45)
       },
       user_agent: {
         type: Sequelize.TEXT
       },
-      metadata: {
-        type: Sequelize.JSONB
+      activo: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true
       },
       createdAt: {
         allowNull: false,
@@ -52,6 +45,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('ActivityLogs');
+    await queryInterface.dropTable('UserSessions');
   }
 };
