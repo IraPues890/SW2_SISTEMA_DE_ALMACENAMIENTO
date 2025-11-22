@@ -14,6 +14,7 @@ module.exports = {
     await queryInterface.bulkInsert('Usuarios', [
       // Administradores (rol_id: 1)
       {
+        id: 1,
         nombre: 'Carlos Mendoza',
         email: 'admin@interbank.pe',
         password_hash: passwordHash,
@@ -24,6 +25,7 @@ module.exports = {
         updatedAt: new Date('2025-10-09T08:30:00Z')
       },
       {
+        id: 2,
         nombre: 'Ana García',
         email: 'ana.garcia@interbank.pe',
         password_hash: passwordHash,
@@ -34,6 +36,7 @@ module.exports = {
         updatedAt: new Date('2025-10-08T16:45:00Z')
       },
       {
+        id: 3,
         nombre: 'Test Admin',
         email: 'test.admin@interbank.pe',
         password_hash: passwordHash,
@@ -46,6 +49,7 @@ module.exports = {
       
       // Usuarios regulares (rol_id: 3 - Viewer)
       {
+        id: 4,
         nombre: 'Sandra Vega',
         email: 'sandra.vega@interbank.pe',
         password_hash: passwordHash,
@@ -56,6 +60,7 @@ module.exports = {
         updatedAt: new Date('2025-10-09T07:45:00Z')
       },
       {
+        id: 5,
         nombre: 'Luis Martínez',
         email: 'luis.martinez@interbank.pe',
         password_hash: passwordHash,
@@ -66,6 +71,7 @@ module.exports = {
         updatedAt: new Date('2025-10-08T14:20:00Z')
       },
       {
+        id: 6,
         nombre: 'Patricia Flores',
         email: 'patricia.flores@interbank.pe',
         password_hash: passwordHash,
@@ -76,6 +82,7 @@ module.exports = {
         updatedAt: new Date('2025-10-09T10:30:00Z')
       },
       {
+        id: 7,
         nombre: 'Jorge Herrera',
         email: 'jorge.herrera@interbank.pe',
         password_hash: passwordHash,
@@ -86,6 +93,7 @@ module.exports = {
         updatedAt: new Date('2025-10-07T16:10:00Z')
       },
       {
+        id: 8,
         nombre: 'Carmen Torres',
         email: 'carmen.torres@interbank.pe',
         password_hash: passwordHash,
@@ -96,6 +104,7 @@ module.exports = {
         updatedAt: new Date('2025-10-08T09:25:00Z')
       },
       {
+        id: 9,
         nombre: 'Roberto Silva',
         email: 'roberto.silva@interbank.pe',
         password_hash: passwordHash,
@@ -106,6 +115,7 @@ module.exports = {
         updatedAt: new Date('2025-10-09T09:15:00Z')
       },
       {
+        id: 10,
         nombre: 'María López',
         email: 'maria.lopez@interbank.pe',
         password_hash: passwordHash,
@@ -118,6 +128,7 @@ module.exports = {
       
       // Usuario inactivo (para pruebas)
       {
+        id: 11,
         nombre: 'Usuario Desactivado',
         email: 'usuario.inactivo@interbank.pe',
         password_hash: passwordHash,

@@ -5,6 +5,7 @@ module.exports = {
   async up (queryInterface, Sequelize) {
     await queryInterface.bulkInsert('Roles', [
       {
+        id: 1,
         nombre: 'Administrador',
         descripcion: 'Rol con acceso completo al sistema, incluyendo auditoría y gestión de usuarios',
         permisos: JSON.stringify({
@@ -23,6 +24,7 @@ module.exports = {
         updatedAt: new Date('2025-09-01T08:00:00Z')
       },
       {
+        id: 2,
         nombre: 'Editor',
         descripcion: 'Puede crear, editar, compartir archivos y carpetas',
         permisos: JSON.stringify({
@@ -40,6 +42,7 @@ module.exports = {
         updatedAt: new Date('2025-09-01T08:00:00Z')
       },
       {
+        id: 3,
         nombre: 'Viewer',
         descripcion: 'Solo puede visualizar y descargar archivos',
         permisos: JSON.stringify({

@@ -6,9 +6,14 @@ export async function uploadFile(file, provider) {
   let presignedUrl;
 
   try {
+    const token = localStorage.getItem('token');
+    
     const response = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
       body: JSON.stringify({
         fileName: file.name,
         fileType: file.type

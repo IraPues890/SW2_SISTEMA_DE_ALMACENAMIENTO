@@ -3,9 +3,10 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    // Seeders de Carpetas
+    // Primero insertar carpetas padre (nivel 0)
     await queryInterface.bulkInsert('Carpetas', [
       {
+        id: 1,
         usuario_id: 1, // Carlos Mendoza (Admin)
         nombre: 'Documentos Administrativos',
         ruta_completa: '/Documentos Administrativos',
@@ -15,16 +16,7 @@ module.exports = {
         updatedAt: new Date('2025-10-09T08:30:00Z')
       },
       {
-        usuario_id: 1,
-        carpeta_padre_id: 1,
-        nombre: 'Políticas',
-        ruta_completa: '/Documentos Administrativos/Políticas',
-        nivel: 1,
-        es_papelera: false,
-        createdAt: new Date('2025-09-05T10:15:00Z'),
-        updatedAt: new Date('2025-10-08T14:20:00Z')
-      },
-      {
+        id: 3,
         usuario_id: 2, // Ana García (Admin)
         nombre: 'Reportes Financieros',
         ruta_completa: '/Reportes Financieros',
@@ -34,6 +26,7 @@ module.exports = {
         updatedAt: new Date('2025-10-08T16:45:00Z')
       },
       {
+        id: 5,
         usuario_id: 5, // Luis Martínez (Editor)
         nombre: 'Proyectos Desarrollo',
         ruta_completa: '/Proyectos Desarrollo',
@@ -44,9 +37,25 @@ module.exports = {
       }
     ], {});
 
+    // Después insertar carpetas hijas (nivel 1)
+    await queryInterface.bulkInsert('Carpetas', [
+      {
+        id: 2,
+        usuario_id: 1,
+        carpeta_padre_id: 1,
+        nombre: 'Políticas',
+        ruta_completa: '/Documentos Administrativos/Políticas',
+        nivel: 1,
+        es_papelera: false,
+        createdAt: new Date('2025-09-05T10:15:00Z'),
+        updatedAt: new Date('2025-10-08T14:20:00Z')
+      }
+    ], {});
+
     // Seeders de Archivos
     await queryInterface.bulkInsert('Archivos', [
       {
+        id: 1,
         usuario_id: 1,
         carpeta_id: 2, // Políticas
         nombre: 'Política de Seguridad 2025.pdf',
@@ -65,6 +74,7 @@ module.exports = {
         updatedAt: new Date('2025-10-08T14:20:00Z')
       },
       {
+        id: 2,
         usuario_id: 1,
         carpeta_id: 2,
         nombre: 'Manual de Usuario.docx',
@@ -83,6 +93,7 @@ module.exports = {
         updatedAt: new Date('2025-10-09T07:45:00Z')
       },
       {
+        id: 3,
         usuario_id: 2,
         carpeta_id: 3, // Reportes Financieros
         nombre: 'Reporte Q3 2025.xlsx',

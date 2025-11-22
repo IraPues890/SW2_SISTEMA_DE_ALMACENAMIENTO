@@ -6,6 +6,7 @@ module.exports = {
     await queryInterface.bulkInsert('ActivityLogs', [
       // Login exitoso - Administrador
       {
+        id: 1,
         usuario_id: 1,
         accion: 'LOGIN',
         entidad_tipo: 'usuario',
@@ -25,6 +26,7 @@ module.exports = {
       
       // Subida de archivo - Política de Seguridad
       {
+        id: 2,
         usuario_id: 1,
         accion: 'UPLOAD',
         entidad_tipo: 'archivo',
@@ -45,6 +47,7 @@ module.exports = {
       
       // Login exitoso - Editor
       {
+        id: 3,
         usuario_id: 5,
         accion: 'LOGIN',
         entidad_tipo: 'usuario',
@@ -64,10 +67,11 @@ module.exports = {
       
       // Creación de carpeta
       {
+        id: 4,
         usuario_id: 5,
         accion: 'CREATE_FOLDER',
         entidad_tipo: 'carpeta',
-        entidad_id: 4,
+        entidad_id: 5, // Carpeta "Proyectos Desarrollo" 
         descripcion: 'Carpeta "Proyectos Desarrollo" creada por Luis Martínez',
         prioridad: 'info',
         ip_address: '192.168.1.101',
@@ -82,6 +86,7 @@ module.exports = {
       
       // Login fallido - Intento de acceso no autorizado
       {
+        id: 5,
         usuario_id: null,
         accion: 'LOGIN_FAILED',
         entidad_tipo: 'sistema',
@@ -101,6 +106,7 @@ module.exports = {
       
       // Descarga de archivo
       {
+        id: 6,
         usuario_id: 4,
         accion: 'DOWNLOAD',
         entidad_tipo: 'archivo',
@@ -120,6 +126,7 @@ module.exports = {
       
       // Compartir archivo
       {
+        id: 7,
         usuario_id: 2,
         accion: 'SHARE',
         entidad_tipo: 'archivo',
@@ -139,11 +146,12 @@ module.exports = {
       
       // Eliminación de archivo (soft delete)
       {
+        id: 8,
         usuario_id: 5,
         accion: 'DELETE',
         entidad_tipo: 'archivo',
-        entidad_id: 4,
-        descripcion: 'Luis Martínez eliminó "Especificaciones Técnicas.pdf" (movido a papelera)',
+        entidad_id: 2, // Manual de Usuario.docx
+        descripcion: 'Luis Martínez eliminó "Manual de Usuario.docx" (movido a papelera)',
         prioridad: 'warning',
         ip_address: '192.168.1.101',
         user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
@@ -158,6 +166,7 @@ module.exports = {
       
       // Intento de acceso no autorizado a auditoría
       {
+        id: 9,
         usuario_id: 4,
         accion: 'ACCESS_DENIED',
         entidad_tipo: 'sistema',
@@ -177,6 +186,7 @@ module.exports = {
       
       // Logout
       {
+        id: 10,
         usuario_id: 1,
         accion: 'LOGOUT',
         entidad_tipo: 'usuario',

@@ -47,12 +47,6 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'archivo_id',
         as: 'compartidos'
       });
-      
-      // Archivo tiene logs de actividad
-      Archivo.hasMany(models.ActivityLog, {
-        foreignKey: 'archivo_id',
-        as: 'activityLogs'
-      });
     }
   }
   Archivo.init({

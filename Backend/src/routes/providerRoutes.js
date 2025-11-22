@@ -14,8 +14,8 @@ router.post("/:provider/upload", async (req, res) => {
     const repo = StorageFactory(provider);
     const url = await repo.getSignedUrl(fileName, fileType);
 
-    // Log de generación de URL de subida
-    await AuditService.log({
+    // Log de generación de URL de subida (asíncrono, no bloqueante)
+    AuditService.log({
       usuario_id: req.user?.id || null,
       accion: 'generate_upload_url',
       descripcion: `Generó URL de subida para archivo: ${fileName}`,
@@ -24,7 +24,7 @@ router.post("/:provider/upload", async (req, res) => {
       ip_address: req.ip || req.connection.remoteAddress,
       user_agent: req.get('User-Agent'),
       metadata: { fileName, fileType, provider }
-    });
+    }).catch(err => console.error('Error en audit log:', err));
 
     return res.json({
       success: true,
@@ -75,8 +75,8 @@ router.get("/:provider/download", async (req, res) => {
     const repo = StorageFactory(provider);
     const result = await repo.downloadObject(fileName);
     
-    // Log de descarga de archivo
-    await AuditService.log({
+    // Log de descarga de archivo (asíncrono, no bloqueante)
+    AuditService.log({
       usuario_id: req.user?.id || null,
       accion: 'download_archivo',
       descripcion: `Descargó archivo: ${fileName}`,
@@ -85,7 +85,7 @@ router.get("/:provider/download", async (req, res) => {
       ip_address: req.ip || req.connection.remoteAddress,
       user_agent: req.get('User-Agent'),
       metadata: { fileName, provider }
-    });
+    }).catch(err => console.error('Error en audit log:', err));
     
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     res.send(result);
@@ -166,7 +166,7 @@ router.post("/delete-batch", async (req, res) => {
       AuditService.log({
         usuario_id: req.user?.id || null,
         accion: 'delete_archivo',
-        descripción: `Eliminó archivo: ${file.fileName}`,
+        descripcion: `Eliminó archivo: ${file.fileName}`,
         entidad_tipo: 'archivo',
         prioridad: 'warning',
         ip_address: req.ip || req.connection.remoteAddress,
@@ -208,17 +208,17 @@ router.post("/:provider/folder", async (req, res) => {
     const repo = StorageFactory(provider);
     const result = await repo.createFolder(folderName);
 
-    // Log de creación de carpeta
-    await AuditService.log({
+    // Log de creación de carpeta (asíncrono, no bloqueante)
+    AuditService.log({
       usuario_id: req.user?.id || null,
       accion: 'create_carpeta',
-      descripción: `Creó carpeta: ${folderName}`,
+      descripcion: `Creó carpeta: ${folderName}`,
       entidad_tipo: 'carpeta',
       prioridad: 'info',
       ip_address: req.ip || req.connection.remoteAddress,
       user_agent: req.get('User-Agent'),
       metadata: { folderName, provider }
-    });
+    }).catch(err => console.error('Error en audit log:', err));
 
     res.json({
       success: true,
