@@ -13,7 +13,7 @@ class users as "USERS" << (T,#FFAAAA) >> {
     + nombre: VARCHAR(100) [NOT NULL]
     + email: VARCHAR(255) [UK, NOT NULL]
     + password_hash: VARCHAR(255) [NOT NULL]
-    + rol: VARCHAR(20) [DEFAULT 'user']
+    + rol_id: int [FK] -- referencia a tabla ROLES
     + activo: BOOLEAN [DEFAULT true]
     + ultimo_login: TIMESTAMP
     + fecha_expiracion_password: TIMESTAMP
@@ -22,7 +22,18 @@ class users as "USERS" << (T,#FFAAAA) >> {
     + updated_at: TIMESTAMP [DEFAULT NOW()]
 }
 
-class user_sessions as "USER_SESSIONS" << (T,#FFAAAA) >> {
+class roles as "ROLES" << (T,#FFAAAA) >> {
+    + id: int [PK]
+    + nombre: VARCHAR(50) [UK, NOT NULL] -- Admin, Editor, Viewer
+    + descripcion: VARCHAR(255)
+    + permisos: JSONB [NOT NULL] -- {"descargar": true, "subir": true, "eliminar": false}
+    + es_sistema: BOOLEAN [DEFAULT false] -- roles predefinidos no editables
+    + activo: BOOLEAN [DEFAULT true]
+    + created_at: TIMESTAMP [DEFAULT NOW()]
+    + updated_at: TIMESTAMP [DEFAULT NOW()]
+}
+
+class usersessions as "USER_SESSIONS" << (T,#FFAAAA) >> {
     + id: int [PK]
     + usuario_id: int [FK]
     + token: VARCHAR(255) [UK]
@@ -90,13 +101,13 @@ class etiquetas as "ETIQUETAS" << (T,#FFAAAA) >> {
     + UNIQUE(usuario_id, nombre)
 }
 
-class archivo_etiquetas as "REL_ARCHIVO_ETIQUETA" << (T,#AAFFAA) >> {
+class archetiq as "REL_ARCHIVO_ETIQUETA" << (T,#AAFFAA) >> {
     + archivo_id: int [PK, FK]
     + etiqueta_id: int [PK, FK]
     + created_at: TIMESTAMP [DEFAULT NOW()]
 }
 
-class permisos_archivos as "PERMISOS_ARCHIVOS" << (T,#FFAAAA) >> {
+class permisosarch as "PERMISOS_ARCHIVOS" << (T,#FFAAAA) >> {
     + id: int [PK]
     + propietario_id: int [FK, NOT NULL]
     + usuario_id: int [FK, NOT NULL]
@@ -109,7 +120,7 @@ class permisos_archivos as "PERMISOS_ARCHIVOS" << (T,#FFAAAA) >> {
     + UNIQUE(usuario_id, archivo_id, tipo_permiso)
 }
 
-class permisos_carpetas as "PERMISOS_CARPETAS" << (T,#FFAAAA) >> {
+class permisoscarp as "PERMISOS_CARPETAS" << (T,#FFAAAA) >> {
     + id: int [PK]
     + propietario_id: int [FK, NOT NULL]
     + usuario_id: int [FK, NOT NULL]
@@ -123,7 +134,7 @@ class permisos_carpetas as "PERMISOS_CARPETAS" << (T,#FFAAAA) >> {
     + UNIQUE(usuario_id, carpeta_id, tipo_permiso)
 }
 
-class activity_logs as "ACTIVITY_LOGS" << (T,#FFAAAA) >> {
+class logs as "ACTIVITY_LOGS" << (T,#FFAAAA) >> {
     + id: int [PK]
     + usuario_id: int [FK]
     + accion: VARCHAR(100) [NOT NULL]
@@ -137,7 +148,7 @@ class activity_logs as "ACTIVITY_LOGS" << (T,#FFAAAA) >> {
     + created_at: TIMESTAMP [DEFAULT NOW()]
 }
 
-class print_jobs as "PRINT_JOBS" << (T,#FFAAAA) >> {
+class jobs as "PRINT_JOBS" << (T,#FFAAAA) >> {
     + id: int [PK]
     + archivo_id: int [FK, NOT NULL]
     + usuario_id: int [FK, NOT NULL]
@@ -152,7 +163,7 @@ class print_jobs as "PRINT_JOBS" << (T,#FFAAAA) >> {
     + completed_at: TIMESTAMP
 }
 
-class file_shares as "FILE_SHARES" << (T,#FFAAAA) >> {
+class shares as "FILE_SHARES" << (T,#FFAAAA) >> {
     + id: int [PK]
     + archivo_id: int [FK, NOT NULL]
     + usuario_id: int [FK, NOT NULL] -- quien comparte
@@ -168,32 +179,29 @@ class file_shares as "FILE_SHARES" << (T,#FFAAAA) >> {
     + accessed_at: TIMESTAMP
 }
 
--- Relaciones Users
-users ||--o{ user_sessions
+users ||--o{ usersessions
 users ||--o{ carpetas
 users ||--o{ archivos 
 users ||--o{ etiquetas
 users ||--o{ versiones
-users ||--o{ permisos_archivos
-users ||--o{ permisos_carpetas
-users ||--o{ activity_logs
-users ||--o{ print_jobs
-users ||--o{ file_shares
+users ||--o{ permisosarch
+users ||--o{ permisoscarp
+users ||--o{ logs
+users ||--o{ jobs
+users ||--o{ shares
 
--- Relaciones Carpetas
-carpetas ||--o{ carpetas : "carpeta_padre"
+roles ||--o{ users
+
+carpetas ||--o{ carpetas
 carpetas ||--o{ archivos
-carpetas ||--o{ permisos_carpetas
 
--- Relaciones Archivos
 archivos ||--o{ versiones
-archivos ||--o{ archivo_etiquetas
-archivos ||--o{ permisos_archivos
-archivos ||--o{ print_jobs
-archivos ||--o{ file_shares
+archivos ||--o{ archetiq
+archivos ||--o{ permisosarch
+archivos ||--o{ jobs
+archivos ||--o{ shares
 
--- Relaciones Etiquetas
-etiquetas ||--o{ archivo_etiquetas
+etiquetas ||--o{ archetiq
 
 title **BD ULSTORAGE MEJORADA - SISTEMA DE ALMACENAMIENTO HÍBRIDO**
 note top : BD PostgreSQL almacena METADATOS + ÍNDICES OPTIMIZADOS
@@ -227,9 +235,9 @@ note bottom
     **ÍNDICES RECOMENDADOS:**
     - CREATE INDEX idx_archivos_search ON archivos USING GIN(search_vector);
     - CREATE INDEX idx_archivos_usuario_carpeta ON archivos(usuario_id, carpeta_id);
-    - CREATE INDEX idx_activity_logs_usuario_fecha ON activity_logs(usuario_id, created_at);
-    - CREATE INDEX idx_permisos_usuario_entidad ON permisos_archivos(usuario_id, archivo_id);
-    - CREATE INDEX idx_file_shares_token ON file_shares(token) WHERE activo = true;
+    - CREATE INDEX idx_logs_usuario_fecha ON logs(usuario_id, created_at);
+    - CREATE INDEX idx_permisosarch_usuario_entidad ON permisosarch(usuario_id, archivo_id);
+    - CREATE INDEX idx_shares_token ON shares(token) WHERE activo = true;
 end note
 
 @enduml
