@@ -30,7 +30,8 @@ router.post("/:provider/upload", async (req, res) => {
 // GET /storage/:provider/list
 router.get("/:provider/list", async (req, res) => {
   try {
-    const repo = StorageFactory(req.params.provider);
+    const provider = req.params.provider.toLowerCase();
+    const repo = StorageFactory(provider);
     const objects = await repo.listObjects(req.params.provider);
 
     res.json({

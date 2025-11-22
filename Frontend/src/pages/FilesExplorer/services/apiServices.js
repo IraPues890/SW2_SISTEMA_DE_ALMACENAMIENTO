@@ -1,30 +1,30 @@
-const API_BASE = 'http://localhost:3000/api/storage' // HARCODEADO PORQUE MATARON EL BACKEND MALDITOS
+const API_BASE = 'http://localhost:3000/api/storage';
 
-const API_URL_AWS = 'http://localhost:3000/api/storage/aws/list'
-const API_URL_OCI = 'http://localhost:3000/api/storage/oracle/list'
+// URLs por proveedor
+const API_URL_AWS = 'http://localhost:3000/api/storage/aws/list';
+const API_URL_OCI = 'http://localhost:3000/api/storage/oracle/list';
+const API_URL_GCP = 'http://localhost:3000/api/storage/gcp/list';
+const API_URL_AZURE = 'http://localhost:3000/api/storage/azure/list';
 
+// Ahora sí, todos los proveedores vivos
 const PROVIDERS = [
   API_URL_AWS,
-  API_URL_OCI
+  API_URL_OCI,
+  API_URL_GCP,
+  API_URL_AZURE
 ];
 
 async function triggerBrowserDownload(response, id) {
     try {
         const blob = await response.blob();
-        console.log(blob);
-        // Creamos una URL temporal en memoria
         const downloadUrl = URL.createObjectURL(blob);
 
-        // Creamos un enlace <a> fantasma para hacer clic
         const a = document.createElement('a');
         a.href = downloadUrl;
         a.download = id;
-
-        // Simulamos el clic y limpiamos
         document.body.appendChild(a);
         a.click();
 
-        // Limpiamos la URL de memoria y el enlace
         URL.revokeObjectURL(downloadUrl);
         a.remove();
 
@@ -46,12 +46,11 @@ export async function getAllFiles() {
           })
       )
     );
+
     const allObjectArrays = allApiData.map(data => data.data);
     const combinedObjects = allObjectArrays.flat();
-    // Ahora combinedObjects es: [ file1, file2, file3, file4, file5 ]
-    console.log(combinedObjects);
-    return { objects: combinedObjects };
 
+    return { objects: combinedObjects };
   } catch (err) {
     throw err;
   }
@@ -60,7 +59,7 @@ export async function getAllFiles() {
 export async function downloadFiles(id) {
     try {
         if (Array.isArray(id)) {
-            const response = await fetch('http://localhost:3000/api/storage/aws/download-bulk/', {
+            const response = await fetch(`${API_BASE}/aws/download-bulk/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -70,7 +69,7 @@ export async function downloadFiles(id) {
             return triggerBrowserDownload(response, 'la-castro-bomba.zip');
 
         } else {
-            const API_URL = `http://localhost:3000/api/storage/aws/download/?bucket=giomar-nos-debe-broster&fileName=${id}`
+            const API_URL = `${API_BASE}/aws/download/?bucket=giomar-nos-debe-broster&fileName=${id}`;
             const response = await fetch(API_URL);
             return triggerBrowserDownload(response, id);
         }
@@ -80,7 +79,6 @@ export async function downloadFiles(id) {
 }
 
 export async function deleteFilesBatch(filesToDelete) {
-  
   const API_URL = `${API_BASE}/delete-batch`;
 
   const response = await fetch(API_URL, {
