@@ -1,3 +1,6 @@
+import React, { useState } from 'react';
+import ShareModal from './ShareModal';
+
 const FileIcon = ({ type }) => {
   let icon = '📄'; 
   if (type === 'folder') icon = '📁';
@@ -15,6 +18,7 @@ const FileIcon = ({ type }) => {
 
 // Tu nuevo componente de Fila
 export const FileRow = ({ file, isSelected, isChecked, onToggleSelection, onPreview }) => {
+  const [openShare, setOpenShare] = useState(false);
   
   // Clases dinámicas para la fila
   const rowClasses = [
@@ -57,7 +61,16 @@ export const FileRow = ({ file, isSelected, isChecked, onToggleSelection, onPrev
           >
             {file.type === 'folder' ? 'Abrir' : 'Ver'}
           </button>
+          {file.type === 'folder' && (
+            <button
+              onClick={() => setOpenShare(true)}
+              className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Compartir
+            </button>
+          )}
         </div>
+        <ShareModal folderId={file.id} open={openShare} onClose={() => setOpenShare(false)} />
       </td>
     </tr>
   );

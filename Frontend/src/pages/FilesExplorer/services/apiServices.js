@@ -1,4 +1,5 @@
 const API_BASE = 'http://localhost:3000/api/storage' // HARCODEADO PORQUE MATARON EL BACKEND MALDITOS
+const API_BASE_BACKEND = 'http://localhost:3000/api'
 
 const API_URL_AWS = 'http://localhost:3000/api/storage/aws/list'
 const API_URL_OCI = 'http://localhost:3000/api/storage/oracle/list'
@@ -101,4 +102,35 @@ export async function deleteFilesBatch(filesToDelete) {
 
   const data = await response.json();
   return data.results; 
+}
+
+// --- Funciones para compartir carpetas (simples) ---
+function authHeaders() {
+  const token = localStorage.getItem('token');
+  return token ? { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+}
+
+export async function shareFolder(folderId, email) {
+  const url = `${API_BASE_BACKEND}/folders/${folderId}/share`;
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ email })
+  });
+  if (!resp.ok) throw new Error('Error compartiendo carpeta');
+  return resp.json();
+}
+
+export async function listShared(folderId) {
+  const url = `${API_BASE_BACKEND}/folders/${folderId}/shared`;
+  const resp = await fetch(url, { headers: authHeaders() });
+  if (!resp.ok) throw new Error('Error listando compartidos');
+  return resp.json();
+}
+
+export async function revokeShare(folderId, shareId) {
+  const url = `${API_BASE_BACKEND}/folders/${folderId}/share/${shareId}`;
+  const resp = await fetch(url, { method: 'DELETE', headers: authHeaders() });
+  if (resp.status === 204) return true;
+  throw new Error('Error revocando permiso');
 }
