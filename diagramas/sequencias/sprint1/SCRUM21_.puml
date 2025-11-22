@@ -1,0 +1,25 @@
+@startuml SCRUM_21_CrearRoles
+title "SCRUM-21 - Crear roles con permisos diferenciados (administrador)"
+skinparam monochrome true
+actor Administrador as "Administrador"
+participant "Frontend Admin" as Frontend
+participant "API Backend (Express)" as Backend
+participant "RolesController" as Controller
+participant "RolesService" as Service
+participant "DB (Postgres)" as DB
+
+Administrador -> Frontend: Abrir panel de administración -> 'Crear rol'
+Frontend -> Backend: POST /api/admin/roles {name, permissions[]}
+Backend -> Controller: createRole(req.body)
+Controller -> Service: validateAndCreateRole(name, permissions)
+Service -> DB: INSERT INTO roles (name)
+DB --> Service: {roleId}
+Service -> DB: INSERT INTO role_permissions (role_id, permission)
+DB --> Service: {permissions assigned}
+Service --> Controller: {success: true, roleId}
+Controller --> Backend: 201 Created (roleId)
+Backend --> Frontend: 201 Created (mensaje y rol creado)
+Frontend -> Administrador: Mostrar nuevo rol en la lista
+
+note over Service,DB: Permissions pueden ser granular: read:file, write:file, share, admin:users, billing:view
+@enduml

@@ -1,0 +1,48 @@
+@startuml SCRUM_15_EliminarArchivo
+title "SCRUM-15 - Eliminar archivo (cloud + metadatos)"
+actor Usuario as "Usuario / Navegador"
+participant "Aplicación Frontend" as Frontend
+participant "API Backend\n(Express)" as Backend
+participant "FileController" as Controller
+participant "FileService" as Service
+participant "StorageFactory" as Factory
+participant "Repositorio Amazon" as Repo
+participant "AWS S3 / Cloud" as S3
+
+Usuario -> Frontend: Pulsar 'Eliminar' en archivo
+Frontend -> Backend: DELETE /api/files/:id
+Backend -> Controller: deleteFile(params.id)
+Controller -> Service: deleteFile(archivoId, userId)
+Service -> Repo: repo.deleteFile(cloudKey)  // si proveedor !== 'local'
+Repo -> S3: s3.deleteObject({Bucket, Key})
+S3 --> Repo: {} // éxito
+Repo --> Service: true
+Service -> FS local: eliminar archivo temporal local (si existe)
+Service -> BD: Version.destroy + Archivo.destroy
+Service --> Controller: { success: true }
+Controller --> Frontend: 200 OK (eliminado)
+@enduml
+@startuml SCRUM-15_EliminarArchivo
+title SCRUM-15: Eliminar archivo
+
+actor Usuario
+participant "Plataforma web" as Frontend
+participant "Backend / API" as Backend
+participant "Storage Provider" as Storage
+
+Usuario -> Frontend: 1. Click "Eliminar" (confirmación)
+activate Usuario
+Usuario -> Frontend: 1. Click "Eliminar" (confirmación)
+activate Frontend
+Frontend -> Backend: 2. DELETE /storage/:provider/delete/:fileName
+activate Backend
+Backend -> Storage: 3. Borrar objeto
+activate Storage
+Storage --> Backend: 4. Resultado de borrado
+deactivate Storage
+Backend --> Frontend: 5. 200 {success}
+deactivate Backend
+Frontend -> Usuario: 6. Remover del listado (actualizar UI)
+deactivate Frontend
+deactivate Usuario
+@enduml

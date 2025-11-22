@@ -1,0 +1,22 @@
+@startuml SCRUM_27_NotificarAlertas
+title "SCRUM-27 - Notificar alertas (exceso de cuota / eventos críticos)"
+skinparam monochrome true
+
+actor Sistema as "Sistema / Worker"
+participant "QuotaWorker" as QuotaWorker
+participant "AlertsService" as AlertsService
+participant "NotificationProvider" as Notifier
+participant "Admin Dashboard" as Admin
+participant "DB (Postgres)" as DB
+
+QuotaWorker -> DB: comprobar uso por usuario
+DB --> QuotaWorker: {usoBytes, cuotaBytes}
+QuotaWorker -> AlertsService: crear alerta (userId, tipo=quota_exceeded)
+AlertsService -> DB: INSERT alerts (userId, nivel, mensaje, estado)
+DB --> AlertsService: {alert saved}
+AlertsService -> Notifier: enviar notificación (email/push) al usuario
+Notifier --> AlertsService: {resultado envío}
+AlertsService -> Admin: publicar alerta en dashboard (websocket/event)
+Admin --> AlertsService: {ack recibida}
+
+@enduml
