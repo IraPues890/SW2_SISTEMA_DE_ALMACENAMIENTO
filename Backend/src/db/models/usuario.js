@@ -49,31 +49,31 @@ module.exports = (sequelize, DataTypes) => {
       
       // Usuario tiene muchos permisos de archivos como propietario
       Usuario.hasMany(models.PermisosArchivos, {
-        foreignKey: 'propietario_id',
-        as: 'permisosArchivosComoPropietario'
+        foreignKey: 'usuario_propietario_id',
+        as: 'permisosArchivosComoOwner'
       });
       
       // Usuario tiene muchos permisos de archivos como beneficiario
       Usuario.hasMany(models.PermisosArchivos, {
-        foreignKey: 'usuario_id',
-        as: 'permisosArchivosRecibidos'
+        foreignKey: 'usuario_beneficiario_id',
+        as: 'permisosArchivosBeneficiario'
       });
-
+      
       // Usuario tiene muchos permisos de carpetas como propietario
       Usuario.hasMany(models.PermisosCarpetas, {
-        foreignKey: 'propietario_id',
-        as: 'permisosCarpetasComoPropietario'
+        foreignKey: 'usuario_propietario_id',
+        as: 'permisosCarpetasComoOwner'
       });
       
       // Usuario tiene muchos permisos de carpetas como beneficiario
       Usuario.hasMany(models.PermisosCarpetas, {
-        foreignKey: 'usuario_id',
-        as: 'permisosCarpetasRecibidos'
+        foreignKey: 'usuario_beneficiario_id',
+        as: 'permisosCarpetasBeneficiario'
       });
-
+      
       // Usuario tiene muchos archivos compartidos
       Usuario.hasMany(models.FileShares, {
-        foreignKey: 'propietario_id',
+        foreignKey: 'usuario_id',
         as: 'archivosCompartidos'
       });
       
@@ -90,7 +90,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     email: {
-      type: DataTypes.STRING(150),
+      type: DataTypes.STRING(255),
       allowNull: false,
       unique: true,
       validate: {
@@ -109,56 +109,19 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id'
       }
     },
-    telefono: {
-      type: DataTypes.STRING(20)
-    },
-    avatar_url: {
-      type: DataTypes.STRING(500)
-    },
-    configuracion_ui: {
-      type: DataTypes.JSONB
-    },
-    preferencias: {
-      type: DataTypes.JSONB
-    },
-    timezone: {
-      type: DataTypes.STRING(50),
-      defaultValue: 'UTC'
-    },
-    idioma: {
-      type: DataTypes.STRING(10),
-      defaultValue: 'es'
-    },
     activo: {
       type: DataTypes.BOOLEAN,
       defaultValue: true
     },
-    email_verificado: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
-    },
-    fecha_verificacion: {
-      type: DataTypes.DATE
-    },
-    intentos_login_fallidos: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0
-    },
-    bloqueado_hasta: {
-      type: DataTypes.DATE
-    },
     ultimo_login: {
       type: DataTypes.DATE
     },
-    ultimo_cambio_password: {
+    fecha_expiracion_password: {
       type: DataTypes.DATE
     },
-    requiere_cambio_password: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
-    },
-    metadata: {
-      type: DataTypes.JSONB
+    intentos_fallidos: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0
     }
   }, {
     sequelize,

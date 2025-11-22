@@ -15,18 +15,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'usuario_id',
         as: 'usuario'
       });
-      
-      // ActivityLog puede estar relacionado con un archivo
-      ActivityLog.belongsTo(models.Archivo, {
-        foreignKey: 'archivo_id',
-        as: 'archivo'
-      });
     }
   }
   ActivityLog.init({
     usuario_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
       references: {
         model: 'Usuarios',
         key: 'id'
@@ -36,53 +29,24 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING(100),
       allowNull: false
     },
+    descripcion: {
+      type: DataTypes.STRING(500)
+    },
     entidad_tipo: {
-      type: DataTypes.STRING(50),
-      allowNull: false
-
+      type: DataTypes.STRING(50)
     },
     entidad_id: {
       type: DataTypes.INTEGER
     },
-    descripcion: {
-      type: DataTypes.TEXT
-    },
-    detalles_accion: {
-      type: DataTypes.JSONB
-    },
-    archivo_id: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: 'Archivos',
-        key: 'id'
-      }
-    },
-    carpeta_id: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: 'Carpetas',
-        key: 'id'
-      }
+    prioridad: {
+      type: DataTypes.STRING(20),
+      defaultValue: 'info'
     },
     ip_address: {
-      type: DataTypes.INET
+      type: 'INET'
     },
     user_agent: {
       type: DataTypes.TEXT
-    },
-    session_id: {
-      type: DataTypes.STRING(255)
-    },
-    prioridad: {
-      type: DataTypes.INTEGER,
-      defaultValue: 1
-    },
-    resultado: {
-      type: DataTypes.ENUM('exito', 'fallo', 'advertencia'),
-      defaultValue: 'exito'
-    },
-    duracion_ms: {
-      type: DataTypes.INTEGER
     },
     metadata: {
       type: DataTypes.JSONB
@@ -90,6 +54,9 @@ module.exports = (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'ActivityLog',
+    timestamps: true,
+    createdAt: 'createdAt',
+    updatedAt: false
   });
   return ActivityLog;
 };

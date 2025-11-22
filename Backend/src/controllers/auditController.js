@@ -1,5 +1,5 @@
-const { ActivityLog, Usuario, Archivo } = require('../db/models');
-const { Op } = require('sequelize');
+const { ActivityLog, Usuario } = require('../db/models');
+const { Op, fn, col } = require('sequelize');
 
 class AuditController {
   // GET /api/audit/logs - Obtener todos los logs con filtros
@@ -13,6 +13,7 @@ class AuditController {
         fecha_inicio,
         fecha_fin,
         prioridad,
+        entidad_tipo,
         search
       } = req.query;
 
@@ -42,6 +43,10 @@ class AuditController {
         where.prioridad = prioridad;
       }
 
+      if (entidad_tipo) {
+        where.entidad_tipo = entidad_tipo;
+      }
+
       // Búsqueda global en descripción
       if (search) {
         where[Op.or] = [
@@ -52,17 +57,16 @@ class AuditController {
 
       const { rows: logs, count: total } = await ActivityLog.findAndCountAll({
         where,
+        attributes: [
+          'id', 'usuario_id', 'accion', 'descripcion', 
+          'entidad_tipo', 'entidad_id', 'prioridad', 
+          'ip_address', 'user_agent', 'metadata', 'createdAt'
+        ],
         include: [
           {
             model: Usuario,
             as: 'usuario',
             attributes: ['id', 'nombre', 'email'],
-            required: false
-          },
-          {
-            model: Archivo,
-            as: 'archivo',
-            attributes: ['id', 'nombre', 'tipo'],
             required: false
           }
         ],
@@ -119,10 +123,10 @@ class AuditController {
         where: whereDate,
         attributes: [
           'accion',
-          [sequelize.fn('COUNT', sequelize.col('accion')), 'count']
+          [fn('COUNT', col('accion')), 'count']
         ],
         group: ['accion'],
-        order: [[sequelize.fn('COUNT', sequelize.col('accion')), 'DESC']],
+        order: [[fn('COUNT', col('accion')), 'DESC']],
         limit: 10
       });
 
@@ -131,7 +135,7 @@ class AuditController {
         where: whereDate,
         attributes: [
           'usuario_id',
-          [sequelize.fn('COUNT', sequelize.col('usuario_id')), 'count']
+          [fn('COUNT', col('usuario_id')), 'count']
         ],
         include: [{
           model: Usuario,
@@ -139,7 +143,7 @@ class AuditController {
           attributes: ['nombre', 'email']
         }],
         group: ['usuario_id', 'usuario.id'],
-        order: [[sequelize.fn('COUNT', sequelize.col('usuario_id')), 'DESC']],
+        order: [[fn('COUNT', col('usuario_id')), 'DESC']],
         limit: 10
       });
 
@@ -155,11 +159,11 @@ class AuditController {
           }
         },
         attributes: [
-          [sequelize.fn('DATE', sequelize.col('createdAt')), 'fecha'],
-          [sequelize.fn('COUNT', '*'), 'count']
+          [fn('DATE', col('createdAt')), 'fecha'],
+          [fn('COUNT', '*'), 'count']
         ],
-        group: [sequelize.fn('DATE', sequelize.col('createdAt'))],
-        order: [[sequelize.fn('DATE', sequelize.col('createdAt')), 'ASC']]
+        group: [fn('DATE', col('createdAt'))],
+        order: [[fn('DATE', col('createdAt')), 'ASC']]
       });
 
       res.json({
@@ -205,37 +209,37 @@ class AuditController {
 
       const logs = await ActivityLog.findAll({
         where,
+        attributes: [
+          'id', 'usuario_id', 'accion', 'descripcion', 
+          'entidad_tipo', 'entidad_id', 'prioridad', 
+          'ip_address', 'user_agent', 'metadata', 'createdAt'
+        ],
         include: [
           {
             model: Usuario,
             as: 'usuario',
             attributes: ['nombre', 'email']
-          },
-          {
-            model: Archivo,
-            as: 'archivo',
-            attributes: ['nombre']
           }
         ],
         order: [['createdAt', 'DESC']]
       });
 
       // Convertir a CSV
-      const csvHeader = 'Fecha,Usuario,Email,Acción,Descripción,Archivo,IP\n';
+      const csvHeader = 'Fecha,Usuario,Email,Acción,Descripción,Entidad,IP\n';
       const csvData = logs.map(log => {
         const fecha = log.createdAt.toISOString().slice(0, 19).replace('T', ' ');
         const usuario = log.usuario ? log.usuario.nombre : 'N/A';
         const email = log.usuario ? log.usuario.email : 'N/A';
-        const archivo = log.archivo ? log.archivo.nombre : 'N/A';
+        const entidad = log.entidad_tipo ? `${log.entidad_tipo} (ID: ${log.entidad_id || 'N/A'})` : 'N/A';
         
-        return `"${fecha}","${usuario}","${email}","${log.accion}","${log.descripcion}","${archivo}","${log.ip_address}"`;
+        return `"${fecha}","${usuario}","${email}","${log.accion}","${log.descripcion}","${entidad}","${log.ip_address}"`;
       }).join('\n');
 
       const csv = csvHeader + csvData;
 
-      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
       res.setHeader('Content-Disposition', `attachment; filename="audit_logs_${Date.now()}.csv"`);
-      res.send(csv);
+      res.send('\uFEFF' + csv); // BOM para UTF-8
 
     } catch (error) {
       console.error('Error exporting audit logs:', error);

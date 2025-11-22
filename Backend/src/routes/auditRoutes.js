@@ -6,13 +6,34 @@ const auditController = require('../controllers/auditController');
 const authMiddleware = require('../middleware/authMiddleware');
 
 // Middleware para verificar rol de administrador
-const adminMiddleware = (req, res, next) => {
-  if (req.user && req.user.rol === 'admin') {
-    next();
-  } else {
-    return res.status(403).json({
+const adminMiddleware = async (req, res, next) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Usuario no autenticado.'
+      });
+    }
+
+    // Verificar si el usuario tiene permisos de auditoría
+    // El rol ya está cargado desde authMiddleware
+    if (req.user.rol && 
+        req.user.rol.permisos && 
+        (req.user.rol.permisos.audit === true || 
+         req.user.rol.nombre === 'Admin' || 
+         req.user.rol.nombre === 'Administrador')) {
+      next();
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: 'Acceso denegado. Se requieren permisos de auditoría.'
+      });
+    }
+  } catch (error) {
+    console.error('Admin middleware error:', error);
+    return res.status(500).json({
       success: false,
-      message: 'Acceso denegado. Se requieren permisos de administrador.'
+      message: 'Error verificando permisos.'
     });
   }
 };

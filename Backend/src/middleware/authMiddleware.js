@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { Usuario } = require('../db/models');
+const { Usuario, Roles } = require('../db/models');
 
 const authMiddleware = async (req, res, next) => {
   try {
@@ -14,7 +14,14 @@ const authMiddleware = async (req, res, next) => {
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'tu_jwt_secret');
     
-    const usuario = await Usuario.findByPk(decoded.id);
+    const usuario = await Usuario.findByPk(decoded.id, {
+      include: [{
+        model: Roles,
+        as: 'rol',
+        attributes: ['id', 'nombre', 'descripcion', 'permisos']
+      }]
+    });
+    
     if (!usuario || !usuario.activo) {
       return res.status(401).json({
         success: false,
